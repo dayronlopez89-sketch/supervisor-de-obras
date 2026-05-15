@@ -1171,3 +1171,4 @@ export default function SupervisorObra() {
       onClose={()=>setScanBoleta(null)}/>}
   </>;
 }
+
