@@ -1,4 +1,6 @@
 
+
+
 import { useState, useEffect, useRef } from "react";
 
 // ─── Storage Keys ─────────────────────────────────────────────────────────────
@@ -255,7 +257,7 @@ async function escanearBoleta(imageBase64) {
       "anthropic-dangerous-direct-browser-access": "true",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-5-20251001",
       max_tokens: 1024,
       messages: [{
         role: "user",
@@ -1171,4 +1173,3 @@ export default function SupervisorObra() {
       onClose={()=>setScanBoleta(null)}/>}
   </>;
 }
-
