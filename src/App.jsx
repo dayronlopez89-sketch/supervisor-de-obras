@@ -1,7 +1,3 @@
-
-
-
-
 import { useState, useEffect, useRef } from "react";
 
 // ─── Storage Keys ─────────────────────────────────────────────────────────────
@@ -30,18 +26,18 @@ const emptyObra = (nombre="") => ({
 //   materiales     → solo puede agregar/editar materiales y boletas en todas las zonas
 //                    ve el avance pero no toca ítems ni zonas
 
-// ─── Async Storage ────────────────────────────────────────────────────────────
-async function sg(key){ try{ const r=await window.storage.get(key); return r?JSON.parse(r.value):null; }catch{ return null; }}
-async function ss(key,val){ try{ await window.storage.set(key,JSON.stringify(val)); }catch{}}
-async function sd(key){ try{ await window.storage.delete(key); }catch{}}
+// ─── Storage (localStorage) ───────────────────────────────────────────────────
+function sg(key){ try{ const r=localStorage.getItem(key); return r?JSON.parse(r):null; }catch{ return null; }}
+function ss(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch{}}
+function sd(key){ try{ localStorage.removeItem(key); }catch{}}
 
-async function loadAll(){
+function loadAll(){
   return {
-    obras:   await sg(OBRAS_KEY)||[],
-    users:   await sg(USERS_KEY)||[],
-    activeId:await sg(ACTIVE_KEY),
-    session: await sg(SESSION_KEY),
-    invites: await sg(INVITE_KEY)||[],
+    obras:   sg(OBRAS_KEY)||[],
+    users:   sg(USERS_KEY)||[],
+    activeId:sg(ACTIVE_KEY),
+    session: sg(SESSION_KEY),
+    invites: sg(INVITE_KEY)||[],
   };
 }
 
@@ -588,14 +584,12 @@ export default function SupervisorObra(){
   const obra=obras.find(o=>o.id===activeId)||obras[0]||null;
 
   useEffect(()=>{
-    (async()=>{
-      const {obras:o,users:u,activeId:aid,session:ses,invites:inv}=await loadAll();
-      let list=o.length?o:[emptyObra("Mi Primera Obra")];
-      setObras(list); setUsers(u); setInvites(inv||[]);
-      setActiveId(aid||list[0]?.id||null);
-      if(ses&&u.find(x=>x.id===ses)) setCurrentUser(u.find(x=>x.id===ses));
-      setReady(true);
-    })();
+    const {obras:o,users:u,activeId:aid,session:ses,invites:inv}=loadAll();
+    let list=o.length?o:[emptyObra("Mi Primera Obra")];
+    setObras(list); setUsers(u); setInvites(inv||[]);
+    setActiveId(aid||list[0]?.id||null);
+    if(ses&&u.find(x=>x.id===ses)) setCurrentUser(u.find(x=>x.id===ses));
+    setReady(true);
   },[]);
 
   useEffect(()=>{ if(!ready)return; const t=setTimeout(()=>ss(OBRAS_KEY,obras),300); return()=>clearTimeout(t); },[obras,ready]);
@@ -1100,3 +1094,7 @@ export default function SupervisorObra(){
     {scanBoleta&&<ScanBoletaModal onDatos={datos=>handleBoletaDatos(datos,scanBoleta.zId,scanBoleta.iId)} onClose={()=>setScanBoleta(null)}/>}
   </>;
 }
+
+
+
+
