@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect, useRef } from "react";
 
 // ─── Storage Keys ─────────────────────────────────────────────────────────────
@@ -239,6 +237,68 @@ async function exportComprasPDF(obra) {
   doc.save(`compras-${(obra.nombre||"obra").replace(/\s+/g,"-").toLowerCase()}-${today()}.pdf`);
 }
 
+// ─── OCR Boleta con IA ───────────────────────────────────────────────────────
+async function escanearBoleta(imageBase64) {
+  const apiKey = import.meta.env.VITE_ANTHROPIC_KEY;
+  if (!apiKey) throw new Error("No hay API Key configurada");
+
+  const base64Data = imageBase64.split(",")[1];
+  const mediaType = imageBase64.split(";")[0].split(":")[1] || "image/jpeg";
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1024,
+      messages: [{
+        role: "user",
+        content: [
+          {
+            type: "image",
+            source: { type: "base64", media_type: mediaType, data: base64Data }
+          },
+          {
+            type: "text",
+            text: `Analiza esta boleta o factura de materiales de construcción y extrae los datos.
+Responde SOLO con un JSON válido, sin texto adicional, sin bloques de código, sin explicaciones.
+El JSON debe tener exactamente esta estructura:
+{
+  "proveedor": "nombre del proveedor o tienda",
+  "fechaCompra": "YYYY-MM-DD o vacío si no se ve",
+  "materiales": [
+    {
+      "nombre": "nombre del producto",
+      "cantidad": número,
+      "unidad": "unidad (kg, bolsas, m², unidad, etc)",
+      "precio": precio unitario como número
+    }
+  ]
+}
+Si no puedes leer algún campo, usa "" para strings y 0 para números.
+Extrae TODOS los productos que aparezcan en la boleta.`
+          }
+        ]
+      }]
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error?.message || "Error al consultar la IA");
+  }
+
+  const data = await response.json();
+  const text = data.content[0]?.text || "";
+  const clean = text.replace(/```json|```/g, "").trim();
+  return JSON.parse(clean);
+}
+
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const Ico = {
   Hard: ()=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="18" height="18"><path d="M2 18a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v2z"/><path d="M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5"/><path d="M4 15v-3a8 8 0 0 1 16 0v3"/></svg>,
@@ -421,6 +481,96 @@ function MatRow({mat,onEdit,onDelete,onStatus}) {
   </div>;
 }
 
+// ─── Scan Boleta Modal ────────────────────────────────────────────────────────
+function ScanBoletaModal({ onDatos, onClose }) {
+  const [foto, setFoto] = useState(null);
+  const [scanning, setScanning] = useState(false);
+  const [error, setError] = useState("");
+  const [camMode, setCamMode] = useState(false);
+  const videoRef = useRef(); const canvasRef = useRef();
+  const [stream, setStream] = useState(null);
+
+  const startCam = async () => {
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      setStream(s);
+      setCamMode(true);
+      setTimeout(() => { if (videoRef.current) { videoRef.current.srcObject = s; videoRef.current.play(); } }, 100);
+    } catch { setError("No se pudo acceder a la cámara"); }
+  };
+  const stopCam = () => { stream?.getTracks().forEach(t => t.stop()); setStream(null); setCamMode(false); };
+  const capturar = () => {
+    const v = videoRef.current, c = canvasRef.current;
+    c.width = v.videoWidth; c.height = v.videoHeight;
+    c.getContext("2d").drawImage(v, 0, 0);
+    setFoto(c.toDataURL("image/jpeg", 0.9));
+    stopCam();
+  };
+  const handleFile = (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader(); r.onload = ev => setFoto(ev.target.result); r.readAsDataURL(f);
+  };
+  const analizar = async () => {
+    if (!foto) return;
+    setScanning(true); setError("");
+    try {
+      const datos = await escanearBoleta(foto);
+      onDatos(datos);
+      onClose();
+    } catch (e) {
+      setError("Error: " + e.message);
+    } finally { setScanning(false); }
+  };
+
+  return <Modal title="📷 Escanear Boleta con IA" onClose={() => { stopCam(); onClose(); }} wide>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ background: "#1e293b", borderRadius: 10, padding: 12, fontSize: "0.78rem", color: "#94a3b8", lineHeight: 1.6 }}>
+        🤖 <strong style={{ color: "#f59e0b" }}>IA leerá tu boleta</strong> y completará los materiales, cantidades y precios automáticamente.
+      </div>
+
+      {!camMode && !foto && <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button style={{ ...S.btnP, flex: 1, justifyContent: "center" }} onClick={startCam}>
+          📸 Usar Cámara
+        </button>
+        <label style={{ ...S.btnS, flex: 1, justifyContent: "center", cursor: "pointer" }}>
+          🖼️ Galería
+          <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleFile} />
+        </label>
+      </div>}
+
+      {camMode && <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+        <div style={{ width: "100%", background: "#000", borderRadius: 10, overflow: "hidden", maxHeight: 300 }}>
+          <video ref={videoRef} style={{ width: "100%", objectFit: "cover", display: "block" }} playsInline muted />
+        </div>
+        <canvas ref={canvasRef} style={{ display: "none" }} />
+        <div style={{ display: "flex", gap: 8 }}>
+          <button style={S.btnG} onClick={stopCam}>Cancelar</button>
+          <button style={{ ...S.btnP, padding: "12px 28px" }} onClick={capturar}>📸 Capturar</button>
+        </div>
+      </div>}
+
+      {foto && !camMode && <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+        <img src={foto} style={{ width: "100%", maxHeight: 280, objectFit: "contain", borderRadius: 10, border: "1px solid #334155" }} alt="boleta" />
+        <div style={{ display: "flex", gap: 8, width: "100%" }}>
+          <button style={{ ...S.btnG, flex: 1, justifyContent: "center" }} onClick={() => { setFoto(null); setError(""); }}>🔄 Otra foto</button>
+          <button style={{ ...S.btnP, flex: 2, justifyContent: "center", opacity: scanning ? 0.7 : 1 }} onClick={analizar} disabled={scanning}>
+            {scanning ? "🤖 Analizando..." : "🤖 Analizar con IA"}
+          </button>
+        </div>
+      </div>}
+
+      {scanning && <div style={{ textAlign: "center", padding: "16px 0" }}>
+        <div style={{ fontSize: "2rem", animation: "spin 1s linear infinite", display: "inline-block" }}>⚙</div>
+        <p style={{ color: "#f59e0b", fontSize: "0.82rem", marginTop: 8 }}>Claude está leyendo tu boleta...</p>
+      </div>}
+
+      {error && <div style={{ background: "#450a0a", border: "1px solid #ef444444", borderRadius: 8, padding: "10px 14px", fontSize: "0.8rem", color: "#fca5a5" }}>
+        {error}
+      </div>}
+    </div>
+  </Modal>;
+}
+
 // ─── MatForm ──────────────────────────────────────────────────────────────────
 function MatForm({mat,onChange}) {
   const p=parseFloat(mat.precio)||0,q=parseFloat(mat.cantidad)||0,t=p*q;
@@ -568,6 +718,8 @@ export default function SupervisorObra() {
   const [dragO,setDragO]=useState(null);
   const [cameraFor,setCameraFor]=useState(null); // {zonaId,itemId}
 
+  const [scanBoleta, setScanBoleta] = useState(null); // {zId, iId}
+
   const obra = obras.find(o=>o.id===activeId) || obras[0] || null;
 
   useEffect(()=>{
@@ -644,6 +796,16 @@ export default function SupervisorObra() {
   const hDS=(e,i)=>{ setDragI(i); e.dataTransfer.effectAllowed="move"; };
   const hDO=(e,i)=>{ e.preventDefault(); setDragO(i); };
   const hDD=(e,i)=>{ e.preventDefault(); if(dragI===null||dragI===i){setDragI(null);setDragO(null);return;} updObra(o=>{const z=[...o.zonas];const[m]=z.splice(dragI,1);z.splice(i,0,m);return{...o,zonas:z};}); setDragI(null);setDragO(null); };
+
+  // ── Escanear Boleta ──
+  const handleBoletaDatos = (datos, zId, iId) => {
+    if (!datos.materiales?.length) { toast("No se encontraron materiales", "err"); return; }
+    datos.materiales.forEach(m => {
+      const mat = { id:uid(), nombre:m.nombre||"", estado:"pendiente", cantidad:m.cantidad||0, unidad:m.unidad||"", precio:m.precio||0, proveedor:datos.proveedor||"", fechaCompra:datos.fechaCompra||"", fechaEntrega:"", notas:"" };
+      updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,materiales:[...(i.materiales||[]),mat]}:i)}:z)}));
+    });
+    toast(`✅ ${datos.materiales.length} material(es) agregado(s) desde la boleta`);
+  };
 
   // ── Export ──
   const doPDF=async()=>{ if(!obra)return; setExporting(true); try{await exportAvancePDF(obra,calcZonePct,totalPct);}catch(e){toast("Error al generar PDF","err");}finally{setExporting(false);} };
@@ -782,6 +944,7 @@ export default function SupervisorObra() {
                       <span className="badge" style={{background:"#1e293b",color:"#64748b",fontSize:"0.58rem"}}>W{item.peso||1}</span>
                       <button className="ic" onClick={()=>{setForm({nombre:item.nombre,descripcion:item.descripcion||"",peso:item.peso||1,notas:item.notas||"",fechaInicio:item.fechaInicio||"",fechaFin:item.fechaFin||""});setModal({type:"editItem",zId:zona.id,iId:item.id});}}><Ico.Edit/></button>
                       <button className="ic" title="Agregar material" onClick={()=>setModal({type:"addMat",zId:zona.id,iId:item.id})} style={{fontSize:"0.68rem",fontWeight:700}}>+M</button>
+                      <button className="ic" title="Escanear boleta" onClick={()=>setScanBoleta({zId:zona.id,iId:item.id})} style={{fontSize:"0.75rem"}}>📷</button>
                       <button className="ic" title="Fotos" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))}><Ico.Cam/></button>
                       {(item.materiales||[]).length>0&&<button className="ic" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))}>
                         <Ico.Chev open={iOpen}/><span style={{fontSize:"0.68rem",fontWeight:700,marginLeft:2}}>{item.materiales.length}</span>
@@ -990,5 +1153,10 @@ export default function SupervisorObra() {
 
     {/* Camera */}
     {cameraFor&&<CameraModal onCapture={data=>addFoto(cameraFor.zId,cameraFor.iId,data)} onClose={()=>setCameraFor(null)}/>}
+
+    {/* Scan Boleta */}
+    {scanBoleta&&<ScanBoletaModal
+      onDatos={datos=>handleBoletaDatos(datos,scanBoleta.zId,scanBoleta.iId)}
+      onClose={()=>setScanBoleta(null)}/>}
   </>;
 }
