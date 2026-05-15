@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 
 // ─── Storage Keys ─────────────────────────────────────────────────────────────
@@ -944,12 +945,22 @@ export default function SupervisorObra() {
                       <span className="badge" style={{background:"#1e293b",color:"#64748b",fontSize:"0.58rem"}}>W{item.peso||1}</span>
                       <button className="ic" onClick={()=>{setForm({nombre:item.nombre,descripcion:item.descripcion||"",peso:item.peso||1,notas:item.notas||"",fechaInicio:item.fechaInicio||"",fechaFin:item.fechaFin||""});setModal({type:"editItem",zId:zona.id,iId:item.id});}}><Ico.Edit/></button>
                       <button className="ic" title="Agregar material" onClick={()=>setModal({type:"addMat",zId:zona.id,iId:item.id})} style={{fontSize:"0.68rem",fontWeight:700}}>+M</button>
-                      <button className="ic" title="Escanear boleta" onClick={()=>setScanBoleta({zId:zona.id,iId:item.id})} style={{fontSize:"0.75rem"}}>📷</button>
-                      <button className="ic" title="Fotos" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))}><Ico.Cam/></button>
+                      <button className="ic" title="Fotos de trabajo" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))}><Ico.Cam/></button>
                       {(item.materiales||[]).length>0&&<button className="ic" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))}>
                         <Ico.Chev open={iOpen}/><span style={{fontSize:"0.68rem",fontWeight:700,marginLeft:2}}>{item.materiales.length}</span>
                       </button>}
                       <button className="ic danger" onClick={()=>delItem(zona.id,item.id)}><Ico.Trash/></button>
+                    </div>
+                    {/* Botón escanear boleta separado y visible */}
+                    <div style={{padding:"6px 12px",borderTop:"1px solid #1e293b22",display:"flex",gap:6}}>
+                      <button style={{...S.btnP,fontSize:"0.72rem",padding:"6px 12px",borderRadius:8,flex:1,justifyContent:"center"}}
+                        onClick={()=>setScanBoleta({zId:zona.id,iId:item.id})}>
+                        🧾 Escanear Boleta con IA
+                      </button>
+                      <button style={{...S.btnS,fontSize:"0.72rem",padding:"6px 12px",borderRadius:8}}
+                        onClick={()=>setModal({type:"addMat",zId:zona.id,iId:item.id})}>
+                        + Material manual
+                      </button>
                     </div>
 
                     {iOpen&&<>
