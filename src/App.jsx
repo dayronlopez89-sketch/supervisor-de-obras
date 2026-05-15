@@ -643,7 +643,7 @@ export default function SupervisorObra(){
   };
 
   // ── CRUD Obras ──
-  const createObra=()=>{ if(!form.nombre?.trim())return; const o=emptyObra(form.nombre.trim()); o.descripcion=form.descripcion||""; o.fechaInicio=form.fechaInicio||today(); o.fechaFin=form.fechaFin||""; setObras(p=>[...p,o]); setActiveId(o.id); ss(ACTIVE_KEY,o.id); closeModal(); };
+  const createObra=()=>{ if(!form.nombre?.trim())return; const o=emptyObra(form.nombre.trim()); o.descripcion=form.descripcion||""; o.fechaInicio=form.fechaInicio||today(); o.fechaFin=form.fechaFin||""; setObras(p=>[...p,o]); setActiveId(o.id); ss(ACTIVE_KEY,o.id); setTab("zonas"); closeModal(); };
   const deleteObra=(id)=>{ if(!window.confirm("¿Eliminar esta obra?"))return; const next=obras.filter(o=>o.id!==id); setObras(next); if(activeId===id){ const nid=next[0]?.id||null; setActiveId(nid); ss(ACTIVE_KEY,nid); } };
 
   // ── CRUD Zonas ──
@@ -947,15 +947,61 @@ export default function SupervisorObra(){
 
     {modal?.type==="obras"&&<Modal title="Mis Obras" onClose={closeModal} wide>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
-        {obras.map(o=>{ const aPct=()=>{ const all=o.zonas.flatMap(z=>z.items||[]); if(!all.length)return 0; const tw=all.reduce((s,i)=>s+(i.peso||1),0),dw=all.reduce((s,i)=>s+(i.peso||1)*(calcItemPct(i)/100),0); return Math.round((dw/tw)*100); }; const p=aPct(),pc2=p<30?"#ef4444":p<70?"#f59e0b":"#22c55e";
-          return <div key={o.id} style={{background:"#1e293b",borderRadius:10,padding:"12px 14px",display:"flex",alignItems:"center",gap:10,border:o.id===activeId?"1px solid #f59e0b44":"1px solid transparent",cursor:"pointer"}} onClick={()=>{setActiveId(o.id);ss(ACTIVE_KEY,o.id);closeModal();}}>
-            <div style={{position:"relative",flexShrink:0}}><Ring pct={p} size={38} stroke={4} color={pc2}/><div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:"0.55rem",fontWeight:800,color:pc2}}>{p}%</span></div></div>
-            <div style={{flex:1}}><div style={{fontWeight:700,fontSize:"0.9rem"}}>{o.nombre}</div><div style={{fontSize:"0.68rem",color:"#64748b"}}>{o.zonas.length} zonas · {o.trabajadores.length} trabajadores</div></div>
-            {o.id===activeId&&<span style={{fontSize:"0.65rem",color:"#f59e0b",fontWeight:700}}>ACTIVA</span>}
-            {currentUser?.rol==="admin"&&<button className="ic danger" onClick={e=>{e.stopPropagation();deleteObra(o.id);}}><Ico.Trash/></button>}
+        {/* Botón Nueva Obra siempre visible arriba */}
+        {currentUser?.rol==="admin"&&<button style={{...S.btnP,justifyContent:"center",marginBottom:4}} onClick={()=>{closeModal();setModal({type:"newObra"});}}><Ico.Plus/> Nueva Obra</button>}
+        {obras.length===0&&<div style={{textAlign:"center",padding:"30px 0",color:"#334155",fontSize:"0.85rem"}}>No hay obras aún. ¡Crea la primera!</div>}
+        {obras.map(o=>{
+          const aPct=()=>{ const all=o.zonas.flatMap(z=>z.items||[]); if(!all.length)return 0; const tw=all.reduce((s,i)=>s+(i.peso||1),0),dw=all.reduce((s,i)=>s+(i.peso||1)*(calcItemPct(i)/100),0); return Math.round((dw/tw)*100); };
+          const p=aPct(),pc2=p<30?"#ef4444":p<70?"#f59e0b":"#22c55e";
+          const allI=o.zonas.flatMap(z=>z.items||[]);
+          const doneI=allI.filter(i=>i.terminado).length;
+          const allM=allI.flatMap(i=>i.materiales||[]);
+          const pendM=allM.filter(m=>!m.estado||m.estado==="pendiente").length;
+          const isActive=o.id===activeId;
+          return <div key={o.id} style={{background:isActive?"#0f1f36":"#0f172a",borderRadius:12,border:`2px solid ${isActive?"#f59e0b":"#1e293b"}`,overflow:"hidden",transition:"all .2s",cursor:"pointer"}}
+            onClick={()=>{setActiveId(o.id);ss(ACTIVE_KEY,o.id);setTab("zonas");closeModal();}}>
+            {/* Header tarjeta */}
+            <div style={{padding:"13px 14px 10px",display:"flex",alignItems:"center",gap:12}}>
+              <div style={{position:"relative",flexShrink:0}}>
+                <Ring pct={p} size={52} stroke={5} color={pc2}/>
+                <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+                  <span style={{fontSize:"0.7rem",fontWeight:800,color:pc2,lineHeight:1}}>{p}%</span>
+                </div>
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontWeight:700,fontSize:"1rem",color:"#f1f5f9",display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+                  {o.nombre}
+                  {isActive&&<span style={{fontSize:"0.58rem",background:"#f59e0b",color:"#0f172a",borderRadius:4,padding:"1px 6px",fontWeight:800,letterSpacing:"0.05em"}}>ACTIVA</span>}
+                </div>
+                {o.descripcion&&<div style={{fontSize:"0.72rem",color:"#475569",marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.descripcion}</div>}
+                {(o.fechaInicio||o.fechaFin)&&<div style={{display:"flex",gap:8,marginTop:3,flexWrap:"wrap"}}>
+                  {o.fechaInicio&&<span style={{fontSize:"0.63rem",color:"#475569",display:"flex",alignItems:"center",gap:2}}><Ico.Cal/>{fmtDate(o.fechaInicio)}</span>}
+                  {o.fechaFin&&<span style={{fontSize:"0.63rem",color:daysDiff(o.fechaFin)<7?"#ef4444":"#475569",display:"flex",alignItems:"center",gap:2}}><Ico.Cal/>{fmtDate(o.fechaFin)}</span>}
+                </div>}
+              </div>
+              <div style={{display:"flex",gap:5,flexShrink:0}} onClick={e=>e.stopPropagation()}>
+                {currentUser?.rol==="admin"&&<button className="ic danger" onClick={()=>deleteObra(o.id)}><Ico.Trash/></button>}
+              </div>
+            </div>
+            {/* Stats mini */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",borderTop:"1px solid #1e293b"}}>
+              {[
+                ["Zonas",o.zonas.length,"#64748b"],
+                ["Ítems",allI.length,"#64748b"],
+                ["Listos",doneI,"#22c55e"],
+                ["Mat. pend.",pendM,"#f59e0b"],
+              ].map(([l,v,c])=><div key={l} style={{padding:"8px 6px",textAlign:"center",borderRight:"1px solid #1e293b"}}>
+                <div style={{fontSize:"1rem",fontWeight:800,color:c,lineHeight:1}}>{v}</div>
+                <div style={{fontSize:"0.55rem",color:"#475569",marginTop:2,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.04em"}}>{l}</div>
+              </div>)}
+            </div>
+            {/* Call to action */}
+            <div style={{padding:"8px 14px",background:isActive?"#0a1628":"#080f1e",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <span style={{fontSize:"0.68rem",color:"#475569"}}>Toca para ver zonas e ítems →</span>
+              {o.trabajadores.length>0&&<span style={{fontSize:"0.65rem",color:"#64748b"}}>👷 {o.trabajadores.length} trabajador{o.trabajadores.length!==1?"es":""}</span>}
+            </div>
           </div>;
         })}
-        {currentUser?.rol==="admin"&&<button style={S.btnP} onClick={()=>{closeModal();setModal({type:"newObra"});}}><Ico.Plus/> Nueva Obra</button>}
       </div>
     </Modal>}
 
