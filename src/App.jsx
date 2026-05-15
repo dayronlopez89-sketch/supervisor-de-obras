@@ -800,32 +800,52 @@ export default function SupervisorObra(){
 
     <div style={{minHeight:"100vh",background:"linear-gradient(160deg,#020b18 0%,#0a1628 100%)",color:"#f1f5f9"}}>
 
-      {/* HEADER */}
-      <div style={{background:"#080f1e",borderBottom:"1px solid #1e293b",padding:"0 12px",position:"sticky",top:0,zIndex:50}}>
-        <div style={{maxWidth:820,margin:"0 auto"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 0 7px"}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
+      {/* HEADER — dos filas en móvil para evitar solapamiento */}
+      <div style={{background:"#080f1e",borderBottom:"1px solid #1e293b",position:"sticky",top:0,zIndex:50}}>
+        <div style={{maxWidth:820,margin:"0 auto",padding:"0 12px"}}>
+
+          {/* Fila 1: título + botones de acción */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 0 6px",gap:8}}>
+
+            {/* Izquierda: icono + título */}
+            <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,flex:1}}>
               <div style={{background:"#f59e0b22",borderRadius:8,padding:"5px 7px",flexShrink:0}}><Ico.Hard/></div>
               <div style={{minWidth:0}}>
-                <h1 style={{margin:0,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.3rem",fontWeight:800,letterSpacing:"0.04em",textTransform:"uppercase",color:"#f1f5f9",whiteSpace:"nowrap"}}>Supervisor <span style={{color:"#f59e0b"}}>de Obra</span></h1>
-                {obra&&<button onClick={()=>!isMateriales&&setModal({type:"obras"})} style={{background:"none",border:"none",cursor:isMateriales?"default":"pointer",padding:0,color:"#64748b",fontSize:"0.68rem",display:"flex",alignItems:"center",gap:3,marginTop:1}}>
-                  <Ico.Building/> {obra.nombre}
+                <h1 style={{margin:0,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.25rem",fontWeight:800,letterSpacing:"0.04em",textTransform:"uppercase",color:"#f1f5f9",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                  Supervisor <span style={{color:"#f59e0b"}}>de Obra</span>
+                </h1>
+                {obra&&<button onClick={()=>!isMateriales&&setModal({type:"obras"})} style={{background:"none",border:"none",cursor:isMateriales?"default":"pointer",padding:0,color:"#64748b",fontSize:"0.65rem",display:"flex",alignItems:"center",gap:3,marginTop:1,maxWidth:"100%"}}>
+                  <Ico.Building/><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{obra.nombre}</span>
                 </button>}
               </div>
             </div>
-            <div style={{display:"flex",alignItems:"center",gap:5}}>
-              <div style={{display:"flex",alignItems:"center",gap:5,background:"#0f172a",border:`1px solid ${currentUser.color||"#f59e0b"}33`,borderRadius:8,padding:"4px 8px"}}>
-                <div style={{width:22,height:22,borderRadius:"50%",background:(currentUser.color||"#f59e0b")+"22",border:`1.5px solid ${currentUser.color||"#f59e0b"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.7rem",fontWeight:800,color:currentUser.color||"#f59e0b"}}>{currentUser.nombre[0].toUpperCase()}</div>
-                <span style={{fontSize:"0.68rem",color:"#94a3b8"}}>{rm.icon}</span>
-              </div>
-              {obra&&<div style={{position:"relative",flexShrink:0}}><Ring pct={pct} size={40} stroke={4} color={pc}/><div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:"0.58rem",fontWeight:800,color:pc}}>{pct}%</span></div></div>}
+
+            {/* Derecha: acciones compactas */}
+            <div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
+              {obra&&<div style={{position:"relative",flexShrink:0}}>
+                <Ring pct={pct} size={36} stroke={3} color={pc}/>
+                <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <span style={{fontSize:"0.5rem",fontWeight:800,color:pc}}>{pct}%</span>
+                </div>
+              </div>}
               {!isMateriales&&<button className="ic" onClick={()=>setModal({type:"settings"})}><Ico.Gear/></button>}
               <button className="ic" title="Cerrar sesión" onClick={handleLogout}><Ico.LogOut/></button>
             </div>
           </div>
-          <div style={{display:"flex",borderTop:"1px solid #1e293b",overflowX:"auto"}}>
-            {TABS.map(t=><button key={t.id} className={`tb ${tab===t.id?"on":""}`} onClick={()=>setTab(t.id)}>{t.icon}{t.label}</button>)}
+
+          {/* Fila 2: usuario + tabs */}
+          <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #1e293b",gap:0}}>
+            {/* Badge usuario a la izquierda de los tabs */}
+            <div style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px 5px 0",borderRight:"1px solid #1e293b",flexShrink:0,marginRight:6}}>
+              <div style={{width:20,height:20,borderRadius:"50%",background:(currentUser.color||"#f59e0b")+"22",border:`1.5px solid ${currentUser.color||"#f59e0b"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.62rem",fontWeight:800,color:currentUser.color||"#f59e0b"}}>{currentUser.nombre[0].toUpperCase()}</div>
+              <span style={{fontSize:"0.62rem",color:"#64748b"}}>{rm.icon}</span>
+            </div>
+            {/* Tabs */}
+            <div style={{display:"flex",overflowX:"auto",flex:1}}>
+              {TABS.map(t=><button key={t.id} className={`tb ${tab===t.id?"on":""}`} onClick={()=>setTab(t.id)}>{t.icon}{t.label}</button>)}
+            </div>
           </div>
+
         </div>
       </div>
 
