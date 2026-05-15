@@ -319,22 +319,73 @@ function AuthScreen({users,obras,invites,onLogin,onRegister,onAcceptInvite}){
     </div>;
   }
 
-  return <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#020b18,#0a1628)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
-    <div style={{width:"100%",maxWidth:400,textAlign:"center"}}>
-      <div style={{background:"#f59e0b22",borderRadius:"50%",width:76,height:76,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",border:"1px solid #f59e0b44"}}><Ico.Lock/></div>
-      <h2 style={{margin:"0 0 4px",fontSize:"1.8rem",fontWeight:800,letterSpacing:"0.06em",textTransform:"uppercase",color:"#f1f5f9"}}>Supervisor <span style={{color:"#f59e0b"}}>de Obra</span></h2>
-      <p style={{margin:"0 0 20px",fontSize:"0.8rem",color:"#64748b"}}>Sistema multi-usuario</p>
+  return <div style={{minHeight:"100vh",background:"linear-gradient(160deg,#010a14 0%,#071524 50%,#0a1e32 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:16,position:"relative",overflow:"hidden"}}>
+    {/* Fondo decorativo */}
+    <div style={{position:"absolute",inset:0,pointerEvents:"none",overflow:"hidden"}}>
+      <div style={{position:"absolute",top:"-20%",left:"-10%",width:"60vw",height:"60vw",borderRadius:"50%",background:"radial-gradient(circle,#f59e0b08 0%,transparent 70%)"}}/>
+      <div style={{position:"absolute",bottom:"-15%",right:"-10%",width:"50vw",height:"50vw",borderRadius:"50%",background:"radial-gradient(circle,#38bdf808 0%,transparent 70%)"}}/>
+      <div style={{position:"absolute",top:"30%",left:"50%",transform:"translateX(-50%)",width:"1px",height:"40%",background:"linear-gradient(to bottom,transparent,#f59e0b18,transparent)"}}/>
+    </div>
 
-      {/* Enlazar obra — botón prominente */}
-      <button onClick={()=>setEnlaceMode("generar")} style={{...S.btnT,width:"100%",justifyContent:"center",marginBottom:16,padding:"11px 14px"}}>
+    <div style={{width:"100%",maxWidth:420,textAlign:"center",position:"relative",zIndex:1}}>
+
+      {/* Logo / Icono premium */}
+      <div style={{margin:"0 auto 20px",position:"relative",width:96,height:96}}>
+        {/* Anillos decorativos */}
+        <div style={{position:"absolute",inset:-8,borderRadius:"50%",border:"1px solid #f59e0b18",animation:"spin 12s linear infinite"}}/>
+        <div style={{position:"absolute",inset:-16,borderRadius:"50%",border:"1px dashed #f59e0b0d"}}/>
+        {/* Fondo hexagonal simulado con círculo */}
+        <div style={{width:96,height:96,borderRadius:24,background:"linear-gradient(135deg,#1a2d1a,#1e3a0f)",border:"2px solid #f59e0b55",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 0 40px #f59e0b22, inset 0 1px 0 #f59e0b33"}}>
+          {/* Casco de obra SVG personalizado */}
+          <svg viewBox="0 0 48 48" width="52" height="52" fill="none">
+            <defs>
+              <linearGradient id="hg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#fbbf24"/>
+                <stop offset="100%" stopColor="#f59e0b"/>
+              </linearGradient>
+            </defs>
+            {/* Casco */}
+            <path d="M8 30 Q8 18 24 14 Q40 18 40 30 Z" fill="url(#hg)" opacity="0.95"/>
+            <rect x="6" y="29" width="36" height="5" rx="2.5" fill="url(#hg)"/>
+            <rect x="14" y="34" width="20" height="3" rx="1.5" fill="#92400e" opacity="0.6"/>
+            {/* Reflejo en el casco */}
+            <path d="M14 20 Q18 17 24 16.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.4"/>
+            {/* Franja central */}
+            <rect x="22" y="14" width="4" height="16" rx="2" fill="white" opacity="0.15"/>
+          </svg>
+        </div>
+        {/* Punto de estado */}
+        <div style={{position:"absolute",bottom:2,right:2,width:14,height:14,borderRadius:"50%",background:"#22c55e",border:"2px solid #010a14",boxShadow:"0 0 8px #22c55e88"}}/>
+      </div>
+
+      {/* Título */}
+      <div style={{marginBottom:4}}>
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"2.2rem",fontWeight:900,letterSpacing:"0.08em",textTransform:"uppercase",color:"#f1f5f9",lineHeight:1}}>
+          Supervisor
+        </div>
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"2.2rem",fontWeight:900,letterSpacing:"0.08em",textTransform:"uppercase",background:"linear-gradient(90deg,#f59e0b,#fbbf24,#f59e0b)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",lineHeight:1}}>
+          de Obra
+        </div>
+      </div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:24}}>
+        <div style={{height:"1px",width:40,background:"linear-gradient(to right,transparent,#334155)"}}/>
+        <span style={{fontSize:"0.72rem",color:"#475569",letterSpacing:"0.12em",textTransform:"uppercase",fontWeight:600}}>Sistema multi-usuario</span>
+        <div style={{height:"1px",width:40,background:"linear-gradient(to left,transparent,#334155)"}}/>
+      </div>
+
+      {/* Enlazar obra */}
+      <button onClick={()=>setEnlaceMode("generar")} style={{width:"100%",justifyContent:"center",marginBottom:14,padding:"12px 14px",background:"linear-gradient(135deg,#0c2340,#0f2d52)",border:"1px solid #38bdf844",borderRadius:12,color:"#7dd3fc",fontWeight:700,fontSize:"0.84rem",cursor:"pointer",display:"flex",alignItems:"center",gap:8,letterSpacing:"0.04em",boxShadow:"0 4px 20px #38bdf810",transition:"all .2s"}}>
         <Ico.Link/> Enlazar obra con otra persona
       </button>
 
-      {/* Tabs login / registro */}
-      <div style={{display:"flex",background:"#0f172a",borderRadius:10,padding:3,marginBottom:20,border:"1px solid #1e293b"}}>
-        {users.length>0&&<button onClick={()=>setMode("login")} style={{flex:1,padding:"7px",borderRadius:8,border:"none",fontWeight:700,fontSize:"0.78rem",cursor:"pointer",background:mode==="login"?"#1e293b":"transparent",color:mode==="login"?"#f1f5f9":"#64748b",transition:"all .2s"}}>Ingresar</button>}
-        <button onClick={()=>setMode("register")} style={{flex:1,padding:"7px",borderRadius:8,border:"none",fontWeight:700,fontSize:"0.78rem",cursor:"pointer",background:mode==="register"?"#1e293b":"transparent",color:mode==="register"?"#f1f5f9":"#64748b",transition:"all .2s"}}>Nuevo usuario</button>
-      </div>
+      {/* Card contenedor */}
+      <div style={{background:"linear-gradient(160deg,#0f172a,#0a1628)",border:"1px solid #1e293b",borderRadius:16,padding:"18px 16px",boxShadow:"0 20px 60px rgba(0,0,0,.5)"}}>
+
+        {/* Tabs login / registro */}
+        <div style={{display:"flex",background:"#060e1a",borderRadius:10,padding:3,marginBottom:18,border:"1px solid #1e293b"}}>
+          {users.length>0&&<button onClick={()=>setMode("login")} style={{flex:1,padding:"8px",borderRadius:8,border:"none",fontWeight:700,fontSize:"0.78rem",cursor:"pointer",background:mode==="login"?"linear-gradient(135deg,#1e293b,#162032)":"transparent",color:mode==="login"?"#f1f5f9":"#475569",transition:"all .2s",boxShadow:mode==="login"?"0 2px 8px rgba(0,0,0,.3)":"none"}}>Ingresar</button>}
+          <button onClick={()=>setMode("register")} style={{flex:1,padding:"8px",borderRadius:8,border:"none",fontWeight:700,fontSize:"0.78rem",cursor:"pointer",background:mode==="register"?"linear-gradient(135deg,#1e293b,#162032)":"transparent",color:mode==="register"?"#f1f5f9":"#475569",transition:"all .2s",boxShadow:mode==="register"?"0 2px 8px rgba(0,0,0,.3)":"none"}}>Nuevo usuario</button>
+        </div>
 
       {mode==="login"&&<div style={{display:"flex",flexDirection:"column",gap:14}}>
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -379,7 +430,8 @@ function AuthScreen({users,obras,invites,onLogin,onRegister,onAcceptInvite}){
         <button style={{...S.btnP,justifyContent:"center",marginTop:4}} onClick={doRegister}><Ico.User/> Crear cuenta</button>
       </div>}
 
-      {error&&<p style={{margin:"12px 0 0",color:"#ef4444",fontSize:"0.83rem",textAlign:"center"}}>{error}</p>}
+      {error&&<p style={{margin:"10px 0 0",color:"#ef4444",fontSize:"0.82rem",textAlign:"center"}}>{error}</p>}
+      </div>{/* end card */}
     </div>
   </div>;
 }
@@ -482,7 +534,7 @@ function MatForm({mat,onChange}){
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
-function Dashboard({obra,calcZonePct,totalPct,onPDF,onCompras,currentUser}){
+function Dashboard({obra,calcZonePct,totalPct,onPDF,onCompras,currentUser,onGoToZonas}){
   const pct=totalPct(),pc=pct<30?"#ef4444":pct<70?"#f59e0b":"#22c55e";
   const allI=obra.zonas.flatMap(z=>z.items||[]);
   const allM=allI.flatMap(i=>i.materiales||[]);
@@ -494,7 +546,10 @@ function Dashboard({obra,calcZonePct,totalPct,onPDF,onCompras,currentUser}){
   const alertas=allI.filter(i=>{ const d=daysDiff(i.fechaFin); return !i.terminado&&d!==null&&d<=3; });
   const sorted=[...obra.zonas].sort((a,b)=>calcZonePct(b)-calcZonePct(a));
   return <div style={{display:"flex",flexDirection:"column",gap:12}}>
-    <div style={{background:"linear-gradient(135deg,#0f172a,#1e293b)",border:"1px solid #334155",borderRadius:16,padding:18,display:"flex",alignItems:"center",gap:16}}>
+    {/* Tarjeta principal — clickeable lleva a Zonas */}
+    <div onClick={onGoToZonas} style={{background:"linear-gradient(135deg,#0f172a,#1e293b)",border:"1px solid #334155",borderRadius:16,padding:18,display:"flex",alignItems:"center",gap:16,cursor:"pointer",transition:"border-color .2s"}}
+      onMouseEnter={e=>e.currentTarget.style.borderColor="#f59e0b55"}
+      onMouseLeave={e=>e.currentTarget.style.borderColor="#334155"}>
       <div style={{position:"relative",flexShrink:0}}>
         <Ring pct={pct} size={90} stroke={7} color={pc}/>
         <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
@@ -503,13 +558,16 @@ function Dashboard({obra,calcZonePct,totalPct,onPDF,onCompras,currentUser}){
         </div>
       </div>
       <div style={{flex:1}}>
-        <div style={{fontSize:"1rem",fontWeight:700,color:"#f1f5f9",marginBottom:4}}>{obra.nombre||"Sin nombre"}</div>
+        <div style={{fontSize:"1rem",fontWeight:700,color:"#f1f5f9",marginBottom:2,display:"flex",alignItems:"center",gap:6}}>
+          {obra.nombre||"Sin nombre"}
+          <span style={{fontSize:"0.62rem",color:"#f59e0b",background:"#f59e0b18",border:"1px solid #f59e0b33",borderRadius:5,padding:"1px 6px",fontWeight:700}}>Ver zonas →</span>
+        </div>
         {obra.descripcion&&<div style={{fontSize:"0.75rem",color:"#64748b",marginBottom:4}}>{obra.descripcion}</div>}
         {(obra.fechaInicio||obra.fechaFin)&&<div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
           {obra.fechaInicio&&<span style={{fontSize:"0.68rem",color:"#64748b",display:"flex",alignItems:"center",gap:2}}><Ico.Cal/>{fmtDate(obra.fechaInicio)}</span>}
           {obra.fechaFin&&<span style={{fontSize:"0.68rem",color:daysDiff(obra.fechaFin)<7?"#ef4444":"#64748b",display:"flex",alignItems:"center",gap:2}}><Ico.Cal/>{fmtDate(obra.fechaFin)}</span>}
         </div>}
-        <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
+        <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}} onClick={e=>e.stopPropagation()}>
           <button style={{...S.btnP,fontSize:"0.72rem",padding:"6px 12px"}} onClick={onPDF}>📄 PDF Avance</button>
           <button style={{...S.btnS,fontSize:"0.72rem",padding:"6px 10px"}} onClick={onCompras}><Ico.Cart/> PDF Compras</button>
         </div>
@@ -780,7 +838,7 @@ export default function SupervisorObra(){
           <span>Acceso de <strong>Encargado de Materiales</strong> — puedes agregar y gestionar materiales en todas las zonas.</span>
         </div>}
 
-        {tab==="dashboard"&&obra&&<Dashboard obra={obra} calcZonePct={calcZonePct} totalPct={totalPct} onPDF={doPDF} onCompras={doCompras} currentUser={currentUser}/>}
+        {tab==="dashboard"&&obra&&<Dashboard obra={obra} calcZonePct={calcZonePct} totalPct={totalPct} onPDF={doPDF} onCompras={doCompras} currentUser={currentUser} onGoToZonas={()=>setTab("zonas")}/>}
 
         {tab==="zonas"&&obra&&<div>
           <div style={{display:"flex",gap:8,marginBottom:10,alignItems:"center"}}>
@@ -1072,8 +1130,40 @@ export default function SupervisorObra(){
 
     {modal?.type==="settings"&&<Modal title="Configuración" onClose={closeModal} wide>
       <div style={{display:"flex",flexDirection:"column",gap:16}}>
+
+        {/* ── Mis Obras ── */}
+        <div>
+          <label style={{fontSize:"0.72rem",color:"#94a3b8",display:"flex",alignItems:"center",gap:4,marginBottom:8,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}><Ico.Building/> Mis Obras</label>
+          <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:8}}>
+            {obras.map(o=>{
+              const aPct=()=>{ const all=o.zonas.flatMap(z=>z.items||[]); if(!all.length)return 0; const tw=all.reduce((s,i)=>s+(i.peso||1),0),dw=all.reduce((s,i)=>s+(i.peso||1)*(calcItemPct(i)/100),0); return Math.round((dw/tw)*100); };
+              const p=aPct(),pc2=p<30?"#ef4444":p<70?"#f59e0b":"#22c55e";
+              const isActive=o.id===activeId;
+              return <div key={o.id} style={{background:isActive?"#0f1f36":"#1e293b",border:`1.5px solid ${isActive?"#f59e0b44":"transparent"}`,borderRadius:10,padding:"10px 12px",display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}
+                onClick={()=>{setActiveId(o.id);ss(ACTIVE_KEY,o.id);setTab("zonas");closeModal();}}>
+                <div style={{position:"relative",flexShrink:0}}>
+                  <Ring pct={p} size={36} stroke={4} color={pc2}/>
+                  <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <span style={{fontSize:"0.5rem",fontWeight:800,color:pc2}}>{p}%</span>
+                  </div>
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:700,fontSize:"0.88rem",color:"#f1f5f9",display:"flex",alignItems:"center",gap:5}}>
+                    {o.nombre}
+                    {isActive&&<span style={{fontSize:"0.55rem",background:"#f59e0b",color:"#0f172a",borderRadius:3,padding:"1px 5px",fontWeight:800}}>ACTIVA</span>}
+                  </div>
+                  <div style={{fontSize:"0.65rem",color:"#475569"}}>{o.zonas.length} zonas · {o.zonas.flatMap(z=>z.items||[]).length} ítems</div>
+                </div>
+                <span style={{fontSize:"0.62rem",color:"#475569"}}>Ver →</span>
+                {currentUser?.rol==="admin"&&<button className="ic danger" style={{padding:"3px 5px"}} onClick={e=>{e.stopPropagation();deleteObra(o.id);}}><Ico.Trash/></button>}
+              </div>;
+            })}
+          </div>
+          {currentUser?.rol==="admin"&&<button style={{...S.btnP,justifyContent:"center",width:"100%"}} onClick={()=>{closeModal();setModal({type:"newObra"});}}><Ico.Plus/> Nueva Obra</button>}
+        </div>
+
         {obra&&<div>
-          <label style={{fontSize:"0.72rem",color:"#94a3b8",display:"block",marginBottom:5,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>Obra Activa</label>
+          <label style={{fontSize:"0.72rem",color:"#94a3b8",display:"block",marginBottom:5,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>Obra Activa — {obra.nombre}</label>
           <input style={{...S.inp,marginBottom:7}} placeholder="Nombre" value={obra.nombre||""} onChange={e=>updObra(o=>({...o,nombre:e.target.value}))}/>
           <input style={{...S.inp,marginBottom:7}} placeholder="Descripción" value={obra.descripcion||""} onChange={e=>updObra(o=>({...o,descripcion:e.target.value}))}/>
           <textarea style={S.inp} placeholder="Notas generales" value={obra.notas||""} onChange={e=>updObra(o=>({...o,notas:e.target.value}))}/>
