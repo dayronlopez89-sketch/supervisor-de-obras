@@ -105,26 +105,69 @@ async function exportAvancePDF(obra,calcZonePct,totalPct){
   for(let p=1;p<=pages;p++){ doc.setPage(p); doc.setFillColor(10,22,40); doc.rect(0,H-26,W,26,"F"); doc.setFont("helvetica","normal"); doc.setFontSize(7.5); doc.setTextColor(100,116,139); doc.text(`Supervisor de Obra — ${obra.nombre}`,M,H-10); doc.text(`Pág ${p}/${pages}`,W-M,H-10,{align:"right"}); }
   doc.save(`avance-${(obra.nombre||"obra").replace(/\s+/g,"-").toLowerCase()}-${today()}.pdf`);
 }
-async function exportComprasPDF(obra){
+async function exportComprasPDF(obra, filtroItemId=null){
   const jsPDF=await getJsPDF(); const doc=new jsPDF({unit:"pt",format:"a4"});
   const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),M=40; let y=M;
   const chk=(n=30)=>{ if(y+n>H-M){doc.addPage();y=M;} };
   const now=new Date();
   doc.setFillColor(10,22,40); doc.rect(0,0,W,75,"F"); doc.setFillColor(34,197,94); doc.rect(0,73,W,3,"F");
-  doc.setFont("helvetica","bold"); doc.setFontSize(18); doc.setTextColor(241,245,249); doc.text("ORDEN DE COMPRA",M,28);
+  const titulo=filtroItemId?"MATERIALES DEL ÍTEM":"ORDEN DE COMPRA";
+  doc.setFont("helvetica","bold"); doc.setFontSize(18); doc.setTextColor(241,245,249); doc.text(titulo,M,28);
   doc.setFontSize(10); doc.setTextColor(34,197,94); doc.text(obra.nombre||"Obra sin nombre",M,44);
   doc.setFontSize(8); doc.setFont("helvetica","normal"); doc.setTextColor(148,163,184); doc.text(`Generado: ${now.toLocaleDateString("es-ES",{day:"2-digit",month:"long",year:"numeric"})}`,M,60); y=90;
   let totalGeneral=0; const pendientes=[],todos=[];
-  obra.zonas.forEach(zona=>{ (zona.items||[]).forEach(item=>{ (item.materiales||[]).forEach(mat=>{ const total=(parseFloat(mat.precio)||0)*(parseFloat(mat.cantidad)||0); totalGeneral+=total; const entry={...mat,zonaNombre:zona.nombre,itemNombre:item.nombre,total}; todos.push(entry); if(!mat.estado||mat.estado==="pendiente") pendientes.push(entry); }); }); });
+
+  obra.zonas.forEach(zona=>{
+    const items=(zona.items||[]).filter(item=>!filtroItemId||item.id===filtroItemId);
+    items.forEach(item=>{
+      // Materiales del ítem padre
+      (item.materiales||[]).forEach(mat=>{
+        const total=(parseFloat(mat.precio)||0)*(parseFloat(mat.cantidad)||0);
+        totalGeneral+=total;
+        const entry={...mat,zonaNombre:zona.nombre,itemNombre:item.nombre,subItemNombre:null,total};
+        todos.push(entry);
+        if(!mat.estado||mat.estado==="pendiente") pendientes.push(entry);
+      });
+      // Materiales de los sub-ítems
+      (item.subItems||[]).forEach(si=>{
+        (si.materiales||[]).forEach(mat=>{
+          const total=(parseFloat(mat.precio)||0)*(parseFloat(mat.cantidad)||0);
+          totalGeneral+=total;
+          const entry={...mat,zonaNombre:zona.nombre,itemNombre:item.nombre,subItemNombre:si.nombre,total};
+          todos.push(entry);
+          if(!mat.estado||mat.estado==="pendiente") pendientes.push(entry);
+        });
+      });
+    });
+  });
+
   [["MATERIALES PENDIENTES",pendientes],["TODOS LOS MATERIALES",todos]].forEach(([title,items])=>{
     if(!items.length)return; chk(40);
     doc.setFillColor(15,23,42); doc.roundedRect(M,y,W-M*2,24,4,4,"F"); doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.setTextColor(241,245,249); doc.text(title,M+10,y+16); y+=32;
-    items.forEach((mat,i)=>{ chk(20); const EST={pendiente:[245,158,11],comprado:[34,197,94],en_camino:[56,189,248],entregado:[167,139,250]}; const ec=EST[mat.estado||"pendiente"]; doc.setFillColor(i%2===0?15:12,i%2===0?23:20,i%2===0?42:36); doc.rect(M,y,W-M*2,16,"F"); doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(210,220,230); doc.text(mat.nombre||"",M+4,y+11); doc.setTextColor(...ec); doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.text((mat.estado||"pendiente").toUpperCase(),M+120,y+11); doc.setFont("helvetica","normal"); doc.setTextColor(180,190,200); doc.setFontSize(8); doc.text(`${mat.cantidad||0} ${mat.unidad||""}`,M+180,y+11); doc.setTextColor(245,158,11); doc.setFont("helvetica","bold"); doc.text(mat.total>0?`$${fmt(mat.total)}`:"—",W-M-6,y+11,{align:"right"}); doc.setFont("helvetica","normal"); doc.setTextColor(100,116,139); doc.setFontSize(7); doc.text(`${mat.zonaNombre} › ${mat.itemNombre}`,M+240,y+11); y+=17; }); y+=10;
+    items.forEach((mat,i)=>{
+      chk(20);
+      const EST={pendiente:[245,158,11],comprado:[34,197,94],en_camino:[56,189,248],entregado:[167,139,250]};
+      const ec=EST[mat.estado||"pendiente"];
+      doc.setFillColor(i%2===0?15:12,i%2===0?23:20,i%2===0?42:36); doc.rect(M,y,W-M*2,16,"F");
+      doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(210,220,230);
+      doc.text(mat.nombre||"",M+4,y+11);
+      doc.setTextColor(...ec); doc.setFont("helvetica","bold"); doc.setFontSize(7);
+      doc.text((mat.estado||"pendiente").toUpperCase(),M+120,y+11);
+      doc.setFont("helvetica","normal"); doc.setTextColor(180,190,200); doc.setFontSize(8);
+      doc.text(`${mat.cantidad||0} ${mat.unidad||""}`,M+180,y+11);
+      doc.setTextColor(245,158,11); doc.setFont("helvetica","bold");
+      doc.text(mat.total>0?`$${fmt(mat.total)}`:"—",W-M-6,y+11,{align:"right"});
+      doc.setFont("helvetica","normal"); doc.setTextColor(100,116,139); doc.setFontSize(7);
+      const loc=mat.subItemNombre?`${mat.zonaNombre} › ${mat.itemNombre} › ${mat.subItemNombre}`:`${mat.zonaNombre} › ${mat.itemNombre}`;
+      doc.text(loc,M+240,y+11);
+      y+=17;
+    }); y+=10;
   });
   chk(40); doc.setFillColor(245,158,11); doc.roundedRect(M,y,W-M*2,32,5,5,"F"); doc.setFont("helvetica","bold"); doc.setFontSize(13); doc.setTextColor(15,23,42); doc.text("TOTAL GENERAL",M+14,y+21); doc.setFontSize(16); doc.text(`$${fmt(totalGeneral)}`,W-M-10,y+21,{align:"right"});
   const pages=doc.internal.getNumberOfPages();
-  for(let p=1;p<=pages;p++){ doc.setPage(p); doc.setFillColor(10,22,40); doc.rect(0,H-26,W,26,"F"); doc.setFont("helvetica","normal"); doc.setFontSize(7.5); doc.setTextColor(100,116,139); doc.text(`Orden de Compra — ${obra.nombre}`,M,H-10); doc.text(`Pág ${p}/${pages}`,W-M,H-10,{align:"right"}); }
-  doc.save(`compras-${(obra.nombre||"obra").replace(/\s+/g,"-").toLowerCase()}-${today()}.pdf`);
+  for(let p=1;p<=pages;p++){ doc.setPage(p); doc.setFillColor(10,22,40); doc.rect(0,H-26,W,26,"F"); doc.setFont("helvetica","normal"); doc.setFontSize(7.5); doc.setTextColor(100,116,139); doc.text(`${titulo} — ${obra.nombre}`,M,H-10); doc.text(`Pág ${p}/${pages}`,W-M,H-10,{align:"right"}); }
+  const sufijo=filtroItemId?"item":"compras";
+  doc.save(`${sufijo}-${(obra.nombre||"obra").replace(/\s+/g,"-").toLowerCase()}-${today()}.pdf`);
 }
 
 // ─── OCR Boleta ───────────────────────────────────────────────────────────────
@@ -570,8 +613,25 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onP
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
         <button style={{...S.btnP,fontSize:"0.72rem",padding:"6px 12px"}} onClick={e=>{e.stopPropagation();onGoToZonas();}}>Ver zonas →</button>
         <button style={{...S.btnP,fontSize:"0.72rem",padding:"6px 12px"}} onClick={e=>{e.stopPropagation();onPDF();}}>📄 PDF Avance</button>
-        <button style={{...S.btnS,fontSize:"0.72rem",padding:"6px 10px"}} onClick={e=>{e.stopPropagation();onCompras();}}><Ico.Cart/> PDF Compras</button>
+        <button style={{...S.btnS,fontSize:"0.72rem",padding:"6px 10px"}} onClick={e=>{e.stopPropagation();onCompras(null);}}><Ico.Cart/> PDF Compras (obra)</button>
       </div>
+      {/* PDF por ítem */}
+      {allI.length>0&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:10,padding:"10px 12px"}}>
+        <div style={{fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8,display:"flex",alignItems:"center",gap:4}}><Ico.Cart/> PDF materiales por ítem</div>
+        <div style={{display:"flex",flexDirection:"column",gap:5}}>
+          {o.zonas.flatMap(z=>(z.items||[]).map(item=>({item,zona:z}))).map(({item,zona})=>{
+            const totalMats=(item.materiales||[]).length + (item.subItems||[]).reduce((s,si)=>s+(si.materiales||[]).length,0);
+            if(totalMats===0) return null;
+            return <div key={item.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,background:"#0a1628",borderRadius:7,padding:"6px 10px"}}>
+              <div style={{minWidth:0}}>
+                <div style={{fontSize:"0.78rem",color:"#e2e8f0",fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.nombre}</div>
+                <div style={{fontSize:"0.6rem",color:"#f59e0b"}}>📍 {zona.nombre} · 📦 {totalMats} mat.</div>
+              </div>
+              <button style={{...S.btnG,fontSize:"0.65rem",padding:"4px 9px",flexShrink:0}} onClick={e=>{e.stopPropagation();onCompras(item.id);}}>PDF →</button>
+            </div>;
+          }).filter(Boolean)}
+        </div>
+      </div>}
 
       {alertas.length>0&&<div style={{background:"#450a0a",border:"1px solid #ef444444",borderRadius:10,padding:"10px 12px"}}>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6,color:"#fca5a5",fontSize:"0.7rem",fontWeight:700,textTransform:"uppercase"}}><Ico.Alert/> {alertas.length} ítem(s) próximo(s) a vencer</div>
@@ -689,7 +749,7 @@ function Dashboard({obras,activeId,calcZonePct,calcItemPct,isItemDone,totalPct,o
         isItemDone={isItemDone}
         onGoToZonas={()=>onGoToZonas(o.id)}
         onPDF={()=>onPDF(o.id)}
-        onCompras={()=>onCompras(o.id)}
+        onCompras={(iId)=>onCompras(o.id,iId)}
         onChangeStatus={(est)=>onChangeStatus(o.id,est)}
         currentUser={currentUser}
       />
@@ -1068,7 +1128,7 @@ export default function SupervisorObra(){
           isItemDone={isItemDone}
           totalPct={totalPct}
           onPDF={(oId)=>{ const o=obras.find(x=>x.id===oId); if(!o)return; setExporting(true); exportAvancePDF(o,calcZonePct,()=>{ const all=o.zonas.flatMap(z=>z.items||[]); if(!all.length)return 0; const tw=all.reduce((s,i)=>s+(i.peso||1),0),dw=all.reduce((s,i)=>s+(i.peso||1)*(calcItemPct(i)/100),0); return Math.round((dw/tw)*100); }).catch(()=>toast("Error al generar PDF","err")).finally(()=>setExporting(false)); }}
-          onCompras={(oId)=>{ const o=obras.find(x=>x.id===oId); if(!o)return; setExporting(true); exportComprasPDF(o).catch(()=>toast("Error","err")).finally(()=>setExporting(false)); }}
+          onCompras={(oId,filtroItemId)=>{ const o=obras.find(x=>x.id===oId); if(!o)return; setExporting(true); exportComprasPDF(o,filtroItemId||null).catch(()=>toast("Error","err")).finally(()=>setExporting(false)); }}
           currentUser={currentUser}
           onGoToZonas={(oId)=>{ setActiveId(oId); ss(ACTIVE_KEY,oId); setTab("zonas"); }}
           onChangeStatus={(oId,est)=>setObras(prev=>prev.map(o=>o.id===oId?{...o,estado:est}:o))}
