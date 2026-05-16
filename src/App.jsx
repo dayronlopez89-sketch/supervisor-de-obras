@@ -837,7 +837,7 @@ export default function SupervisorObra(){
   const setHerramientaStatus=(tId,hId,estado)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,herramientas:(t.herramientas||[]).map(h=>h.id===hId?{...h,estado}:h)}:t)}));
 
   // ── Asistencia ──
-  const toggleAsistencia=(tId,fecha,val)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,asistencia:{...(t.asistencia||{}),(val===null?undefined:[fecha]):val,[fecha]:val}}:t)}));
+  const toggleAsistencia=(tId,fecha,val)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>{ if(t.id!==tId)return t; const a={...(t.asistencia||{})}; if(val===null){delete a[fecha];}else{a[fecha]=val;} return{...t,asistencia:a}; })}));
 
   // ── Fotos ──
   const addFoto=(zId,iId,data)=>{ const f={id:uid(),data,fecha:new Date().toLocaleDateString("es-ES"),hora:new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,fotos:[...(i.fotos||[]),f]}:i)}:z)})); toast("📸 Foto guardada"); };
