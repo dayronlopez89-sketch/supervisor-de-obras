@@ -1,11 +1,36 @@
 import { useState, useEffect, useRef } from "react";
+import { initializeApp } from "firebase/app";
+import { getFirestore, doc, setDoc, onSnapshot } from "firebase/firestore";
 
-// ─── Storage Keys ─────────────────────────────────────────────────────────────
-const OBRAS_KEY   = "supervisor_obras_v5";
-const ACTIVE_KEY  = "supervisor_active_v5";
-const USERS_KEY   = "supervisor_users_v5";
+// ─── Firebase Config ──────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyCuxyEp7aNa9DNwE_06zIc4gU7kxereEx4",
+  authDomain: "supervisor-obras.firebaseapp.com",
+  projectId: "supervisor-obras",
+  storageBucket: "supervisor-obras.firebasestorage.app",
+  messagingSenderId: "169133557724",
+  appId: "1:169133557724:web:95e3f94338c19760827119"
+};
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+const STATE_REF = doc(db, "app", "state");
+
+// Guarda en Firestore (debounced)
+let saveTimer = null;
+function fbSave(data){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{
+    setDoc(STATE_REF, {
+      obras: data.obras,
+      users: data.users,
+      invites: data.invites,
+    }, {merge:true}).catch(e=>console.error("Firebase save error",e));
+  }, 800);
+}
+
+// ─── Storage Keys (solo datos locales del dispositivo) ────────────────────────
 const SESSION_KEY = "supervisor_session_v5";
-const INVITE_KEY  = "supervisor_invites_v5";
+const ACTIVE_KEY  = "supervisor_active_v5";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const uid     = () => Math.random().toString(36).substr(2,9);
@@ -14,6 +39,16 @@ const fmt     = n => n!=null&&n!==""?Number(n).toLocaleString("es-AR",{minimumFr
 const fmtDate = s => s?new Date(s+"T12:00:00").toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric"}):"—";
 const daysDiff= s => { if(!s)return null; return Math.ceil((new Date(s+"T12:00:00")-new Date())/86400000); };
 const mkCode  = () => Math.floor(100000+Math.random()*900000).toString();
+
+function sg(key){ try{ const r=localStorage.getItem(key); return r?JSON.parse(r):null; }catch{ return null; }}
+function ss(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch{}}
+function sd(key){ try{ localStorage.removeItem(key); }catch{}}
+
+const emptyObra = (nombre="") => ({
+  id:uid(), nombre, descripcion:"", fechaInicio:today(), fechaFin:"", notas:"",
+  estado:"en_ejecucion",
+  zonas:[], trabajadores:[]
+});
 
 const OBRA_ESTADOS = {
   en_ejecucion: { label:"En ejecución", color:"#22c55e", bg:"#22c55e18", icon:"🏗️" },
@@ -26,26 +61,6 @@ const HERRAMIENTA_ESTADOS = {
   en_uso:        { label:"En uso",        color:"#f59e0b", dot:"#f59e0b" },
   en_reparacion: { label:"En reparación", color:"#ef4444", dot:"#ef4444" },
 };
-
-const emptyObra = (nombre="") => ({
-  id:uid(), nombre, descripcion:"", fechaInicio:today(), fechaFin:"", notas:"",
-  estado:"en_ejecucion",
-  zonas:[], trabajadores:[]
-});
-
-function sg(key){ try{ const r=localStorage.getItem(key); return r?JSON.parse(r):null; }catch{ return null; }}
-function ss(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch{}}
-function sd(key){ try{ localStorage.removeItem(key); }catch{}}
-
-function loadAll(){
-  return {
-    obras:   sg(OBRAS_KEY)||[],
-    users:   sg(USERS_KEY)||[],
-    activeId:sg(ACTIVE_KEY),
-    session: sg(SESSION_KEY),
-    invites: sg(INVITE_KEY)||[],
-  };
-}
 
 // ─── PDF ──────────────────────────────────────────────────────────────────────
 async function getJsPDF(){
@@ -870,18 +885,48 @@ export default function SupervisorObra(){
 
   const obra=obras.find(o=>o.id===activeId)||obras[0]||null;
 
+  // ── Carga inicial y escucha en tiempo real desde Firebase ──
   useEffect(()=>{
-    const {obras:o,users:u,activeId:aid,session:ses,invites:inv}=loadAll();
-    let list=o.length?o:[emptyObra("Mi Primera Obra")];
-    setObras(list); setUsers(u); setInvites(inv||[]);
-    setActiveId(aid||list[0]?.id||null);
-    if(ses&&u.find(x=>x.id===ses)) setCurrentUser(u.find(x=>x.id===ses));
-    setReady(true);
+    const aid=sg(ACTIVE_KEY);
+    const ses=sg(SESSION_KEY);
+
+    // Suscribirse a cambios en tiempo real
+    const unsub=onSnapshot(STATE_REF, (snap)=>{
+      if(snap.exists()){
+        const data=snap.data();
+        const o=data.obras||[];
+        const u=data.users||[];
+        const inv=data.invites||[];
+        const list=o.length?o:[emptyObra("Mi Primera Obra")];
+        setObras(list);
+        setUsers(u);
+        setInvites(inv);
+        if(!ready){
+          setActiveId(aid||list[0]?.id||null);
+          if(ses&&u.find(x=>x.id===ses)) setCurrentUser(u.find(x=>x.id===ses));
+          setReady(true);
+        }
+      } else {
+        // Primera vez — no hay datos en Firebase aún
+        const list=[emptyObra("Mi Primera Obra")];
+        setObras(list);
+        setActiveId(list[0].id);
+        fbSave({obras:list, users:[], invites:[]});
+        setReady(true);
+      }
+    }, (err)=>{
+      console.error("Firebase listener error",err);
+      // Fallback a localStorage si falla Firebase
+      const list=[emptyObra("Mi Primera Obra")];
+      setObras(list);
+      setReady(true);
+    });
+
+    return ()=>unsub();
   },[]);
 
-  useEffect(()=>{ if(!ready)return; const t=setTimeout(()=>ss(OBRAS_KEY,obras),300); return()=>clearTimeout(t); },[obras,ready]);
-  useEffect(()=>{ if(!ready)return; ss(USERS_KEY,users); },[users,ready]);
-  useEffect(()=>{ if(!ready)return; ss(INVITE_KEY,invites); },[invites,ready]);
+  // ── Sincronizar cambios a Firebase ──
+  useEffect(()=>{ if(!ready)return; fbSave({obras,users,invites}); },[obras,users,invites,ready]);
 
   const updObra=(fn)=>setObras(prev=>prev.map(o=>o.id===activeId?fn(o):o));
   const closeModal=()=>{ setModal(null); setForm({}); setMatForm({}); };
@@ -906,19 +951,19 @@ export default function SupervisorObra(){
   const totalPct=()=>{ if(!obra)return 0; const all=obra.zonas.flatMap(z=>z.items||[]); if(!all.length)return 0; const tw=all.reduce((s,i)=>s+(i.peso||1),0); const dw=all.reduce((s,i)=>s+(i.peso||1)*(calcItemPct(i)/100),0); return Math.round((dw/tw)*100); };
 
   const handleLogin=(user)=>{ setCurrentUser(user); ss(SESSION_KEY,user.id); };
-  const handleRegister=(user)=>{ const next=[...users,user]; setUsers(next); ss(USERS_KEY,next); setCurrentUser(user); ss(SESSION_KEY,user.id); };
+  const handleRegister=(user)=>{ const next=[...users,user]; setUsers(next); setCurrentUser(user); ss(SESSION_KEY,user.id); };
   const handleLogout=()=>{ setCurrentUser(null); sd(SESSION_KEY); };
 
   const handleInvite=({action,code})=>{
     if(action==="generate"){
       const newInv={code,obraId:obra?.id||null,createdAt:Date.now(),used:false,expiresAt:Date.now()+86400000};
       const next=[...invites.filter(i=>!i.used&&i.obraId===obra?.id),newInv];
-      setInvites(next); ss(INVITE_KEY,next);
+      setInvites(next);
     } else if(action==="join"){
       const inv=invites.find(i=>i.code===code&&!i.used&&i.expiresAt>Date.now());
       if(!inv){toast("Código inválido o expirado","err");return;}
       const nextInv=invites.map(i=>i.code===code?{...i,used:true}:i);
-      setInvites(nextInv); ss(INVITE_KEY,nextInv);
+      setInvites(nextInv);
       if(inv.obraId){ setActiveId(inv.obraId); ss(ACTIVE_KEY,inv.obraId); }
       toast("✅ ¡Obra enlazada correctamente!");
     }
@@ -1012,11 +1057,11 @@ export default function SupervisorObra(){
     if(!nuPin||nuPin.length!==5){toast("PIN de 5 dígitos requerido","err");return;}
     if(nuPin!==nuPin2){toast("Los PINes no coinciden","err");return;}
     const nu={id:uid(),nombre:nuNombre.trim(),rol:nuRol||"materiales",pin:nuPin,color:["#f59e0b","#22c55e","#38bdf8","#a78bfa","#fb923c"][Math.floor(Math.random()*5)]};
-    const next=[...users,nu]; setUsers(next); ss(USERS_KEY,next);
+    const next=[...users,nu]; setUsers(next);
     toast(`✅ Usuario "${nu.nombre}" creado`); setForm({});
   };
 
-  if(!ready) return <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#020b18,#0a1628)",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:12,color:"#64748b"}}><span style={{fontSize:"2.5rem",animation:"spin 1s linear infinite",display:"inline-block"}}>⚙</span><span style={{fontSize:"0.82rem"}}>Cargando...</span></div>;
+  if(!ready) return <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#020b18,#0a1628)",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:12,color:"#64748b"}}><span style={{fontSize:"2.5rem",animation:"spin 1s linear infinite",display:"inline-block"}}>⚙</span><span style={{fontSize:"0.82rem"}}>Conectando a la nube…</span></div>;
 
   if(!currentUser) return <AuthScreen users={users} obras={obras} invites={invites} onLogin={handleLogin} onRegister={handleRegister} onAcceptInvite={handleInvite}/>;
 
@@ -1513,7 +1558,7 @@ export default function SupervisorObra(){
                 <div style={{fontSize:"0.85rem",fontWeight:600,color:"#f1f5f9"}}>{u.nombre} {u.id===currentUser?.id&&<span style={{fontSize:"0.6rem",color:"#f59e0b"}}>(tú)</span>}</div>
                 <div style={{fontSize:"0.65rem",color:"#64748b"}}>{rm2.icon} {rm2.label}</div>
               </div>
-              {u.id!==currentUser?.id&&currentUser?.rol==="admin"&&<button className="ic danger" style={{padding:"3px 6px"}} onClick={()=>{ if(window.confirm(`¿Eliminar a ${u.nombre}?`)){ const next=users.filter(x=>x.id!==u.id); setUsers(next); ss(USERS_KEY,next); } }}><Ico.Trash/></button>}
+              {u.id!==currentUser?.id&&currentUser?.rol==="admin"&&<button className="ic danger" style={{padding:"3px 6px"}} onClick={()=>{ if(window.confirm(`¿Eliminar a ${u.nombre}?`)){ const next=users.filter(x=>x.id!==u.id); setUsers(next); } }}><Ico.Trash/></button>}
             </div>; })}
           </div>
           {currentUser?.rol==="admin"&&<div style={{background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,padding:"14px"}}>
