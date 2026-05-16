@@ -935,26 +935,37 @@ export default function SupervisorObra(){
   const isMateriales = currentUser?.rol==="materiales";
 
   // Permiso de zona — para agregar ítems y editar la zona en sí
+  // Colaboradores pueden crear ítems en cualquier zona (pero solo editar la zona si son dueños)
   const canEditZona = (zona) => {
     if(isMateriales) return false;
     if(!zona) return false;
     if(currentUser?.rol==="admin") return true;
-    if(!zona.ownerUserId) return true;
+    // Colaborador puede editar/borrar solo sus propias zonas
+    if(!zona.ownerUserId) return false;
     return zona.ownerUserId===currentUser?.id;
   };
 
-  // Permiso de ítem — SOLO el creador puede marcar/editar/eliminar
+  // Puede agregar ítems en la zona (cualquier colaborador puede agregar en cualquier zona)
+  const canAddItemInZona = (zona) => {
+    if(isMateriales) return false;
+    if(!zona) return false;
+    return true; // todos los usuarios logueados no-materiales pueden agregar ítems
+  };
+
+  // Permiso de ítem — SOLO el creador puede editar/eliminar/marcar su propio ítem
+  // Aplica igual para admin y colaborador: nadie toca el ítem ajeno
   const canEditItem = (item) => {
     if(!item) return false;
     if(isMateriales) return false;
-    if(currentUser?.rol==="admin") return true;
-    // Si no tiene dueño asignado, nadie más que admin puede tocarlo
-    if(!item.ownerUserId) return false;
+    // Si no tiene dueño asignado, solo el admin que lo cree luego podrá editarlo
+    if(!item.ownerUserId) return currentUser?.rol==="admin";
     return item.ownerUserId===currentUser?.id;
   };
 
-  const canEditMat = (zona) => {
+  const canEditMat = (zona, item=null) => {
     if(isMateriales) return true;
+    // El dueño del ítem puede gestionar sus materiales
+    if(item && item.ownerUserId && item.ownerUserId===currentUser?.id) return true;
     return canEditZona(zona);
   };
 
@@ -1215,7 +1226,6 @@ export default function SupervisorObra(){
             const isOpen=exZones[zona.id],zPct=calcZonePct(zona),zc=zPct<30?"#ef4444":zPct<70?"#f59e0b":"#22c55e";
             const isDO=dragO===zi&&typeof dragI==="number";
             const ceZona=canEditZona(zona);
-            const ceMat=canEditMat(zona);
             const ownerUser=users.find(u=>u.id===zona.ownerUserId);
 
             return <div key={zona.id} className={`card${isDO?" dov":""}`}
@@ -1250,6 +1260,7 @@ export default function SupervisorObra(){
                   const ic=iPct===100?"#22c55e":iPct>0?"#f59e0b":"#64748b";
                   const comentarios=item.comentarios||[];
                   const ceItem=canEditItem(item); // permiso a nivel de ítem
+                  const ceMat=canEditMat(zona, item); // materiales: dueño ítem o encargado materiales
                   const itemOwner=users.find(u=>u.id===item.ownerUserId);
 
                   return <div key={item.id} style={{borderTop:"1px solid #1e293b",background:iDone?"#0a1a0a":"transparent"}}>
@@ -1286,10 +1297,9 @@ export default function SupervisorObra(){
                       </button>}
                       {ceItem&&<>
                         <button className="ic" onClick={()=>{setForm({nombre:item.nombre,descripcion:item.descripcion||"",peso:item.peso||1,notas:item.notas||"",fechaInicio:item.fechaInicio||"",fechaFin:item.fechaFin||""});setModal({type:"editItem",zId:zona.id,iId:item.id});}}><Ico.Edit/></button>
-                        <button className="ic" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))}><Ico.Cam/></button>
                         <button className="ic danger" onClick={()=>delItem(zona.id,item.id)}><Ico.Trash/></button>
                       </>}
-                      {!ceItem&&ceZona&&<button className="ic" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))}><Ico.Cam/></button>}
+                      {!isMateriales&&<button className="ic" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))}><Ico.Cam/></button>}
                       {isMateriales&&<button className="ic" title="Materiales" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))} style={{color:"#a78bfa",borderColor:"#a78bfa44"}}><Ico.Mat/></button>}
                     </div>
 
@@ -1358,7 +1368,7 @@ export default function SupervisorObra(){
                           </div>}
                         </div>;
                       })}
-                      {ceZona&&<div style={{display:"flex",gap:7,marginTop:8}}>
+                      {ceItem&&<div style={{display:"flex",gap:7,marginTop:8}}>
                         <input style={{...S.inp,fontSize:"0.8rem",padding:"7px 10px"}} placeholder="Nombre del sub-ítem…" value={form.subNombre||""} onChange={e=>setForm(p=>({...p,subNombre:e.target.value}))} onKeyDown={e=>{ if(e.key==="Enter") addSubItem(zona.id,item.id); }}/>
                         <button style={{...S.btnP,padding:"7px 12px",fontSize:"0.75rem",flexShrink:0}} onClick={()=>addSubItem(zona.id,item.id)}><Ico.Plus/></button>
                       </div>}
@@ -1378,27 +1388,29 @@ export default function SupervisorObra(){
                         onEdit={()=>{setMatForm({...mat});setModal({type:"editMat",zId:zona.id,iId:item.id,mId:mat.id});}}
                         onDelete={()=>delMat(zona.id,item.id,mat.id)}
                         onStatus={s=>setMatStatus(zona.id,item.id,mat.id,s)}/>)}
-                      {!isMateriales&&ceZona&&<div style={{padding:"10px 12px",background:"#06101e",borderTop:"1px solid #0f172a"}}>
+                      {!isMateriales&&<div style={{padding:"10px 12px",background:"#06101e",borderTop:"1px solid #0f172a"}}>
                         <div style={{fontSize:"0.64rem",color:"#475569",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8,display:"flex",alignItems:"center",gap:4}}><Ico.Photo/> Fotos ({(item.fotos||[]).length})</div>
                         <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                           {(item.fotos||[]).map(foto=><div key={foto.id} style={{position:"relative",borderRadius:8,overflow:"hidden",border:"1px solid #1e293b",cursor:"pointer"}} onClick={()=>setModal({type:"viewPhoto",src:foto.data,fecha:foto.fecha,hora:foto.hora})}>
                             <img src={foto.data} alt="foto" style={{width:70,height:70,objectFit:"cover",display:"block"}}/>
                             <div style={{position:"absolute",bottom:0,left:0,right:0,background:"rgba(0,0,0,.7)",padding:"2px 4px",fontSize:"0.5rem",color:"#94a3b8",textAlign:"center"}}>{foto.fecha}</div>
-                            <button onClick={e=>{e.stopPropagation();delFoto(zona.id,item.id,foto.id);}} style={{position:"absolute",top:2,right:2,background:"rgba(239,68,68,.85)",border:"none",borderRadius:"50%",width:16,height:16,cursor:"pointer",color:"#fff",fontSize:"0.6rem",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>×</button>
+                            {ceItem&&<button onClick={e=>{e.stopPropagation();delFoto(zona.id,item.id,foto.id);}} style={{position:"absolute",top:2,right:2,background:"rgba(239,68,68,.85)",border:"none",borderRadius:"50%",width:16,height:16,cursor:"pointer",color:"#fff",fontSize:"0.6rem",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>×</button>}
                           </div>)}
-                          <button onClick={()=>setCameraFor({zId:zona.id,iId:item.id})} style={{width:70,height:70,border:"1px dashed #334155",borderRadius:8,background:"transparent",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,color:"#475569"}}>
-                            <Ico.Cam/><span style={{fontSize:"0.55rem",fontWeight:700}}>Cámara</span>
-                          </button>
-                          <label style={{width:70,height:70,border:"1px dashed #334155",borderRadius:8,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,color:"#475569"}}>
-                            <Ico.Photo/><span style={{fontSize:"0.55rem",fontWeight:700}}>Galería</span>
-                            <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>handleFilePhoto(zona.id,item.id,e)}/>
-                          </label>
+                          {ceItem&&<>
+                            <button onClick={()=>setCameraFor({zId:zona.id,iId:item.id})} style={{width:70,height:70,border:"1px dashed #334155",borderRadius:8,background:"transparent",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,color:"#475569"}}>
+                              <Ico.Cam/><span style={{fontSize:"0.55rem",fontWeight:700}}>Cámara</span>
+                            </button>
+                            <label style={{width:70,height:70,border:"1px dashed #334155",borderRadius:8,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,color:"#475569"}}>
+                              <Ico.Photo/><span style={{fontSize:"0.55rem",fontWeight:700}}>Galería</span>
+                              <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>handleFilePhoto(zona.id,item.id,e)}/>
+                            </label>
+                          </>}
                         </div>
                       </div>}
                     </>}
                   </div>;
                 })}
-                {ceZona&&<div style={{padding:"8px 12px",borderTop:"1px solid #1e293b"}}>
+                {canAddItemInZona(zona)&&<div style={{padding:"8px 12px",borderTop:"1px solid #1e293b"}}>
                   <button style={{...S.btnS,fontSize:"0.72rem",padding:"5px 10px"}} onClick={()=>setModal({type:"addItem",zId:zona.id})}><Ico.Plus/> Agregar ítem</button>
                 </div>}
               </div>}
