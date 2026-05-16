@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 
 // ─── Storage Keys ─────────────────────────────────────────────────────────────
-const OBRAS_KEY   = "supervisor_obras_v4";
-const ACTIVE_KEY  = "supervisor_active_v4";
-const USERS_KEY   = "supervisor_users_v4";
-const SESSION_KEY = "supervisor_session_v4";
-const INVITE_KEY  = "supervisor_invites_v4";  // códigos de enlace pendientes
+const OBRAS_KEY   = "supervisor_obras_v5";
+const ACTIVE_KEY  = "supervisor_active_v5";
+const USERS_KEY   = "supervisor_users_v5";
+const SESSION_KEY = "supervisor_session_v5";
+const INVITE_KEY  = "supervisor_invites_v5";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const uid     = () => Math.random().toString(36).substr(2,9);
@@ -13,20 +13,26 @@ const today   = () => new Date().toISOString().slice(0,10);
 const fmt     = n => n!=null&&n!==""?Number(n).toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2}):"—";
 const fmtDate = s => s?new Date(s+"T12:00:00").toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric"}):"—";
 const daysDiff= s => { if(!s)return null; return Math.ceil((new Date(s+"T12:00:00")-new Date())/86400000); };
-const mkCode  = () => Math.floor(100000+Math.random()*900000).toString(); // 6 dígitos
+const mkCode  = () => Math.floor(100000+Math.random()*900000).toString();
+
+const OBRA_ESTADOS = {
+  en_ejecucion: { label:"En ejecución", color:"#22c55e", bg:"#22c55e18", icon:"🏗️" },
+  pausada:      { label:"Pausada",       color:"#f59e0b", bg:"#f59e0b18", icon:"⏸️" },
+  finalizada:   { label:"Finalizada",    color:"#38bdf8", bg:"#38bdf818", icon:"✅" },
+};
+
+const HERRAMIENTA_ESTADOS = {
+  disponible:    { label:"Disponible",    color:"#22c55e", dot:"#22c55e" },
+  en_uso:        { label:"En uso",        color:"#f59e0b", dot:"#f59e0b" },
+  en_reparacion: { label:"En reparación", color:"#ef4444", dot:"#ef4444" },
+};
 
 const emptyObra = (nombre="") => ({
   id:uid(), nombre, descripcion:"", fechaInicio:today(), fechaFin:"", notas:"",
+  estado:"en_ejecucion",
   zonas:[], trabajadores:[]
 });
 
-// Roles del sistema:
-//   admin          → control total (crea obras, zonas, ítems)
-//   colaborador    → crea/edita sus propias zonas, ve el resto
-//   materiales     → solo puede agregar/editar materiales y boletas en todas las zonas
-//                    ve el avance pero no toca ítems ni zonas
-
-// ─── Storage (localStorage) ───────────────────────────────────────────────────
 function sg(key){ try{ const r=localStorage.getItem(key); return r?JSON.parse(r):null; }catch{ return null; }}
 function ss(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch{}}
 function sd(key){ try{ localStorage.removeItem(key); }catch{}}
@@ -165,6 +171,11 @@ const Ico = {
   Share:   ()=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="16" height="16"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>,
   Mat:     ()=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="16" height="16"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>,
   Key:     ()=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="13" height="13"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>,
+  Wrench:  ()=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="15" height="15"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>,
+  Attend:  ()=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="15" height="15"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>,
+  Chat:    ()=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="13" height="13"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  Send:    ()=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="13" height="13"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
+  Status:  ()=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="13" height="13"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
 };
 
 // ─── Styles & Constants ───────────────────────────────────────────────────────
@@ -238,8 +249,7 @@ function AuthScreen({users,obras,invites,onLogin,onRegister,onAcceptInvite}){
   const [selUser,setSelUser]=useState(users[0]?.id||"");
   const [error,setError]=useState("");
   const [shake,setShake]=useState(false);
-  // Enlace
-  const [enlaceMode,setEnlaceMode]=useState(null); // null | "generar" | "unirse"
+  const [enlaceMode,setEnlaceMode]=useState(null);
   const [inviteCode,setInviteCode]=useState("");
   const [genCode,setGenCode]=useState("");
   const [copied,setCopied]=useState(false);
@@ -259,11 +269,7 @@ function AuthScreen({users,obras,invites,onLogin,onRegister,onAcceptInvite}){
     if(p1!==p2){setError("Los PINes no coinciden");return;}
     onRegister({id:uid(),nombre:nombre.trim(),rol,pin:p1,color:["#f59e0b","#22c55e","#38bdf8","#a78bfa","#fb923c"][Math.floor(Math.random()*5)]});
   };
-  const generarCodigo=()=>{
-    const code=mkCode();
-    setGenCode(code);
-    onAcceptInvite({action:"generate",code});
-  };
+  const generarCodigo=()=>{ const code=mkCode(); setGenCode(code); onAcceptInvite({action:"generate",code}); };
   const unirseConCodigo=()=>{
     const inv=invites.find(i=>i.code===inviteCode.trim()&&!i.used);
     if(!inv){setError("Código inválido o ya fue usado");return;}
@@ -278,14 +284,12 @@ function AuthScreen({users,obras,invites,onLogin,onRegister,onAcceptInvite}){
         <div style={{background:"#1e3a5f22",borderRadius:"50%",width:64,height:64,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",border:"1px solid #38bdf844"}}><span style={{fontSize:"1.8rem"}}>🔗</span></div>
         <h2 style={{margin:"0 0 4px",fontSize:"1.5rem",fontWeight:800,color:"#f1f5f9"}}>Enlazar Obra</h2>
         <p style={{margin:"0 0 20px",fontSize:"0.8rem",color:"#64748b"}}>Sincroniza una obra con otra persona</p>
-
         <div style={{display:"flex",gap:8,marginBottom:20,background:"#0f172a",borderRadius:10,padding:3,border:"1px solid #1e293b"}}>
           {[["generar","Generar código"],["unirse","Tengo un código"]].map(([v,l])=><button key={v} onClick={()=>{setEnlaceMode(v);setGenCode("");setInviteCode("");setError("");}} style={{flex:1,padding:"7px",borderRadius:8,border:"none",fontWeight:700,fontSize:"0.78rem",cursor:"pointer",background:enlaceMode===v?"#1e293b":"transparent",color:enlaceMode===v?"#f1f5f9":"#64748b",transition:"all .2s"}}>{l}</button>)}
         </div>
-
         {enlaceMode==="generar"&&<div style={{textAlign:"left",display:"flex",flexDirection:"column",gap:12}}>
           <div style={{background:"#1e293b",borderRadius:10,padding:14,fontSize:"0.8rem",color:"#94a3b8",lineHeight:1.6}}>
-            Se generará un código de 6 dígitos.<br/>Mándalo por <strong style={{color:"#25D366"}}>WhatsApp</strong> o mensaje a la otra persona. Cuando lo ingrese, quedarán conectados a la misma obra.
+            Se generará un código de 6 dígitos.<br/>Mándalo por <strong style={{color:"#25D366"}}>WhatsApp</strong> a la otra persona.
           </div>
           {!genCode&&<button style={{...S.btnP,justifyContent:"center"}} onClick={generarCodigo}><Ico.Share/> Generar código</button>}
           {genCode&&<>
@@ -295,24 +299,12 @@ function AuthScreen({users,obras,invites,onLogin,onRegister,onAcceptInvite}){
               <div style={{fontSize:"0.68rem",color:"#475569",marginTop:6}}>Válido por 24 horas</div>
             </div>
             <button style={{...S.btnT,justifyContent:"center"}} onClick={copiar}><Ico.Copy/>{copied?"¡Copiado!":"Copiar código"}</button>
-            <div style={{background:"#1e293b",borderRadius:8,padding:"10px 12px",fontSize:"0.78rem",color:"#64748b"}}>
-              💬 Mensaje sugerido para WhatsApp:<br/>
-              <span style={{color:"#94a3b8",fontStyle:"italic"}}>«Ingresa este código en Supervisor de Obra para enlazar nuestra obra: <strong style={{color:"#38bdf8"}}>{genCode}</strong>»</span>
-            </div>
           </>}
         </div>}
-
         {enlaceMode==="unirse"&&<div style={{textAlign:"left",display:"flex",flexDirection:"column",gap:12}}>
-          <div style={{background:"#1e293b",borderRadius:10,padding:14,fontSize:"0.8rem",color:"#94a3b8",lineHeight:1.6}}>
-            El encargado de la obra te compartió un código de 6 dígitos. Ingrésalo aquí para unirte y ver la misma obra.
-          </div>
-          <div>
-            <label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:5,fontWeight:600}}>Código de 6 dígitos</label>
-            <input style={{...S.inp,fontSize:"1.6rem",letterSpacing:"0.3em",textAlign:"center",fontWeight:800}} maxLength={6} placeholder="000000" value={inviteCode} onChange={e=>{ if(/^\d{0,6}$/.test(e.target.value)) setInviteCode(e.target.value); }}/>
-          </div>
+          <input style={{...S.inp,fontSize:"1.6rem",letterSpacing:"0.3em",textAlign:"center",fontWeight:800}} maxLength={6} placeholder="000000" value={inviteCode} onChange={e=>{ if(/^\d{0,6}$/.test(e.target.value)) setInviteCode(e.target.value); }}/>
           <button style={{...S.btnP,justifyContent:"center"}} onClick={unirseConCodigo} disabled={inviteCode.length!==6}><Ico.Link/> Unirse a la obra</button>
         </div>}
-
         {error&&<p style={{margin:"12px 0 0",color:"#ef4444",fontSize:"0.83rem",textAlign:"center"}}>{error}</p>}
         <button style={{...S.btnS,margin:"16px auto 0",justifyContent:"center"}} onClick={()=>{setEnlaceMode(null);setGenCode("");setError("");}}>← Volver</button>
       </div>
@@ -320,118 +312,75 @@ function AuthScreen({users,obras,invites,onLogin,onRegister,onAcceptInvite}){
   }
 
   return <div style={{minHeight:"100vh",background:"linear-gradient(160deg,#010a14 0%,#071524 50%,#0a1e32 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:16,position:"relative",overflow:"hidden"}}>
-    {/* Fondo decorativo */}
     <div style={{position:"absolute",inset:0,pointerEvents:"none",overflow:"hidden"}}>
       <div style={{position:"absolute",top:"-20%",left:"-10%",width:"60vw",height:"60vw",borderRadius:"50%",background:"radial-gradient(circle,#f59e0b08 0%,transparent 70%)"}}/>
       <div style={{position:"absolute",bottom:"-15%",right:"-10%",width:"50vw",height:"50vw",borderRadius:"50%",background:"radial-gradient(circle,#38bdf808 0%,transparent 70%)"}}/>
-      <div style={{position:"absolute",top:"30%",left:"50%",transform:"translateX(-50%)",width:"1px",height:"40%",background:"linear-gradient(to bottom,transparent,#f59e0b18,transparent)"}}/>
     </div>
-
     <div style={{width:"100%",maxWidth:420,textAlign:"center",position:"relative",zIndex:1}}>
-
-      {/* Logo / Icono premium */}
       <div style={{margin:"0 auto 20px",position:"relative",width:96,height:96}}>
-        {/* Anillos decorativos */}
         <div style={{position:"absolute",inset:-8,borderRadius:"50%",border:"1px solid #f59e0b18",animation:"spin 12s linear infinite"}}/>
-        <div style={{position:"absolute",inset:-16,borderRadius:"50%",border:"1px dashed #f59e0b0d"}}/>
-        {/* Fondo hexagonal simulado con círculo */}
-        <div style={{width:96,height:96,borderRadius:24,background:"linear-gradient(135deg,#1a2d1a,#1e3a0f)",border:"2px solid #f59e0b55",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 0 40px #f59e0b22, inset 0 1px 0 #f59e0b33"}}>
-          {/* Casco de obra SVG personalizado */}
+        <div style={{width:96,height:96,borderRadius:24,background:"linear-gradient(135deg,#1a2d1a,#1e3a0f)",border:"2px solid #f59e0b55",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 0 40px #f59e0b22"}}>
           <svg viewBox="0 0 48 48" width="52" height="52" fill="none">
-            <defs>
-              <linearGradient id="hg" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#fbbf24"/>
-                <stop offset="100%" stopColor="#f59e0b"/>
-              </linearGradient>
-            </defs>
-            {/* Casco */}
+            <defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#fbbf24"/><stop offset="100%" stopColor="#f59e0b"/></linearGradient></defs>
             <path d="M8 30 Q8 18 24 14 Q40 18 40 30 Z" fill="url(#hg)" opacity="0.95"/>
             <rect x="6" y="29" width="36" height="5" rx="2.5" fill="url(#hg)"/>
             <rect x="14" y="34" width="20" height="3" rx="1.5" fill="#92400e" opacity="0.6"/>
-            {/* Reflejo en el casco */}
             <path d="M14 20 Q18 17 24 16.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.4"/>
-            {/* Franja central */}
-            <rect x="22" y="14" width="4" height="16" rx="2" fill="white" opacity="0.15"/>
           </svg>
         </div>
-        {/* Punto de estado */}
         <div style={{position:"absolute",bottom:2,right:2,width:14,height:14,borderRadius:"50%",background:"#22c55e",border:"2px solid #010a14",boxShadow:"0 0 8px #22c55e88"}}/>
       </div>
-
-      {/* Título */}
       <div style={{marginBottom:4}}>
-        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"2.2rem",fontWeight:900,letterSpacing:"0.08em",textTransform:"uppercase",color:"#f1f5f9",lineHeight:1}}>
-          Supervisor
-        </div>
-        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"2.2rem",fontWeight:900,letterSpacing:"0.08em",textTransform:"uppercase",background:"linear-gradient(90deg,#f59e0b,#fbbf24,#f59e0b)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",lineHeight:1}}>
-          de Obra
-        </div>
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"2.2rem",fontWeight:900,letterSpacing:"0.08em",textTransform:"uppercase",color:"#f1f5f9",lineHeight:1}}>Supervisor</div>
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"2.2rem",fontWeight:900,letterSpacing:"0.08em",textTransform:"uppercase",background:"linear-gradient(90deg,#f59e0b,#fbbf24,#f59e0b)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",lineHeight:1}}>de Obra</div>
       </div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:24}}>
         <div style={{height:"1px",width:40,background:"linear-gradient(to right,transparent,#334155)"}}/>
         <span style={{fontSize:"0.72rem",color:"#475569",letterSpacing:"0.12em",textTransform:"uppercase",fontWeight:600}}>Sistema multi-usuario</span>
         <div style={{height:"1px",width:40,background:"linear-gradient(to left,transparent,#334155)"}}/>
       </div>
-
-      {/* Enlazar obra */}
-      <button onClick={()=>setEnlaceMode("generar")} style={{width:"100%",justifyContent:"center",marginBottom:14,padding:"12px 14px",background:"linear-gradient(135deg,#0c2340,#0f2d52)",border:"1px solid #38bdf844",borderRadius:12,color:"#7dd3fc",fontWeight:700,fontSize:"0.84rem",cursor:"pointer",display:"flex",alignItems:"center",gap:8,letterSpacing:"0.04em",boxShadow:"0 4px 20px #38bdf810",transition:"all .2s"}}>
+      <button onClick={()=>setEnlaceMode("generar")} style={{width:"100%",justifyContent:"center",marginBottom:14,padding:"12px 14px",background:"linear-gradient(135deg,#0c2340,#0f2d52)",border:"1px solid #38bdf844",borderRadius:12,color:"#7dd3fc",fontWeight:700,fontSize:"0.84rem",cursor:"pointer",display:"flex",alignItems:"center",gap:8,letterSpacing:"0.04em"}}>
         <Ico.Link/> Enlazar obra con otra persona
       </button>
-
-      {/* Card contenedor */}
       <div style={{background:"linear-gradient(160deg,#0f172a,#0a1628)",border:"1px solid #1e293b",borderRadius:16,padding:"18px 16px",boxShadow:"0 20px 60px rgba(0,0,0,.5)"}}>
-
-        {/* Tabs login / registro */}
         <div style={{display:"flex",background:"#060e1a",borderRadius:10,padding:3,marginBottom:18,border:"1px solid #1e293b"}}>
-          {users.length>0&&<button onClick={()=>setMode("login")} style={{flex:1,padding:"8px",borderRadius:8,border:"none",fontWeight:700,fontSize:"0.78rem",cursor:"pointer",background:mode==="login"?"linear-gradient(135deg,#1e293b,#162032)":"transparent",color:mode==="login"?"#f1f5f9":"#475569",transition:"all .2s",boxShadow:mode==="login"?"0 2px 8px rgba(0,0,0,.3)":"none"}}>Ingresar</button>}
-          <button onClick={()=>setMode("register")} style={{flex:1,padding:"8px",borderRadius:8,border:"none",fontWeight:700,fontSize:"0.78rem",cursor:"pointer",background:mode==="register"?"linear-gradient(135deg,#1e293b,#162032)":"transparent",color:mode==="register"?"#f1f5f9":"#475569",transition:"all .2s",boxShadow:mode==="register"?"0 2px 8px rgba(0,0,0,.3)":"none"}}>Nuevo usuario</button>
+          {users.length>0&&<button onClick={()=>setMode("login")} style={{flex:1,padding:"8px",borderRadius:8,border:"none",fontWeight:700,fontSize:"0.78rem",cursor:"pointer",background:mode==="login"?"linear-gradient(135deg,#1e293b,#162032)":"transparent",color:mode==="login"?"#f1f5f9":"#475569",transition:"all .2s"}}>Ingresar</button>}
+          <button onClick={()=>setMode("register")} style={{flex:1,padding:"8px",borderRadius:8,border:"none",fontWeight:700,fontSize:"0.78rem",cursor:"pointer",background:mode==="register"?"linear-gradient(135deg,#1e293b,#162032)":"transparent",color:mode==="register"?"#f1f5f9":"#475569",transition:"all .2s"}}>Nuevo usuario</button>
         </div>
-
-      {mode==="login"&&<div style={{display:"flex",flexDirection:"column",gap:14}}>
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {users.map(u=>{
-            const rm=ROLE_META[u.rol]||ROLE_META.colaborador;
-            return <button key={u.id} onClick={()=>setSelUser(u.id)} style={{background:selUser===u.id?"#1e293b":"#0f172a",border:`2px solid ${selUser===u.id?u.color||"#f59e0b":"#1e293b"}`,borderRadius:12,padding:"11px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10,transition:"all .2s"}}>
+        {mode==="login"&&<div style={{display:"flex",flexDirection:"column",gap:14}}>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {users.map(u=>{ const rm=ROLE_META[u.rol]||ROLE_META.colaborador; return <button key={u.id} onClick={()=>setSelUser(u.id)} style={{background:selUser===u.id?"#1e293b":"#0f172a",border:`2px solid ${selUser===u.id?u.color||"#f59e0b":"#1e293b"}`,borderRadius:12,padding:"11px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10,transition:"all .2s"}}>
               <div style={{width:36,height:36,borderRadius:"50%",background:(u.color||"#f59e0b")+"22",border:`2px solid ${u.color||"#f59e0b"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1rem",flexShrink:0,color:u.color||"#f59e0b",fontWeight:800}}>{u.nombre[0].toUpperCase()}</div>
-              <div style={{textAlign:"left",flex:1}}>
-                <div style={{fontWeight:700,color:"#f1f5f9",fontSize:"0.9rem"}}>{u.nombre}</div>
-                <div style={{fontSize:"0.68rem",color:"#64748b"}}>{rm.icon} {rm.label}</div>
-              </div>
+              <div style={{textAlign:"left",flex:1}}><div style={{fontWeight:700,color:"#f1f5f9",fontSize:"0.9rem"}}>{u.nombre}</div><div style={{fontSize:"0.68rem",color:"#64748b"}}>{rm.icon} {rm.label}</div></div>
               {selUser===u.id&&<Ico.Check/>}
-            </button>;
-          })}
-        </div>
-        {selUser&&<>
-          <p style={{margin:"4px 0 0",fontSize:"0.8rem",color:"#64748b"}}>PIN de {users.find(u=>u.id===selUser)?.nombre}</p>
-          <PinRow value={pin} onChange={setPin} refs={refs} onComplete={doLogin} shake={shake}/>
-        </>}
-      </div>}
-
-      {mode==="register"&&<div style={{display:"flex",flexDirection:"column",gap:12,textAlign:"left"}}>
-        <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:4,fontWeight:600}}>Nombre completo</label>
-          <input style={S.inp} placeholder="Ej: Juan Pérez" value={nombre} onChange={e=>setNombre(e.target.value)}/></div>
-        <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:6,fontWeight:600}}>Rol</label>
-          <div style={{display:"flex",flexDirection:"column",gap:6}}>
-            {[["admin","👑 Administrador","Control total · crea obras y zonas"],["colaborador","🔧 Colaborador","Edita sus zonas · ve todo"]].map(([v,l,desc])=><button key={v} onClick={()=>setRol(v)} style={{background:rol===v?"#1e293b":"#0f172a",border:`2px solid ${rol===v?"#f59e0b":"#1e293b"}`,borderRadius:10,padding:"10px 12px",cursor:"pointer",textAlign:"left",transition:"all .2s",display:"flex",gap:10,alignItems:"center"}}>
-              <span style={{fontSize:"1.3rem"}}>{l.split(" ")[0]}</span>
-              <div><div style={{fontWeight:700,color:"#f1f5f9",fontSize:"0.82rem"}}>{l.split(" ").slice(1).join(" ")}</div><div style={{fontSize:"0.62rem",color:"#64748b",marginTop:1}}>{desc}</div></div>
-            </button>)}
+            </button>; })}
           </div>
-        </div>
-        <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:6,fontWeight:600}}>Crear PIN (5 dígitos)</label>
-          <PinRow value={pin} onChange={setPin} refs={refs} size={46} height={56}/></div>
-        {pin.every(d=>d!=="")&&<div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:6,fontWeight:600}}>Confirmar PIN</label>
-          <div style={{display:"flex",gap:8,justifyContent:"center"}}>
-            {pin2.map((d,i)=><input key={i} ref={refs2[i]} type="password" inputMode="numeric" maxLength={1} value={d}
-              onChange={e=>{ if(!/^\d?$/.test(e.target.value))return; const n=[...pin2];n[i]=e.target.value;setPin2(n); if(e.target.value&&i<4)refs2[i+1].current?.focus(); }}
-              onKeyDown={e=>{ if(e.key==="Backspace"&&!pin2[i]&&i>0)refs2[i-1].current?.focus(); }}
-              style={{width:46,height:56,textAlign:"center",fontSize:"1.6rem",fontWeight:800,background:"#1e293b",border:`2px solid ${d?"#22c55e":"#334155"}`,borderRadius:10,color:"#f1f5f9",outline:"none"}}/>)}
-          </div></div>}
-        <button style={{...S.btnP,justifyContent:"center",marginTop:4}} onClick={doRegister}><Ico.User/> Crear cuenta</button>
-      </div>}
-
-      {error&&<p style={{margin:"10px 0 0",color:"#ef4444",fontSize:"0.82rem",textAlign:"center"}}>{error}</p>}
-      </div>{/* end card */}
+          {selUser&&<><p style={{margin:"4px 0 0",fontSize:"0.8rem",color:"#64748b"}}>PIN de {users.find(u=>u.id===selUser)?.nombre}</p>
+          <PinRow value={pin} onChange={setPin} refs={refs} onComplete={doLogin} shake={shake}/></>}
+        </div>}
+        {mode==="register"&&<div style={{display:"flex",flexDirection:"column",gap:12,textAlign:"left"}}>
+          <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:4,fontWeight:600}}>Nombre completo</label>
+            <input style={S.inp} placeholder="Ej: Juan Pérez" value={nombre} onChange={e=>setNombre(e.target.value)}/></div>
+          <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:6,fontWeight:600}}>Rol</label>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {[["admin","👑 Administrador","Control total · crea obras y zonas"],["colaborador","🔧 Colaborador","Edita sus zonas · ve todo"]].map(([v,l,desc])=><button key={v} onClick={()=>setRol(v)} style={{background:rol===v?"#1e293b":"#0f172a",border:`2px solid ${rol===v?"#f59e0b":"#1e293b"}`,borderRadius:10,padding:"10px 12px",cursor:"pointer",textAlign:"left",transition:"all .2s",display:"flex",gap:10,alignItems:"center"}}>
+                <span style={{fontSize:"1.3rem"}}>{l.split(" ")[0]}</span>
+                <div><div style={{fontWeight:700,color:"#f1f5f9",fontSize:"0.82rem"}}>{l.split(" ").slice(1).join(" ")}</div><div style={{fontSize:"0.62rem",color:"#64748b",marginTop:1}}>{desc}</div></div>
+              </button>)}
+            </div>
+          </div>
+          <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:6,fontWeight:600}}>Crear PIN (5 dígitos)</label>
+            <PinRow value={pin} onChange={setPin} refs={refs} size={46} height={56}/></div>
+          {pin.every(d=>d!=="")&&<div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:6,fontWeight:600}}>Confirmar PIN</label>
+            <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+              {pin2.map((d,i)=><input key={i} type="password" inputMode="numeric" maxLength={1} value={d}
+                onChange={e=>{ if(!/^\d?$/.test(e.target.value))return; const n=[...pin2];n[i]=e.target.value;setPin2(n); }}
+                style={{width:46,height:56,textAlign:"center",fontSize:"1.6rem",fontWeight:800,background:"#1e293b",border:`2px solid ${d?"#22c55e":"#334155"}`,borderRadius:10,color:"#f1f5f9",outline:"none"}}/>)}
+            </div></div>}
+          <button style={{...S.btnP,justifyContent:"center",marginTop:4}} onClick={doRegister}><Ico.User/> Crear cuenta</button>
+        </div>}
+        {error&&<p style={{margin:"10px 0 0",color:"#ef4444",fontSize:"0.82rem",textAlign:"center"}}>{error}</p>}
+      </div>
     </div>
   </div>;
 }
@@ -534,7 +483,7 @@ function MatForm({mat,onChange}){
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
-function Dashboard({obra,calcZonePct,totalPct,onPDF,onCompras,currentUser,onGoToZonas}){
+function Dashboard({obra,calcZonePct,totalPct,onPDF,onCompras,currentUser,onGoToZonas,onChangeStatus}){
   const pct=totalPct(),pc=pct<30?"#ef4444":pct<70?"#f59e0b":"#22c55e";
   const allI=obra.zonas.flatMap(z=>z.items||[]);
   const allM=allI.flatMap(i=>i.materiales||[]);
@@ -545,8 +494,31 @@ function Dashboard({obra,calcZonePct,totalPct,onPDF,onCompras,currentUser,onGoTo
   const pendMat=allM.filter(m=>!m.estado||m.estado==="pendiente").length;
   const alertas=allI.filter(i=>{ const d=daysDiff(i.fechaFin); return !i.terminado&&d!==null&&d<=3; });
   const sorted=[...obra.zonas].sort((a,b)=>calcZonePct(b)-calcZonePct(a));
+  const obraEst=OBRA_ESTADOS[obra.estado||"en_ejecucion"];
+
+  // Asistencia hoy
+  const hoy=today();
+  const presentes=(obra.trabajadores||[]).filter(t=>(t.asistencia||{})[hoy]==="presente").length;
+  const ausentes=(obra.trabajadores||[]).filter(t=>(t.asistencia||{})[hoy]==="ausente").length;
+
   return <div style={{display:"flex",flexDirection:"column",gap:12}}>
-    {/* Tarjeta principal — clickeable lleva a Zonas */}
+
+    {/* Estado de la obra */}
+    <div style={{background:obraEst.bg,border:`1px solid ${obraEst.color}33`,borderRadius:12,padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+      <div style={{display:"flex",alignItems:"center",gap:8}}>
+        <span style={{fontSize:"1.2rem"}}>{obraEst.icon}</span>
+        <div>
+          <div style={{fontSize:"0.65rem",color:obraEst.color,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em"}}>Estado de la obra</div>
+          <div style={{fontSize:"0.9rem",fontWeight:700,color:"#f1f5f9"}}>{obraEst.label}</div>
+        </div>
+      </div>
+      {currentUser?.rol==="admin"&&<div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+        {Object.entries(OBRA_ESTADOS).map(([k,v])=><button key={k} onClick={()=>onChangeStatus(k)}
+          style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${v.color}44`,background:(obra.estado||"en_ejecucion")===k?v.color+"33":"transparent",color:v.color,fontSize:"0.65rem",fontWeight:700,cursor:"pointer",transition:"all .2s"}}>{v.icon} {v.label}</button>)}
+      </div>}
+    </div>
+
+    {/* Tarjeta principal */}
     <div onClick={onGoToZonas} style={{background:"linear-gradient(135deg,#0f172a,#1e293b)",border:"1px solid #334155",borderRadius:16,padding:18,display:"flex",alignItems:"center",gap:16,cursor:"pointer",transition:"border-color .2s"}}
       onMouseEnter={e=>e.currentTarget.style.borderColor="#f59e0b55"}
       onMouseLeave={e=>e.currentTarget.style.borderColor="#334155"}>
@@ -573,10 +545,12 @@ function Dashboard({obra,calcZonePct,totalPct,onPDF,onCompras,currentUser,onGoTo
         </div>
       </div>
     </div>
+
     {alertas.length>0&&<div style={{background:"#450a0a",border:"1px solid #ef444444",borderRadius:12,padding:"12px 14px"}}>
       <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8,color:"#fca5a5",fontSize:"0.72rem",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em"}}><Ico.Alert/> {alertas.length} ítem(s) próximo(s) a vencer</div>
       {alertas.map(it=>{ const d=daysDiff(it.fechaFin); return <div key={it.id} style={{fontSize:"0.8rem",color:"#fca5a5",marginBottom:3}}>⚠ {it.nombre} — {d<0?`Vencido hace ${Math.abs(d)}d`:`${d}d restante${d!==1?"s":""}`}</div>; })}
     </div>}
+
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
       {[["Completados",done,"#22c55e"],["Pendientes",pend,"#f59e0b"],["Críticos",crit,"#ef4444"]].map(([l,v,c])=>(
         <div key={l} style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:12,padding:"13px 10px",textAlign:"center"}}>
@@ -585,6 +559,20 @@ function Dashboard({obra,calcZonePct,totalPct,onPDF,onCompras,currentUser,onGoTo
         </div>
       ))}
     </div>
+
+    {/* Asistencia hoy */}
+    {obra.trabajadores.length>0&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:13,padding:14}}>
+      <div style={{fontSize:"0.68rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10,display:"flex",alignItems:"center",gap:5}}><Ico.Attend/> Asistencia hoy</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:8}}>
+        {[["Presentes",presentes,"#22c55e"],["Ausentes",ausentes,"#ef4444"],["Sin registrar",obra.trabajadores.length-presentes-ausentes,"#64748b"]].map(([l,v,c])=>(
+          <div key={l} style={{textAlign:"center"}}>
+            <div style={{fontSize:"1.4rem",fontWeight:800,color:c}}>{v}</div>
+            <div style={{fontSize:"0.58rem",color:"#475569"}}>{l}</div>
+          </div>
+        ))}
+      </div>
+    </div>}
+
     {presup>0&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:13,padding:14}}>
       <div style={{display:"flex",alignItems:"center",gap:5,fontSize:"0.68rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}><Ico.Cart/> Materiales</div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginBottom:10}}>
@@ -597,6 +585,7 @@ function Dashboard({obra,calcZonePct,totalPct,onPDF,onCompras,currentUser,onGoTo
       </div>
       <div style={{fontSize:"0.62rem",color:"#475569"}}>{Math.round((gast/presup)*100)}% comprometido</div>
     </div>}
+
     {sorted.length>0&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:13,padding:14}}>
       <div style={{fontSize:"0.68rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}>Avance por Zona</div>
       {sorted.map(z=>{ const zp=calcZonePct(z),zc=zp<30?"#ef4444":zp<70?"#f59e0b":"#22c55e"; return <div key={z.id} style={{marginBottom:10}}>
@@ -617,6 +606,110 @@ function Dashboard({obra,calcZonePct,totalPct,onPDF,onCompras,currentUser,onGoTo
   </div>;
 }
 
+// ─── Worker Card ─────────────────────────────────────────────────────────────
+function WorkerCard({t,zona,onEdit,onDelete,onToggleAsistencia,onAddHerramienta,onEditHerramienta,onDeleteHerramienta,onSetHerramientaStatus,canEdit}){
+  const [open,setOpen]=useState(false);
+  const [tab,setTab]=useState("herramientas"); // herramientas | asistencia
+  const [newTool,setNewTool]=useState("");
+  const hoy=today();
+  const asistHoy=t.asistencia?.[hoy];
+  const herramientas=t.herramientas||[];
+
+  // Calcular últimos 7 días para asistencia
+  const ultimos7=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    ultimos7.push(d.toISOString().slice(0,10));
+  }
+
+  return <div className="card">
+    <div style={{display:"flex",alignItems:"center",gap:10,padding:"11px 12px",cursor:"pointer"}} onClick={()=>setOpen(o=>!o)}>
+      <div style={{width:38,height:38,borderRadius:"50%",background:"#1e3a5f",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.1rem",flexShrink:0,position:"relative"}}>
+        👷
+        {/* Indicador asistencia */}
+        <div style={{position:"absolute",bottom:-1,right:-1,width:12,height:12,borderRadius:"50%",background:asistHoy==="presente"?"#22c55e":asistHoy==="ausente"?"#ef4444":"#334155",border:"2px solid #0f172a"}}/>
+      </div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontWeight:600,fontSize:"0.9rem",color:"#f1f5f9",marginBottom:2}}>{t.nombre}</div>
+        <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+          {t.rol&&<span className="badge" style={{background:"#1e293b",color:"#94a3b8"}}>{t.rol}</span>}
+          {t.telefono&&<span style={{fontSize:"0.68rem",color:"#7dd3fc",display:"flex",alignItems:"center",gap:2}}><Ico.Phone/>{t.telefono}</span>}
+          {zona?<span className="badge" style={{background:"#f59e0b22",color:"#f59e0b"}}>📍 {zona.nombre}</span>:<span className="badge" style={{background:"#1e293b",color:"#475569"}}>Sin zona</span>}
+          {herramientas.length>0&&<span className="badge" style={{background:"#1e3a5f",color:"#7dd3fc"}}>🔧 {herramientas.length}</span>}
+        </div>
+      </div>
+      <div style={{display:"flex",gap:5,flexShrink:0}} onClick={e=>e.stopPropagation()}>
+        {/* Asistencia rápida hoy */}
+        <button title="Presente" onClick={()=>onToggleAsistencia(t.id,hoy,"presente")}
+          style={{padding:"4px 8px",borderRadius:7,border:`1px solid ${asistHoy==="presente"?"#22c55e":"#334155"}`,background:asistHoy==="presente"?"#22c55e22":"transparent",color:asistHoy==="presente"?"#22c55e":"#64748b",fontSize:"0.7rem",cursor:"pointer",fontWeight:700}}>✓</button>
+        <button title="Ausente" onClick={()=>onToggleAsistencia(t.id,hoy,"ausente")}
+          style={{padding:"4px 8px",borderRadius:7,border:`1px solid ${asistHoy==="ausente"?"#ef4444":"#334155"}`,background:asistHoy==="ausente"?"#ef444422":"transparent",color:asistHoy==="ausente"?"#ef4444":"#64748b",fontSize:"0.7rem",cursor:"pointer",fontWeight:700}}>✗</button>
+        {canEdit&&<button className="ic" onClick={()=>onEdit(t)}><Ico.Edit/></button>}
+        {canEdit&&<button className="ic danger" onClick={()=>onDelete(t.id)}><Ico.Trash/></button>}
+      </div>
+      <Ico.Chev open={open}/>
+    </div>
+
+    {open&&<div style={{borderTop:"1px solid #1e293b"}}>
+      {/* Tabs */}
+      <div style={{display:"flex",borderBottom:"1px solid #1e293b"}}>
+        {[["herramientas","🔧 Herramientas"],["asistencia","📋 Asistencia"]].map(([k,l])=><button key={k} onClick={()=>setTab(k)}
+          style={{flex:1,padding:"8px",border:"none",background:"transparent",color:tab===k?"#f59e0b":"#64748b",fontWeight:700,fontSize:"0.74rem",cursor:"pointer",borderBottom:tab===k?"2px solid #f59e0b":"2px solid transparent",transition:"all .2s"}}>{l}</button>)}
+      </div>
+
+      {/* Herramientas */}
+      {tab==="herramientas"&&<div style={{padding:"12px"}}>
+        {herramientas.length===0&&<p style={{fontSize:"0.78rem",color:"#334155",margin:"0 0 10px",textAlign:"center"}}>Sin herramientas asignadas</p>}
+        <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:10}}>
+          {herramientas.map(h=>{
+            const hEst=HERRAMIENTA_ESTADOS[h.estado||"disponible"];
+            return <div key={h.id} style={{display:"flex",alignItems:"center",gap:8,background:"#0a1628",borderRadius:8,padding:"7px 10px"}}>
+              <span style={{width:8,height:8,borderRadius:"50%",background:hEst.dot,flexShrink:0}}/>
+              <span style={{flex:1,fontSize:"0.83rem",color:"#e2e8f0"}}>{h.nombre}</span>
+              {canEdit?<select value={h.estado||"disponible"} onChange={e=>onSetHerramientaStatus(t.id,h.id,e.target.value)}
+                style={{background:"#1e293b",border:`1px solid ${hEst.dot}44`,borderRadius:6,color:hEst.color,fontSize:"0.65rem",fontWeight:700,padding:"2px 5px",cursor:"pointer",outline:"none"}}>
+                {Object.entries(HERRAMIENTA_ESTADOS).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
+              </select>:<span style={{fontSize:"0.65rem",color:hEst.color,fontWeight:700}}>{hEst.label}</span>}
+              {canEdit&&<button className="ic danger" style={{padding:"2px 5px"}} onClick={()=>onDeleteHerramienta(t.id,h.id)}><Ico.Trash/></button>}
+            </div>;
+          })}
+        </div>
+        {canEdit&&<div style={{display:"flex",gap:7}}>
+          <input style={{...S.inp,fontSize:"0.8rem",padding:"7px 10px"}} placeholder="Ej: Taladro, Nivel, Pala…" value={newTool}
+            onChange={e=>setNewTool(e.target.value)}
+            onKeyDown={e=>{ if(e.key==="Enter"&&newTool.trim()){ onAddHerramienta(t.id,newTool.trim()); setNewTool(""); } }}/>
+          <button style={{...S.btnP,padding:"7px 12px",flexShrink:0,fontSize:"0.75rem"}} onClick={()=>{ if(newTool.trim()){ onAddHerramienta(t.id,newTool.trim()); setNewTool(""); } }}><Ico.Plus/></button>
+        </div>}
+      </div>}
+
+      {/* Asistencia últimos 7 días */}
+      {tab==="asistencia"&&<div style={{padding:"12px"}}>
+        <div style={{fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}>Últimos 7 días</div>
+        <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+          {ultimos7.map(fecha=>{
+            const est=t.asistencia?.[fecha];
+            const esHoy=fecha===hoy;
+            const diaSemana=new Date(fecha+"T12:00:00").toLocaleDateString("es-ES",{weekday:"short"});
+            const diaMes=new Date(fecha+"T12:00:00").getDate();
+            return <div key={fecha} style={{flex:"1",minWidth:38,textAlign:"center"}}>
+              <div style={{fontSize:"0.58rem",color:esHoy?"#f59e0b":"#64748b",fontWeight:esHoy?700:400,marginBottom:4}}>{diaSemana}</div>
+              <div style={{fontSize:"0.65rem",color:"#475569",marginBottom:4}}>{diaMes}</div>
+              <button onClick={()=>canEdit&&onToggleAsistencia(t.id,fecha,est==="presente"?"ausente":est==="ausente"?null:"presente")}
+                style={{width:"100%",aspectRatio:"1",borderRadius:8,border:`1px solid ${est==="presente"?"#22c55e":est==="ausente"?"#ef4444":"#334155"}`,background:est==="presente"?"#22c55e22":est==="ausente"?"#ef444422":"transparent",color:est==="presente"?"#22c55e":est==="ausente"?"#ef4444":"#475569",fontSize:"0.9rem",cursor:canEdit?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                {est==="presente"?"✓":est==="ausente"?"✗":"·"}
+              </button>
+            </div>;
+          })}
+        </div>
+        <div style={{display:"flex",gap:12,marginTop:10,fontSize:"0.65rem",color:"#64748b"}}>
+          <span>✓ Presente</span><span>✗ Ausente</span><span>· Sin registrar</span>
+          {canEdit&&<span style={{color:"#475569",fontStyle:"italic"}}>Toca para cambiar</span>}
+        </div>
+      </div>}
+    </div>}
+  </div>;
+}
+
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function SupervisorObra(){
   const [ready,setReady]=useState(false);
@@ -629,6 +722,7 @@ export default function SupervisorObra(){
   const [exZones,setExZones]=useState({});
   const [exItems,setExItems]=useState({});
   const [exSubItems,setExSubItems]=useState({});
+  const [exComents,setExComents]=useState({});
   const [modal,setModal]=useState(null);
   const [form,setForm]=useState({});
   const [matForm,setMatForm]=useState({});
@@ -638,6 +732,7 @@ export default function SupervisorObra(){
   const [dragO,setDragO]=useState(null);
   const [cameraFor,setCameraFor]=useState(null);
   const [scanBoleta,setScanBoleta]=useState(null);
+  const [newComment,setNewComment]=useState({});
 
   const obra=obras.find(o=>o.id===activeId)||obras[0]||null;
 
@@ -658,32 +753,28 @@ export default function SupervisorObra(){
   const closeModal=()=>{ setModal(null); setForm({}); setMatForm({}); };
   const toast=(msg,type="ok")=>{ setModal({type:"toast",msg,toastType:type}); setTimeout(()=>setModal(m=>m?.type==="toast"?null:m),2600); };
 
-  // ── Permisos ──
   const isMateriales = currentUser?.rol==="materiales";
   const canEditZona  = (zona) => {
-    if(isMateriales) return false; // materiales no edita zonas/ítems
+    if(isMateriales) return false;
     if(!zona) return false;
     if(currentUser?.rol==="admin") return true;
     if(!zona.ownerUserId) return true;
     return zona.ownerUserId===currentUser?.id;
   };
   const canEditMat = (zona) => {
-    if(isMateriales) return true;  // materiales edita en todas
+    if(isMateriales) return true;
     return canEditZona(zona);
   };
 
-  // ── Cálculos ──
   const calcItemPct=(item)=>{ const subs=item.subItems||[]; if(!subs.length) return item.terminado?100:0; return Math.round((subs.filter(s=>s.terminado).length/subs.length)*100); };
   const isItemDone=(item)=>{ const subs=item.subItems||[]; return subs.length?subs.every(s=>s.terminado):item.terminado; };
   const calcZonePct=(zona)=>{ if(!(zona.items||[]).length)return 0; const tw=zona.items.reduce((s,i)=>s+(i.peso||1),0); const dw=zona.items.reduce((s,i)=>s+(i.peso||1)*(calcItemPct(i)/100),0); return Math.round((dw/tw)*100); };
   const totalPct=()=>{ if(!obra)return 0; const all=obra.zonas.flatMap(z=>z.items||[]); if(!all.length)return 0; const tw=all.reduce((s,i)=>s+(i.peso||1),0); const dw=all.reduce((s,i)=>s+(i.peso||1)*(calcItemPct(i)/100),0); return Math.round((dw/tw)*100); };
 
-  // ── Auth ──
   const handleLogin=(user)=>{ setCurrentUser(user); ss(SESSION_KEY,user.id); };
   const handleRegister=(user)=>{ const next=[...users,user]; setUsers(next); ss(USERS_KEY,next); setCurrentUser(user); ss(SESSION_KEY,user.id); };
   const handleLogout=()=>{ setCurrentUser(null); sd(SESSION_KEY); };
 
-  // ── Enlace de obra ──
   const handleInvite=({action,code})=>{
     if(action==="generate"){
       const newInv={code,obraId:obra?.id||null,createdAt:Date.now(),used:false,expiresAt:Date.now()+86400000};
@@ -692,7 +783,6 @@ export default function SupervisorObra(){
     } else if(action==="join"){
       const inv=invites.find(i=>i.code===code&&!i.used&&i.expiresAt>Date.now());
       if(!inv){toast("Código inválido o expirado","err");return;}
-      // Marcar usado + activar esa obra si existe
       const nextInv=invites.map(i=>i.code===code?{...i,used:true}:i);
       setInvites(nextInv); ss(INVITE_KEY,nextInv);
       if(inv.obraId){ setActiveId(inv.obraId); ss(ACTIVE_KEY,inv.obraId); }
@@ -703,6 +793,7 @@ export default function SupervisorObra(){
   // ── CRUD Obras ──
   const createObra=()=>{ if(!form.nombre?.trim())return; const o=emptyObra(form.nombre.trim()); o.descripcion=form.descripcion||""; o.fechaInicio=form.fechaInicio||today(); o.fechaFin=form.fechaFin||""; setObras(p=>[...p,o]); setActiveId(o.id); ss(ACTIVE_KEY,o.id); setTab("zonas"); closeModal(); };
   const deleteObra=(id)=>{ if(!window.confirm("¿Eliminar esta obra?"))return; const next=obras.filter(o=>o.id!==id); setObras(next); if(activeId===id){ const nid=next[0]?.id||null; setActiveId(nid); ss(ACTIVE_KEY,nid); } };
+  const changeObraStatus=(estado)=>updObra(o=>({...o,estado}));
 
   // ── CRUD Zonas ──
   const addZona=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,zonas:[...o.zonas,{id:uid(),nombre:form.nombre.trim(),descripcion:form.descripcion||"",peso:parseFloat(form.peso)||1,items:[],ownerUserId:currentUser?.id||null}]})); closeModal(); };
@@ -710,7 +801,7 @@ export default function SupervisorObra(){
   const delZona=(id)=>{ if(!window.confirm("¿Eliminar zona?"))return; updObra(o=>({...o,zonas:o.zonas.filter(z=>z.id!==id),trabajadores:o.trabajadores.map(t=>t.zonaId===id?{...t,zonaId:null}:t)})); };
 
   // ── CRUD Items ──
-  const addItem=(zId)=>{ if(!form.nombre?.trim())return; const ni={id:uid(),nombre:form.nombre.trim(),descripcion:form.descripcion||"",terminado:false,peso:parseFloat(form.peso)||1,materiales:[],fotos:[],notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||"",subItems:[]}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:[...z.items,ni]}:z)})); closeModal(); };
+  const addItem=(zId)=>{ if(!form.nombre?.trim())return; const ni={id:uid(),nombre:form.nombre.trim(),descripcion:form.descripcion||"",terminado:false,peso:parseFloat(form.peso)||1,materiales:[],fotos:[],notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||"",subItems:[],comentarios:[]}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:[...z.items,ni]}:z)})); closeModal(); };
   const editItem=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===modal.zId?{...z,items:z.items.map(i=>i.id===modal.iId?{...i,nombre:form.nombre.trim(),descripcion:form.descripcion||"",peso:parseFloat(form.peso)||1,notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||""}:i)}:z)})); closeModal(); };
   const delItem=(zId,iId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.filter(i=>i.id!==iId)}:z)}));
   const toggleItem=(zId,iId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,terminado:!i.terminado}:i)}:z)}));
@@ -720,6 +811,15 @@ export default function SupervisorObra(){
   const toggleSubItem=(zId,iId,sId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).map(s=>s.id===sId?{...s,terminado:!s.terminado}:s)}:i)}:z)}));
   const delSubItem=(zId,iId,sId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).filter(s=>s.id!==sId)}:i)}:z)}));
 
+  // ── Comentarios por ítem ──
+  const addComment=(zId,iId,texto)=>{
+    if(!texto?.trim())return;
+    const c={id:uid(),texto:texto.trim(),autor:currentUser?.nombre||"?",fecha:new Date().toLocaleDateString("es-ES",{day:"2-digit",month:"short"}),hora:new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})};
+    updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,comentarios:[...(i.comentarios||[]),c]}:i)}:z)}));
+    setNewComment(p=>({...p,[iId]:""}));
+  };
+  const delComment=(zId,iId,cId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,comentarios:(i.comentarios||[]).filter(c=>c.id!==cId)}:i)}:z)}));
+
   // ── Materiales ──
   const addMat=(zId,iId)=>{ if(!matForm.nombre?.trim())return; const m={id:uid(),...matForm,nombre:matForm.nombre.trim(),cantidad:parseFloat(matForm.cantidad)||0,precio:parseFloat(matForm.precio)||0,estado:matForm.estado||"pendiente",agregadoPor:currentUser?.id}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,materiales:[...(i.materiales||[]),m]}:i)}:z)})); closeModal(); };
   const editMat=()=>{ if(!matForm.nombre?.trim())return; const {zId,iId,mId}=modal; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,materiales:i.materiales.map(m=>m.id===mId?{...m,...matForm,cantidad:parseFloat(matForm.cantidad)||0,precio:parseFloat(matForm.precio)||0}:m)}:i)}:z)})); closeModal(); };
@@ -727,30 +827,34 @@ export default function SupervisorObra(){
   const setMatStatus=(zId,iId,mId,estado)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,materiales:i.materiales.map(m=>m.id===mId?{...m,estado}:m)}:i)}:z)}));
 
   // ── Trabajadores ──
-  const addTrab=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,trabajadores:[...o.trabajadores,{id:uid(),nombre:form.nombre.trim(),rol:form.rol||"",zonaId:form.zonaId||null,telefono:form.telefono||""}]})); closeModal(); };
+  const addTrab=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,trabajadores:[...o.trabajadores,{id:uid(),nombre:form.nombre.trim(),rol:form.rol||"",zonaId:form.zonaId||null,telefono:form.telefono||"",herramientas:[],asistencia:{}}]})); closeModal(); };
   const editTrab=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===modal.tId?{...t,nombre:form.nombre.trim(),rol:form.rol||"",zonaId:form.zonaId||null,telefono:form.telefono||""}:t)})); closeModal(); };
   const delTrab=(id)=>updObra(o=>({...o,trabajadores:o.trabajadores.filter(t=>t.id!==id)}));
+
+  // ── Herramientas ──
+  const addHerramienta=(tId,nombre)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,herramientas:[...(t.herramientas||[]),{id:uid(),nombre,estado:"disponible"}]}:t)}));
+  const deleteHerramienta=(tId,hId)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,herramientas:(t.herramientas||[]).filter(h=>h.id!==hId)}:t)}));
+  const setHerramientaStatus=(tId,hId,estado)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,herramientas:(t.herramientas||[]).map(h=>h.id===hId?{...h,estado}:h)}:t)}));
+
+  // ── Asistencia ──
+  const toggleAsistencia=(tId,fecha,val)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,asistencia:{...(t.asistencia||{}),(val===null?undefined:[fecha]):val,[fecha]:val}}:t)}));
 
   // ── Fotos ──
   const addFoto=(zId,iId,data)=>{ const f={id:uid(),data,fecha:new Date().toLocaleDateString("es-ES"),hora:new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,fotos:[...(i.fotos||[]),f]}:i)}:z)})); toast("📸 Foto guardada"); };
   const delFoto=(zId,iId,fId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,fotos:(i.fotos||[]).filter(f=>f.id!==fId)}:i)}:z)}));
   const handleFilePhoto=(zId,iId,e)=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=ev=>addFoto(zId,iId,ev.target.result); r.readAsDataURL(f); e.target.value=""; };
 
-  // ── Boleta ──
   const handleBoletaDatos=(datos,zId,iId)=>{ if(!datos.materiales?.length){toast("No se encontraron materiales","err");return;} datos.materiales.forEach(m=>{ const mat={id:uid(),nombre:m.nombre||"",estado:"pendiente",cantidad:m.cantidad||0,unidad:m.unidad||"",precio:m.precio||0,proveedor:datos.proveedor||"",fechaCompra:datos.fechaCompra||"",notas:"",agregadoPor:currentUser?.id}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,materiales:[...(i.materiales||[]),mat]}:i)}:z)})); }); toast(`✅ ${datos.materiales.length} material(es) agregado(s)`); };
 
-  // ── Drag ──
   const hDS=(e,i)=>{ setDragI(i); e.dataTransfer.effectAllowed="move"; };
   const hDO=(e,i)=>{ e.preventDefault(); setDragO(i); };
   const hDD=(e,i)=>{ e.preventDefault(); if(dragI===null||dragI===i){setDragI(null);setDragO(null);return;} updObra(o=>{const z=[...o.zonas];const[m]=z.splice(dragI,1);z.splice(i,0,m);return{...o,zonas:z};}); setDragI(null);setDragO(null); };
 
-  // ── Export ──
   const doPDF=async()=>{ if(!obra)return; setExporting(true); try{await exportAvancePDF(obra,calcZonePct,totalPct);}catch{toast("Error al generar PDF","err");}finally{setExporting(false);} };
   const doCompras=async()=>{ if(!obra)return; setExporting(true); try{await exportComprasPDF(obra);}catch{toast("Error al generar PDF","err");}finally{setExporting(false);} };
   const doExportJSON=()=>{ const b=new Blob([JSON.stringify(obras,null,2)],{type:"application/json"}); const u=URL.createObjectURL(b); const a=document.createElement("a");a.href=u;a.download=`supervisor-backup-${today()}.json`;a.click();URL.revokeObjectURL(u); };
   const doImportJSON=(e)=>{ const f=e.target.files[0];if(!f)return; const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(Array.isArray(d)){setObras(d);setActiveId(d[0]?.id||null);toast("✅ Datos importados");}else if(d.zonas){setObras(p=>[...p,{...emptyObra("Importada"),...d}]);toast("✅ Importado");}}catch{toast("❌ Error al leer","err");}}; r.readAsText(f);e.target.value=""; };
 
-  // ── Agregar usuario desde configuración ──
   const addUserFromSettings=()=>{
     const {nuNombre,nuRol,nuPin,nuPin2}=form;
     if(!nuNombre?.trim()){toast("Escribe un nombre","err");return;}
@@ -758,7 +862,7 @@ export default function SupervisorObra(){
     if(nuPin!==nuPin2){toast("Los PINes no coinciden","err");return;}
     const nu={id:uid(),nombre:nuNombre.trim(),rol:nuRol||"materiales",pin:nuPin,color:["#f59e0b","#22c55e","#38bdf8","#a78bfa","#fb923c"][Math.floor(Math.random()*5)]};
     const next=[...users,nu]; setUsers(next); ss(USERS_KEY,next);
-    toast(`✅ Usuario "${nu.nombre}" creado`); setForm({}); 
+    toast(`✅ Usuario "${nu.nombre}" creado`); setForm({});
   };
 
   if(!ready) return <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#020b18,#0a1628)",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:12,color:"#64748b"}}><span style={{fontSize:"2.5rem",animation:"spin 1s linear infinite",display:"inline-block"}}>⚙</span><span style={{fontSize:"0.82rem"}}>Cargando...</span></div>;
@@ -768,10 +872,7 @@ export default function SupervisorObra(){
   const pct=obra?totalPct():0; const pc=pct<30?"#ef4444":pct<70?"#f59e0b":"#22c55e";
   const rm=ROLE_META[currentUser.rol]||ROLE_META.colaborador;
 
-  // Tabs según rol
-  const TABS = isMateriales
-    ? [{id:"dashboard",label:"Resumen",icon:<Ico.Chart/>},{id:"zonas",label:"Zonas",icon:<Ico.Zone/>}]
-    : [{id:"dashboard",label:"Resumen",icon:<Ico.Chart/>},{id:"zonas",label:"Zonas",icon:<Ico.Zone/>},{id:"personal",label:"Personal",icon:<Ico.Hard/>}];
+  const TABS = [{id:"dashboard",label:"Resumen",icon:<Ico.Chart/>},{id:"zonas",label:"Zonas",icon:<Ico.Zone/>},{id:"personal",label:"Personal",icon:<Ico.Hard/>}];
 
   const filteredZonas=search.trim()?(obra?.zonas||[]).map(z=>({...z,items:(z.items||[]).filter(i=>i.nombre.toLowerCase().includes(search.toLowerCase()))})).filter(z=>z.items.length>0):(obra?.zonas||[]);
 
@@ -800,14 +901,10 @@ export default function SupervisorObra(){
 
     <div style={{minHeight:"100vh",background:"linear-gradient(160deg,#020b18 0%,#0a1628 100%)",color:"#f1f5f9"}}>
 
-      {/* HEADER — dos filas en móvil para evitar solapamiento */}
+      {/* HEADER */}
       <div style={{background:"#080f1e",borderBottom:"1px solid #1e293b",position:"sticky",top:0,zIndex:50}}>
         <div style={{maxWidth:820,margin:"0 auto",padding:"0 12px"}}>
-
-          {/* Fila 1: título + botones de acción */}
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 0 6px",gap:8}}>
-
-            {/* Izquierda: icono + título */}
             <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,flex:1}}>
               <div style={{background:"#f59e0b22",borderRadius:8,padding:"5px 7px",flexShrink:0}}><Ico.Hard/></div>
               <div style={{minWidth:0}}>
@@ -816,12 +913,13 @@ export default function SupervisorObra(){
                 </h1>
                 {obra&&<button onClick={()=>!isMateriales&&setModal({type:"obras"})} style={{background:"none",border:"none",cursor:isMateriales?"default":"pointer",padding:0,color:"#64748b",fontSize:"0.65rem",display:"flex",alignItems:"center",gap:3,marginTop:1,maxWidth:"100%"}}>
                   <Ico.Building/><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{obra.nombre}</span>
+                  {/* Badge estado obra */}
+                  {obra.estado&&obra.estado!=="en_ejecucion"&&<span style={{background:OBRA_ESTADOS[obra.estado]?.color+"22",color:OBRA_ESTADOS[obra.estado]?.color,borderRadius:4,padding:"0 5px",fontSize:"0.6rem",fontWeight:700}}>{OBRA_ESTADOS[obra.estado]?.icon}</span>}
                 </button>}
               </div>
             </div>
-
-            {/* Derecha: acciones compactas */}
             <div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
+
               {obra&&<div style={{position:"relative",flexShrink:0}}>
                 <Ring pct={pct} size={36} stroke={3} color={pc}/>
                 <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -833,32 +931,27 @@ export default function SupervisorObra(){
             </div>
           </div>
 
-          {/* Fila 2: usuario + tabs */}
           <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #1e293b",gap:0}}>
-            {/* Badge usuario a la izquierda de los tabs */}
             <div style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px 5px 0",borderRight:"1px solid #1e293b",flexShrink:0,marginRight:6}}>
               <div style={{width:20,height:20,borderRadius:"50%",background:(currentUser.color||"#f59e0b")+"22",border:`1.5px solid ${currentUser.color||"#f59e0b"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.62rem",fontWeight:800,color:currentUser.color||"#f59e0b"}}>{currentUser.nombre[0].toUpperCase()}</div>
               <span style={{fontSize:"0.62rem",color:"#64748b"}}>{rm.icon}</span>
             </div>
-            {/* Tabs */}
             <div style={{display:"flex",overflowX:"auto",flex:1}}>
               {TABS.map(t=><button key={t.id} className={`tb ${tab===t.id?"on":""}`} onClick={()=>setTab(t.id)}>{t.icon}{t.label}</button>)}
             </div>
           </div>
-
         </div>
       </div>
 
       {/* CONTENT */}
       <div style={{maxWidth:820,margin:"0 auto",padding:"12px 12px 90px"}} className="fa">
 
-        {/* Banner para rol materiales */}
         {isMateriales&&<div style={{background:"#1a1a2e",border:"1px solid #a78bfa33",borderRadius:10,padding:"10px 14px",marginBottom:12,display:"flex",alignItems:"center",gap:8,fontSize:"0.78rem",color:"#a78bfa"}}>
           <span style={{fontSize:"1.1rem"}}>📦</span>
           <span>Acceso de <strong>Encargado de Materiales</strong> — puedes agregar y gestionar materiales en todas las zonas.</span>
         </div>}
 
-        {tab==="dashboard"&&obra&&<Dashboard obra={obra} calcZonePct={calcZonePct} totalPct={totalPct} onPDF={doPDF} onCompras={doCompras} currentUser={currentUser} onGoToZonas={()=>setTab("zonas")}/>}
+        {tab==="dashboard"&&obra&&<Dashboard obra={obra} calcZonePct={calcZonePct} totalPct={totalPct} onPDF={doPDF} onCompras={doCompras} currentUser={currentUser} onGoToZonas={()=>setTab("zonas")} onChangeStatus={changeObraStatus}/>}
 
         {tab==="zonas"&&obra&&<div>
           <div style={{display:"flex",gap:8,marginBottom:10,alignItems:"center"}}>
@@ -870,7 +963,7 @@ export default function SupervisorObra(){
           </div>
 
           {filteredZonas.length===0&&<div style={{textAlign:"center",padding:"50px 20px",color:"#334155"}}>
-            {search?<p style={{color:"#334155"}}>Sin resultados</p>:<p style={{color:"#334155"}}>{isMateriales?"No hay zonas en esta obra":"Sin zonas. ¡Crea la primera!"}</p>}
+            {search?<p>Sin resultados</p>:<p>{isMateriales?"No hay zonas en esta obra":"Sin zonas. ¡Crea la primera!"}</p>}
           </div>}
 
           {filteredZonas.map((zona,zi)=>{
@@ -891,7 +984,6 @@ export default function SupervisorObra(){
                     <span className="badge" style={{background:zc+"22",color:zc}}>{zPct}%</span>
                     <span style={{fontSize:"0.65rem",color:"#475569"}}>{(zona.items||[]).filter(i=>isItemDone(i)).length}/{(zona.items||[]).length}</span>
                     {ownerUser&&<span style={{fontSize:"0.6rem",color:ownerUser.color||"#f59e0b",background:(ownerUser.color||"#f59e0b")+"18",borderRadius:4,padding:"1px 5px"}}>{ownerUser.nombre}</span>}
-                    {isMateriales&&<span style={{fontSize:"0.6rem",color:"#a78bfa",background:"#a78bfa18",borderRadius:4,padding:"1px 6px"}}>📦 tus materiales</span>}
                   </div>
                   {zona.descripcion&&<div style={{fontSize:"0.7rem",color:"#475569",marginTop:1}}>{zona.descripcion}</div>}
                 </div>
@@ -906,11 +998,12 @@ export default function SupervisorObra(){
 
               {isOpen&&<div>
                 {(zona.items||[]).map((item)=>{
-                  const iOpen=exItems[item.id],sOpen=exSubItems[item.id];
+                  const iOpen=exItems[item.id],sOpen=exSubItems[item.id],cOpen=exComents[item.id];
                   const d=daysDiff(item.fechaFin);
                   const overdue=d!==null&&d<0&&!isItemDone(item),warning=d!==null&&d<=3&&d>=0&&!isItemDone(item);
                   const iPct=calcItemPct(item),iDone=isItemDone(item),hasSubs=(item.subItems||[]).length>0;
                   const ic=iPct===100?"#22c55e":iPct>0?"#f59e0b":"#64748b";
+                  const comentarios=item.comentarios||[];
 
                   return <div key={item.id} style={{borderTop:"1px solid #1e293b",background:iDone?"#0a1a0a":"transparent"}}>
                     <div style={{display:"flex",alignItems:"center",gap:7,padding:"8px 12px",flexWrap:"wrap"}}>
@@ -927,10 +1020,15 @@ export default function SupervisorObra(){
                           {(item.fotos||[]).length>0&&<span style={{fontSize:"0.63rem",color:"#475569",display:"flex",alignItems:"center",gap:2}}><Ico.Photo/>{item.fotos.length}</span>}
                           {(item.materiales||[]).length>0&&<span style={{fontSize:"0.63rem",color:"#475569"}}>📦 {item.materiales.length}</span>}
                           {hasSubs&&<span style={{fontSize:"0.63rem",color:"#64748b",display:"flex",alignItems:"center",gap:2}}><Ico.List/>{(item.subItems||[]).filter(s=>s.terminado).length}/{(item.subItems||[]).length}</span>}
+                          {comentarios.length>0&&<span style={{fontSize:"0.63rem",color:"#64748b",display:"flex",alignItems:"center",gap:2}}><Ico.Chat/>{comentarios.length}</span>}
                         </div>
                       </div>
                       {!isMateriales&&<span className="badge" style={{background:"#1e293b",color:"#64748b",fontSize:"0.58rem"}}>W{item.peso||1}</span>}
-                      {/* Sub-ítems toggle */}
+                      {/* Botones */}
+                      {/* Comentarios toggle */}
+                      <button className="ic" title="Comentarios" onClick={()=>setExComents(p=>({...p,[item.id]:!p[item.id]}))} style={{color:comentarios.length>0?"#38bdf8":"#64748b",borderColor:comentarios.length>0?"#38bdf844":"#334155"}}>
+                        <Ico.Chat/>{comentarios.length>0&&<span style={{fontSize:"0.65rem",fontWeight:700,marginLeft:1}}>{comentarios.length}</span>}
+                      </button>
                       {!isMateriales&&<button className="ic" title="Sub-ítems" onClick={()=>setExSubItems(p=>({...p,[item.id]:!p[item.id]}))} style={{color:hasSubs?"#a78bfa":"#64748b",borderColor:hasSubs?"#a78bfa44":"#334155"}}>
                         <Ico.List/>{hasSubs&&<span style={{fontSize:"0.65rem",fontWeight:700,marginLeft:1}}>{(item.subItems||[]).length}</span>}
                       </button>}
@@ -939,9 +1037,33 @@ export default function SupervisorObra(){
                         <button className="ic" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))}><Ico.Cam/></button>
                         <button className="ic danger" onClick={()=>delItem(zona.id,item.id)}><Ico.Trash/></button>
                       </>}
-                      {/* Botón expandir materiales para rol materiales */}
                       {isMateriales&&<button className="ic" title="Materiales" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))} style={{color:"#a78bfa",borderColor:"#a78bfa44"}}><Ico.Mat/></button>}
                     </div>
+
+                    {/* COMENTARIOS */}
+                    {cOpen&&<div style={{background:"#050d1a",borderTop:"1px solid #0d1a2e",padding:"10px 14px 12px 28px"}}>
+                      <div style={{fontSize:"0.65rem",color:"#38bdf8",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8,display:"flex",alignItems:"center",gap:4}}><Ico.Chat/> Comentarios</div>
+                      {comentarios.length===0&&<p style={{fontSize:"0.75rem",color:"#334155",margin:"0 0 8px"}}>Sin comentarios aún.</p>}
+                      <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:10}}>
+                        {comentarios.map(c=><div key={c.id} style={{background:"#0f172a",borderRadius:8,padding:"7px 10px",display:"flex",gap:8,alignItems:"flex-start"}}>
+                          <div style={{width:22,height:22,borderRadius:"50%",background:"#1e293b",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.65rem",fontWeight:800,color:"#94a3b8",flexShrink:0}}>{c.autor[0].toUpperCase()}</div>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:2}}>
+                              <span style={{fontSize:"0.7rem",fontWeight:700,color:"#94a3b8"}}>{c.autor}</span>
+                              <span style={{fontSize:"0.6rem",color:"#475569"}}>{c.fecha} {c.hora}</span>
+                            </div>
+                            <p style={{margin:0,fontSize:"0.8rem",color:"#cbd5e1",lineHeight:1.4}}>{c.texto}</p>
+                          </div>
+                          {(ceZona||c.autor===currentUser?.nombre)&&<button className="ic danger" style={{padding:"2px 4px",flexShrink:0}} onClick={()=>delComment(zona.id,item.id,c.id)}><Ico.Trash/></button>}
+                        </div>)}
+                      </div>
+                      <div style={{display:"flex",gap:7}}>
+                        <input style={{...S.inp,fontSize:"0.8rem",padding:"7px 10px"}} placeholder="Escribe un comentario…" value={newComment[item.id]||""}
+                          onChange={e=>setNewComment(p=>({...p,[item.id]:e.target.value}))}
+                          onKeyDown={e=>{ if(e.key==="Enter") addComment(zona.id,item.id,newComment[item.id]); }}/>
+                        <button style={{...S.btnT,padding:"7px 10px",flexShrink:0}} onClick={()=>addComment(zona.id,item.id,newComment[item.id])}><Ico.Send/></button>
+                      </div>
+                    </div>}
 
                     {/* SUB-ÍTEMS */}
                     {sOpen&&!isMateriales&&<div style={{background:"#070f1e",borderTop:"1px solid #0d1a2e",padding:"8px 14px 10px 28px"}}>
@@ -958,13 +1080,13 @@ export default function SupervisorObra(){
                       </div>}
                     </div>}
 
-                    {/* BOLETA + MATERIAL — visible para quien pueda editar materiales */}
+                    {/* BOLETA + MATERIAL */}
                     {ceMat&&<div style={{padding:"6px 12px",borderTop:"1px solid #1e293b22",display:"flex",gap:6}}>
                       <button style={{...S.btnP,fontSize:"0.72rem",padding:"6px 12px",borderRadius:8,flex:1,justifyContent:"center"}} onClick={()=>setScanBoleta({zId:zona.id,iId:item.id})}>🧾 Escanear Boleta</button>
                       <button style={{...S.btnS,fontSize:"0.72rem",padding:"6px 12px",borderRadius:8}} onClick={()=>setModal({type:"addMat",zId:zona.id,iId:item.id})}>+ Material</button>
                     </div>}
 
-                    {/* MATERIALES + FOTOS expandidos */}
+                    {/* MATERIALES + FOTOS */}
                     {iOpen&&<>
                       {(item.materiales||[]).map(mat=><MatRow key={mat.id} mat={mat} canEdit={ceMat}
                         onEdit={()=>{setMatForm({...mat});setModal({type:"editMat",zId:zona.id,iId:item.id,mId:mat.id});}}
@@ -998,36 +1120,44 @@ export default function SupervisorObra(){
           })}
         </div>}
 
-        {tab==="personal"&&obra&&!isMateriales&&<div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-            <span style={{fontSize:"0.72rem",color:"#64748b",textTransform:"uppercase",letterSpacing:"0.07em",fontWeight:600}}>Personal · {obra.trabajadores.length}</span>
-            <button style={S.btnP} onClick={()=>setModal({type:"addTrab"})}><Ico.Plus/> Trabajador</button>
-          </div>
-          {!obra.trabajadores.length&&<div style={{textAlign:"center",padding:"50px 20px",color:"#334155"}}><Ico.Hard/><p style={{marginTop:10}}>Sin trabajadores registrados</p></div>}
-          {obra.trabajadores.map(t=>{ const zona=obra.zonas.find(z=>z.id===t.zonaId); return <div key={t.id} className="card" style={{display:"flex",alignItems:"center",gap:10,padding:"11px 12px"}}>
-            <div style={{width:36,height:36,borderRadius:"50%",background:"#1e3a5f",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.1rem",flexShrink:0}}>👷</div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontWeight:600,fontSize:"0.9rem",marginBottom:2}}>{t.nombre}</div>
-              <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                {t.rol&&<span className="badge" style={{background:"#1e293b",color:"#94a3b8"}}>{t.rol}</span>}
-                {t.telefono&&<span style={{fontSize:"0.68rem",color:"#7dd3fc",display:"flex",alignItems:"center",gap:2}}><Ico.Phone/>{t.telefono}</span>}
-                {zona?<span className="badge" style={{background:"#f59e0b22",color:"#f59e0b"}}>📍 {zona.nombre}</span>:<span className="badge" style={{background:"#1e293b",color:"#475569"}}>Sin zona</span>}
-              </div>
+        {/* TAB PERSONAL */}
+        {tab==="personal"&&obra&&<div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+            <div>
+              <span style={{fontSize:"0.72rem",color:"#64748b",textTransform:"uppercase",letterSpacing:"0.07em",fontWeight:600}}>Personal · {obra.trabajadores.length}</span>
+              {obra.trabajadores.length>0&&<div style={{fontSize:"0.65rem",color:"#475569",marginTop:2}}>
+                🔧 {obra.trabajadores.flatMap(t=>t.herramientas||[]).length} herramientas totales
+                {" · "}en uso: {obra.trabajadores.flatMap(t=>t.herramientas||[]).filter(h=>h.estado==="en_uso").length}
+              </div>}
             </div>
-            <button className="ic" onClick={()=>{setForm({nombre:t.nombre,rol:t.rol||"",zonaId:t.zonaId||"",telefono:t.telefono||""});setModal({type:"editTrab",tId:t.id});}}><Ico.Edit/></button>
-            <button className="ic danger" onClick={()=>delTrab(t.id)}><Ico.Trash/></button>
-          </div>; })}
+            {currentUser?.rol==="admin"&&<button style={S.btnP} onClick={()=>setModal({type:"addTrab"})}><Ico.Plus/> Trabajador</button>}
+          </div>
+          {isMateriales&&<div style={{background:"#1a1a2e",border:"1px solid #a78bfa33",borderRadius:10,padding:"10px 14px",marginBottom:12,display:"flex",alignItems:"center",gap:8,fontSize:"0.78rem",color:"#a78bfa"}}>
+            <span style={{fontSize:"1.1rem"}}>📦</span>
+            <span>Vista de <strong>Encargado de Materiales</strong> — puedes ver el personal y sus herramientas.</span>
+          </div>}
+          {!obra.trabajadores.length&&<div style={{textAlign:"center",padding:"50px 20px",color:"#334155"}}><Ico.Hard/><p style={{marginTop:10}}>Sin trabajadores registrados</p></div>}
+          {obra.trabajadores.map(t=>{
+            const zona=obra.zonas.find(z=>z.id===t.zonaId);
+            return <WorkerCard key={t.id} t={t} zona={zona}
+              onEdit={(tr)=>{setForm({nombre:tr.nombre,rol:tr.rol||"",zonaId:tr.zonaId||"",telefono:tr.telefono||""});setModal({type:"editTrab",tId:tr.id});}}
+              onDelete={delTrab}
+              onToggleAsistencia={toggleAsistencia}
+              onAddHerramienta={addHerramienta}
+              onEditHerramienta={()=>{}}
+              onDeleteHerramienta={deleteHerramienta}
+              onSetHerramientaStatus={setHerramientaStatus}
+              canEdit={currentUser?.rol==="admin"}/>;
+          })}
         </div>}
       </div>
     </div>
 
     {/* ── MODALS ── */}
-
     {modal?.type==="obras"&&<Modal title="Mis Obras" onClose={closeModal} wide>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
-        {/* Botón Nueva Obra siempre visible arriba */}
         {currentUser?.rol==="admin"&&<button style={{...S.btnP,justifyContent:"center",marginBottom:4}} onClick={()=>{closeModal();setModal({type:"newObra"});}}><Ico.Plus/> Nueva Obra</button>}
-        {obras.length===0&&<div style={{textAlign:"center",padding:"30px 0",color:"#334155",fontSize:"0.85rem"}}>No hay obras aún. ¡Crea la primera!</div>}
+        {obras.length===0&&<div style={{textAlign:"center",padding:"30px 0",color:"#334155",fontSize:"0.85rem"}}>No hay obras. ¡Crea la primera!</div>}
         {obras.map(o=>{
           const aPct=()=>{ const all=o.zonas.flatMap(z=>z.items||[]); if(!all.length)return 0; const tw=all.reduce((s,i)=>s+(i.peso||1),0),dw=all.reduce((s,i)=>s+(i.peso||1)*(calcItemPct(i)/100),0); return Math.round((dw/tw)*100); };
           const p=aPct(),pc2=p<30?"#ef4444":p<70?"#f59e0b":"#22c55e";
@@ -1036,9 +1166,9 @@ export default function SupervisorObra(){
           const allM=allI.flatMap(i=>i.materiales||[]);
           const pendM=allM.filter(m=>!m.estado||m.estado==="pendiente").length;
           const isActive=o.id===activeId;
+          const oEst=OBRA_ESTADOS[o.estado||"en_ejecucion"];
           return <div key={o.id} style={{background:isActive?"#0f1f36":"#0f172a",borderRadius:12,border:`2px solid ${isActive?"#f59e0b":"#1e293b"}`,overflow:"hidden",transition:"all .2s",cursor:"pointer"}}
             onClick={()=>{setActiveId(o.id);ss(ACTIVE_KEY,o.id);setTab("zonas");closeModal();}}>
-            {/* Header tarjeta */}
             <div style={{padding:"13px 14px 10px",display:"flex",alignItems:"center",gap:12}}>
               <div style={{position:"relative",flexShrink:0}}>
                 <Ring pct={p} size={52} stroke={5} color={pc2}/>
@@ -1049,34 +1179,20 @@ export default function SupervisorObra(){
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontWeight:700,fontSize:"1rem",color:"#f1f5f9",display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
                   {o.nombre}
-                  {isActive&&<span style={{fontSize:"0.58rem",background:"#f59e0b",color:"#0f172a",borderRadius:4,padding:"1px 6px",fontWeight:800,letterSpacing:"0.05em"}}>ACTIVA</span>}
+                  {isActive&&<span style={{fontSize:"0.58rem",background:"#f59e0b",color:"#0f172a",borderRadius:4,padding:"1px 6px",fontWeight:800}}>ACTIVA</span>}
+                  <span style={{fontSize:"0.6rem",background:oEst.bg,color:oEst.color,borderRadius:4,padding:"1px 6px",fontWeight:700}}>{oEst.icon} {oEst.label}</span>
                 </div>
-                {o.descripcion&&<div style={{fontSize:"0.72rem",color:"#475569",marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.descripcion}</div>}
-                {(o.fechaInicio||o.fechaFin)&&<div style={{display:"flex",gap:8,marginTop:3,flexWrap:"wrap"}}>
-                  {o.fechaInicio&&<span style={{fontSize:"0.63rem",color:"#475569",display:"flex",alignItems:"center",gap:2}}><Ico.Cal/>{fmtDate(o.fechaInicio)}</span>}
-                  {o.fechaFin&&<span style={{fontSize:"0.63rem",color:daysDiff(o.fechaFin)<7?"#ef4444":"#475569",display:"flex",alignItems:"center",gap:2}}><Ico.Cal/>{fmtDate(o.fechaFin)}</span>}
-                </div>}
+                {o.descripcion&&<div style={{fontSize:"0.72rem",color:"#475569",marginTop:2}}>{o.descripcion}</div>}
               </div>
               <div style={{display:"flex",gap:5,flexShrink:0}} onClick={e=>e.stopPropagation()}>
                 {currentUser?.rol==="admin"&&<button className="ic danger" onClick={()=>deleteObra(o.id)}><Ico.Trash/></button>}
               </div>
             </div>
-            {/* Stats mini */}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",borderTop:"1px solid #1e293b"}}>
-              {[
-                ["Zonas",o.zonas.length,"#64748b"],
-                ["Ítems",allI.length,"#64748b"],
-                ["Listos",doneI,"#22c55e"],
-                ["Mat. pend.",pendM,"#f59e0b"],
-              ].map(([l,v,c])=><div key={l} style={{padding:"8px 6px",textAlign:"center",borderRight:"1px solid #1e293b"}}>
+              {[["Zonas",o.zonas.length,"#64748b"],["Ítems",allI.length,"#64748b"],["Listos",doneI,"#22c55e"],["Mat. pend.",pendM,"#f59e0b"]].map(([l,v,c])=><div key={l} style={{padding:"8px 6px",textAlign:"center",borderRight:"1px solid #1e293b"}}>
                 <div style={{fontSize:"1rem",fontWeight:800,color:c,lineHeight:1}}>{v}</div>
-                <div style={{fontSize:"0.55rem",color:"#475569",marginTop:2,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.04em"}}>{l}</div>
+                <div style={{fontSize:"0.55rem",color:"#475569",marginTop:2,fontWeight:600,textTransform:"uppercase"}}>{l}</div>
               </div>)}
-            </div>
-            {/* Call to action */}
-            <div style={{padding:"8px 14px",background:isActive?"#0a1628":"#080f1e",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <span style={{fontSize:"0.68rem",color:"#475569"}}>Toca para ver zonas e ítems →</span>
-              {o.trabajadores.length>0&&<span style={{fontSize:"0.65rem",color:"#64748b"}}>👷 {o.trabajadores.length} trabajador{o.trabajadores.length!==1?"es":""}</span>}
             </div>
           </div>;
         })}
@@ -1100,7 +1216,7 @@ export default function SupervisorObra(){
         <input style={S.inp} placeholder="Nombre *" value={form.nombre||""} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))}/>
         <input style={S.inp} placeholder="Descripción" value={form.descripcion||""} onChange={e=>setForm(p=>({...p,descripcion:e.target.value}))}/>
         <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>Peso (1–10)</label><input style={{...S.inp,width:80}} type="number" min="1" max="10" value={form.peso||1} onChange={e=>setForm(p=>({...p,peso:e.target.value}))}/></div>
-        {modal.type==="addZona"&&<div style={{background:"#1e293b",borderRadius:8,padding:"10px 12px",fontSize:"0.78rem",color:"#64748b",display:"flex",gap:6,alignItems:"flex-start"}}><Ico.Shield/><span>Zona asignada a <strong style={{color:"#f59e0b"}}>{currentUser?.nombre}</strong>. Solo tú podrás editarla.</span></div>}
+        {modal.type==="addZona"&&<div style={{background:"#1e293b",borderRadius:8,padding:"10px 12px",fontSize:"0.78rem",color:"#64748b",display:"flex",gap:6,alignItems:"flex-start"}}><Ico.Shield/><span>Zona asignada a <strong style={{color:"#f59e0b"}}>{currentUser?.nombre}</strong>.</span></div>}
         <div style={{display:"flex",gap:7,justifyContent:"flex-end"}}><button style={S.btnS} onClick={closeModal}>Cancelar</button><button style={S.btnP} onClick={modal.type==="addZona"?addZona:editZona}>{modal.type==="addZona"?"Crear":"Guardar"}</button></div>
       </div>
     </Modal>}
@@ -1130,7 +1246,7 @@ export default function SupervisorObra(){
     {(modal?.type==="addTrab"||modal?.type==="editTrab")&&<Modal title={modal.type==="addTrab"?"Nuevo Trabajador":"Editar Trabajador"} onClose={closeModal}>
       <div style={{display:"flex",flexDirection:"column",gap:9}}>
         <input style={S.inp} placeholder="Nombre completo *" value={form.nombre||""} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))}/>
-        <input style={S.inp} placeholder="Rol / Cargo" value={form.rol||""} onChange={e=>setForm(p=>({...p,rol:e.target.value}))}/>
+        <input style={S.inp} placeholder="Rol / Cargo (ej: Albañil, Electricista)" value={form.rol||""} onChange={e=>setForm(p=>({...p,rol:e.target.value}))}/>
         <input style={S.inp} placeholder="Teléfono" value={form.telefono||""} onChange={e=>setForm(p=>({...p,telefono:e.target.value}))}/>
         <select style={{...S.inp,color:form.zonaId?"#f1f5f9":"#64748b"}} value={form.zonaId||""} onChange={e=>setForm(p=>({...p,zonaId:e.target.value}))}>
           <option value="">Sin zona asignada</option>
@@ -1150,8 +1266,6 @@ export default function SupervisorObra(){
 
     {modal?.type==="settings"&&<Modal title="Configuración" onClose={closeModal} wide>
       <div style={{display:"flex",flexDirection:"column",gap:16}}>
-
-        {/* ── Mis Obras ── */}
         <div>
           <label style={{fontSize:"0.72rem",color:"#94a3b8",display:"flex",alignItems:"center",gap:4,marginBottom:8,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}><Ico.Building/> Mis Obras</label>
           <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:8}}>
@@ -1174,7 +1288,6 @@ export default function SupervisorObra(){
                   </div>
                   <div style={{fontSize:"0.65rem",color:"#475569"}}>{o.zonas.length} zonas · {o.zonas.flatMap(z=>z.items||[]).length} ítems</div>
                 </div>
-                <span style={{fontSize:"0.62rem",color:"#475569"}}>Ver →</span>
                 {currentUser?.rol==="admin"&&<button className="ic danger" style={{padding:"3px 5px"}} onClick={e=>{e.stopPropagation();deleteObra(o.id);}}><Ico.Trash/></button>}
               </div>;
             })}
@@ -1189,7 +1302,6 @@ export default function SupervisorObra(){
           <textarea style={S.inp} placeholder="Notas generales" value={obra.notas||""} onChange={e=>updObra(o=>({...o,notas:e.target.value}))}/>
         </div>}
 
-        {/* Usuarios del sistema */}
         <div>
           <label style={{fontSize:"0.72rem",color:"#94a3b8",display:"flex",alignItems:"center",gap:4,marginBottom:8,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}><Ico.Users/> Usuarios registrados</label>
           <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
@@ -1202,8 +1314,6 @@ export default function SupervisorObra(){
               {u.id!==currentUser?.id&&currentUser?.rol==="admin"&&<button className="ic danger" style={{padding:"3px 6px"}} onClick={()=>{ if(window.confirm(`¿Eliminar a ${u.nombre}?`)){ const next=users.filter(x=>x.id!==u.id); setUsers(next); ss(USERS_KEY,next); } }}><Ico.Trash/></button>}
             </div>; })}
           </div>
-
-          {/* Agregar nuevo usuario */}
           {currentUser?.rol==="admin"&&<div style={{background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,padding:"14px"}}>
             <div style={{fontSize:"0.72rem",color:"#38bdf8",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:10,display:"flex",alignItems:"center",gap:5}}><Ico.Plus/> Agregar usuario</div>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
