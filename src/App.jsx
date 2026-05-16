@@ -944,12 +944,12 @@ export default function SupervisorObra(){
   };
 
   // Permiso de ítem — SOLO el creador puede marcar/editar/eliminar
-  // Esta función es la única que controla acceso a ítems
   const canEditItem = (item) => {
     if(!item) return false;
     if(isMateriales) return false;
     if(currentUser?.rol==="admin") return true;
-    if(!item.ownerUserId) return true; // ítem sin dueño: cualquiera puede (recién creado desde cero)
+    // Si no tiene dueño asignado, nadie más que admin puede tocarlo
+    if(!item.ownerUserId) return false;
     return item.ownerUserId===currentUser?.id;
   };
 
@@ -997,12 +997,18 @@ export default function SupervisorObra(){
   const changeObraStatus=(estado)=>updObra(o=>({...o,estado}));
 
   // ── CRUD Zonas ──
-  const addZona=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,zonas:[...o.zonas,{id:uid(),nombre:form.nombre.trim(),descripcion:form.descripcion||"",peso:parseFloat(form.peso)||1,items:[],ownerUserId:currentUser?.id||null}]})); closeModal(); };
+  const addZona=()=>{ if(!form.nombre?.trim())return; if(!currentUser?.id){toast("Error: no hay sesión","err");return;} updObra(o=>({...o,zonas:[...o.zonas,{id:uid(),nombre:form.nombre.trim(),descripcion:form.descripcion||"",peso:parseFloat(form.peso)||1,items:[],ownerUserId:currentUser.id}]})); closeModal(); };
   const editZona=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===modal.zId?{...z,nombre:form.nombre.trim(),descripcion:form.descripcion||"",peso:parseFloat(form.peso)||1}:z)})); closeModal(); };
   const delZona=(id)=>{ if(!window.confirm("¿Eliminar zona?"))return; updObra(o=>({...o,zonas:o.zonas.filter(z=>z.id!==id),trabajadores:o.trabajadores.map(t=>t.zonaId===id?{...t,zonaId:null}:t)})); };
 
   // ── CRUD Items ──
-  const addItem=(zId)=>{ if(!form.nombre?.trim())return; const ni={id:uid(),nombre:form.nombre.trim(),descripcion:form.descripcion||"",terminado:false,peso:parseFloat(form.peso)||1,materiales:[],fotos:[],notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||"",subItems:[],comentarios:[],ownerUserId:currentUser?.id||null}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:[...z.items,ni]}:z)})); closeModal(); };
+  const addItem=(zId)=>{
+    if(!form.nombre?.trim())return;
+    if(!currentUser?.id){toast("Error: no hay sesión activa","err");return;}
+    const ni={id:uid(),nombre:form.nombre.trim(),descripcion:form.descripcion||"",terminado:false,peso:parseFloat(form.peso)||1,materiales:[],fotos:[],notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||"",subItems:[],comentarios:[],ownerUserId:currentUser.id};
+    updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:[...z.items,ni]}:z)}));
+    closeModal();
+  };
   const editItem=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===modal.zId?{...z,items:z.items.map(i=>i.id===modal.iId?{...i,nombre:form.nombre.trim(),descripcion:form.descripcion||"",peso:parseFloat(form.peso)||1,notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||""}:i)}:z)})); closeModal(); };
   const delItem=(zId,iId)=>{ if(!window.confirm("¿Eliminar ítem?"))return; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.filter(i=>i.id!==iId)}:z)})); };
   const toggleItem=(zId,iId,item)=>{
