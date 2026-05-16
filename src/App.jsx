@@ -945,7 +945,7 @@ export default function SupervisorObra(){
     if(isMateriales) return false;
     if(!item) return false;
     if(currentUser?.rol==="admin") return true;
-    if(!item.ownerUserId) return true; // ítems viejos sin dueño: cualquiera puede
+    if(!item.ownerUserId) return false; // sin dueño: solo admin puede (evita que cualquiera lo toque)
     return item.ownerUserId===currentUser?.id;
   };
   const canEditMat = (zona) => {
@@ -1266,6 +1266,11 @@ export default function SupervisorObra(){
                       {!isMateriales&&<button className="ic" title="Sub-ítems" onClick={()=>setExSubItems(p=>({...p,[item.id]:!p[item.id]}))} style={{color:hasSubs?"#a78bfa":"#64748b",borderColor:hasSubs?"#a78bfa44":"#334155"}}>
                         <Ico.List/>{hasSubs&&<span style={{fontSize:"0.65rem",fontWeight:700,marginLeft:1}}>{(item.subItems||[]).length}</span>}
                       </button>}
+                      {/* Admin puede asignar dueño a ítems sin dueño */}
+                      {currentUser?.rol==="admin"&&!item.ownerUserId&&<button className="ic" title="Asignar responsable" style={{color:"#f59e0b",borderColor:"#f59e0b44",fontSize:"0.6rem",padding:"3px 6px"}}
+                        onClick={()=>setModal({type:"asignarDueno",zId:zona.id,iId:item.id})}>
+                        👤+
+                      </button>}
                       {ceItem&&<>
                         <button className="ic" onClick={()=>{setForm({nombre:item.nombre,descripcion:item.descripcion||"",peso:item.peso||1,notas:item.notas||"",fechaInicio:item.fechaInicio||"",fechaFin:item.fechaFin||""});setModal({type:"editItem",zId:zona.id,iId:item.id});}}><Ico.Edit/></button>
                         <button className="ic" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))}><Ico.Cam/></button>
@@ -1422,6 +1427,26 @@ export default function SupervisorObra(){
     </div>
 
     {/* ── MODALS ── */}
+    {modal?.type==="asignarDueno"&&<Modal title="Asignar responsable del ítem" onClose={closeModal}>
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        <p style={{margin:0,fontSize:"0.82rem",color:"#94a3b8"}}>¿Quién es responsable de este ítem? Solo esa persona podrá marcarlo como listo, editarlo o eliminarlo.</p>
+        {users.filter(u=>u.rol!=="materiales").map(u=>{
+          const rm=ROLE_META[u.rol]||ROLE_META.colaborador;
+          return <button key={u.id} onClick={()=>{
+            updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===modal.zId?{...z,items:z.items.map(i=>i.id===modal.iId?{...i,ownerUserId:u.id}:i)}:z)}));
+            toast(`✅ Ítem asignado a ${u.nombre}`); closeModal();
+          }} style={{background:"#1e293b",border:"1px solid #334155",borderRadius:10,padding:"11px 14px",cursor:"pointer",display:"flex",alignItems:"center",gap:10,transition:"all .2s"}}>
+            <div style={{width:32,height:32,borderRadius:"50%",background:(u.color||"#f59e0b")+"22",border:`2px solid ${u.color||"#f59e0b"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.9rem",fontWeight:800,color:u.color||"#f59e0b"}}>{u.nombre[0].toUpperCase()}</div>
+            <div style={{textAlign:"left"}}>
+              <div style={{fontWeight:700,color:"#f1f5f9",fontSize:"0.88rem"}}>{u.nombre}</div>
+              <div style={{fontSize:"0.65rem",color:"#64748b"}}>{rm.icon} {rm.label}</div>
+            </div>
+          </button>;
+        })}
+        <button style={{...S.btnS,justifyContent:"center"}} onClick={closeModal}>Cancelar</button>
+      </div>
+    </Modal>}
+
     {modal?.type==="obras"&&<Modal title="Mis Obras" onClose={closeModal} wide>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         {currentUser?.rol==="admin"&&<button style={{...S.btnP,justifyContent:"center",marginBottom:4}} onClick={()=>{closeModal();setModal({type:"newObra"});}}><Ico.Plus/> Nueva Obra</button>}
