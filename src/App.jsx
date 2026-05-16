@@ -933,21 +933,26 @@ export default function SupervisorObra(){
   const toast=(msg,type="ok")=>{ setModal({type:"toast",msg,toastType:type}); setTimeout(()=>setModal(m=>m?.type==="toast"?null:m),2600); };
 
   const isMateriales = currentUser?.rol==="materiales";
-  const canEditZona  = (zona) => {
+
+  // Permiso de zona — para agregar ítems y editar la zona en sí
+  const canEditZona = (zona) => {
     if(isMateriales) return false;
     if(!zona) return false;
     if(currentUser?.rol==="admin") return true;
     if(!zona.ownerUserId) return true;
     return zona.ownerUserId===currentUser?.id;
   };
-  // Permiso por ítem — solo el creador puede editar/completar/eliminar
+
+  // Permiso de ítem — SOLO el creador puede marcar/editar/eliminar
+  // Esta función es la única que controla acceso a ítems
   const canEditItem = (item) => {
-    if(isMateriales) return false;
     if(!item) return false;
+    if(isMateriales) return false;
     if(currentUser?.rol==="admin") return true;
-    if(!item.ownerUserId) return false; // sin dueño: solo admin puede (evita que cualquiera lo toque)
+    if(!item.ownerUserId) return true; // ítem sin dueño: cualquiera puede (recién creado desde cero)
     return item.ownerUserId===currentUser?.id;
   };
+
   const canEditMat = (zona) => {
     if(isMateriales) return true;
     return canEditZona(zona);
@@ -1008,7 +1013,9 @@ export default function SupervisorObra(){
   // ── Sub-Ítems ──
   const addSubItem=(zId,iId)=>{ if(!form.subNombre?.trim())return; const ns={id:uid(),nombre:form.subNombre.trim(),terminado:false,materiales:[],ownerUserId:currentUser?.id||null}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:[...(i.subItems||[]),ns]}:i)}:z)})); setForm(p=>({...p,subNombre:""})); };
   const toggleSubItem=(zId,iId,sId,si)=>{
-    if(si?.ownerUserId&&si.ownerUserId!==currentUser?.id&&currentUser?.rol!=="admin"){ toast("Solo el creador puede marcar este sub-ítem","err"); return; }
+    // El dueño del sub-ítem es el mismo dueño del ítem padre
+    const parentItem=obras.find(o=>o.id===activeId)?.zonas.flatMap(z=>z.items||[]).find(i=>i.id===iId);
+    if(!canEditItem(parentItem)){ toast("Solo el creador puede marcar este sub-ítem","err"); return; }
     updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).map(s=>s.id===sId?{...s,terminado:!s.terminado}:s)}:i)}:z)}));
   };
   const delSubItem=(zId,iId,sId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).filter(s=>s.id!==sId)}:i)}:z)}));
@@ -1315,7 +1322,7 @@ export default function SupervisorObra(){
                         return <div key={si.id} style={{background:"#0a1628",borderRadius:8,marginBottom:6,overflow:"hidden",border:"1px solid #0f1e30"}}>
                           {/* Fila principal del sub-ítem */}
                           <div style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px"}}>
-                            {ceZona
+                            {ceItem
                               ?<button className="sub-tog" style={{background:si.terminado?"#22c55e":"#1e293b"}} onClick={()=>toggleSubItem(zona.id,item.id,si.id,si)}><div className="sub-knob" style={{transform:si.terminado?"translateX(10px)":"translateX(0)"}}/></button>
                               :<div style={{width:24,height:14,display:"flex",alignItems:"center",justifyContent:"center",color:si.terminado?"#22c55e":"#475569",fontSize:"0.8rem"}}>{si.terminado?"✓":"○"}</div>}
                             <span style={{flex:1,fontSize:"0.82rem",color:si.terminado?"#4ade80":"#94a3b8",textDecoration:si.terminado?"line-through":"none"}}>{si.nombre}</span>
@@ -1326,7 +1333,7 @@ export default function SupervisorObra(){
                               style={{color:siMats.length>0?"#a78bfa":"#64748b",borderColor:siMats.length>0?"#a78bfa44":"#334155",padding:"3px 5px"}}>
                               <Ico.Mat/>
                             </button>
-                            {ceZona&&<button className="ic danger" style={{padding:"2px 5px"}} onClick={()=>delSubItem(zona.id,item.id,si.id)}><Ico.Trash/></button>}
+                            {ceItem&&<button className="ic danger" style={{padding:"2px 5px"}} onClick={()=>delSubItem(zona.id,item.id,si.id)}><Ico.Trash/></button>}
                           </div>
 
                           {/* Materiales del sub-ítem */}
