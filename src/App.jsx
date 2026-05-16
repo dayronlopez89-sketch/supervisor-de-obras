@@ -940,6 +940,14 @@ export default function SupervisorObra(){
     if(!zona.ownerUserId) return true;
     return zona.ownerUserId===currentUser?.id;
   };
+  // Permiso por ítem — solo el creador puede editar/completar/eliminar
+  const canEditItem = (item) => {
+    if(isMateriales) return false;
+    if(!item) return false;
+    if(currentUser?.rol==="admin") return true;
+    if(!item.ownerUserId) return true; // ítems viejos sin dueño: cualquiera puede
+    return item.ownerUserId===currentUser?.id;
+  };
   const canEditMat = (zona) => {
     if(isMateriales) return true;
     return canEditZona(zona);
@@ -980,14 +988,14 @@ export default function SupervisorObra(){
   const delZona=(id)=>{ if(!window.confirm("¿Eliminar zona?"))return; updObra(o=>({...o,zonas:o.zonas.filter(z=>z.id!==id),trabajadores:o.trabajadores.map(t=>t.zonaId===id?{...t,zonaId:null}:t)})); };
 
   // ── CRUD Items ──
-  const addItem=(zId)=>{ if(!form.nombre?.trim())return; const ni={id:uid(),nombre:form.nombre.trim(),descripcion:form.descripcion||"",terminado:false,peso:parseFloat(form.peso)||1,materiales:[],fotos:[],notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||"",subItems:[],comentarios:[]}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:[...z.items,ni]}:z)})); closeModal(); };
+  const addItem=(zId)=>{ if(!form.nombre?.trim())return; const ni={id:uid(),nombre:form.nombre.trim(),descripcion:form.descripcion||"",terminado:false,peso:parseFloat(form.peso)||1,materiales:[],fotos:[],notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||"",subItems:[],comentarios:[],ownerUserId:currentUser?.id||null}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:[...z.items,ni]}:z)})); closeModal(); };
   const editItem=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===modal.zId?{...z,items:z.items.map(i=>i.id===modal.iId?{...i,nombre:form.nombre.trim(),descripcion:form.descripcion||"",peso:parseFloat(form.peso)||1,notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||""}:i)}:z)})); closeModal(); };
   const delItem=(zId,iId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.filter(i=>i.id!==iId)}:z)}));
-  const toggleItem=(zId,iId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,terminado:!i.terminado}:i)}:z)}));
+  const toggleItem=(zId,iId,item)=>{ if(!canEditItem(item)){toast("Solo el creador puede marcar este ítem","err");return;} updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,terminado:!i.terminado}:i)}:z)})); };
 
   // ── Sub-Ítems ──
-  const addSubItem=(zId,iId)=>{ if(!form.subNombre?.trim())return; const ns={id:uid(),nombre:form.subNombre.trim(),terminado:false,materiales:[]}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:[...(i.subItems||[]),ns]}:i)}:z)})); setForm(p=>({...p,subNombre:""})); };
-  const toggleSubItem=(zId,iId,sId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).map(s=>s.id===sId?{...s,terminado:!s.terminado}:s)}:i)}:z)}));
+  const addSubItem=(zId,iId)=>{ if(!form.subNombre?.trim())return; const ns={id:uid(),nombre:form.subNombre.trim(),terminado:false,materiales:[],ownerUserId:currentUser?.id||null}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:[...(i.subItems||[]),ns]}:i)}:z)})); setForm(p=>({...p,subNombre:""})); };
+  const toggleSubItem=(zId,iId,sId,si)=>{ if(si&&si.ownerUserId&&si.ownerUserId!==currentUser?.id&&currentUser?.rol!=="admin"){toast("Solo el creador puede marcar este sub-ítem","err");return;} updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).map(s=>s.id===sId?{...s,terminado:!s.terminado}:s)}:i)}:z)})); };
   const delSubItem=(zId,iId,sId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).filter(s=>s.id!==sId)}:i)}:z)}));
 
   // ── Materiales de Sub-Ítems ──
@@ -1213,11 +1221,13 @@ export default function SupervisorObra(){
                   const iPct=calcItemPct(item),iDone=isItemDone(item),hasSubs=(item.subItems||[]).length>0;
                   const ic=iPct===100?"#22c55e":iPct>0?"#f59e0b":"#64748b";
                   const comentarios=item.comentarios||[];
+                  const ceItem=canEditItem(item); // permiso a nivel de ítem
+                  const itemOwner=users.find(u=>u.id===item.ownerUserId);
 
                   return <div key={item.id} style={{borderTop:"1px solid #1e293b",background:iDone?"#0a1a0a":"transparent"}}>
                     <div style={{display:"flex",alignItems:"center",gap:7,padding:"8px 12px",flexWrap:"wrap"}}>
-                      {!hasSubs&&ceZona&&<button className="tog" style={{background:iDone?"#22c55e":"#1e293b"}} onClick={()=>toggleItem(zona.id,item.id)}><div className="knob" style={{transform:iDone?"translateX(14px)":"translateX(0)"}}/></button>}
-                      {!hasSubs&&!ceZona&&<div style={{width:32,height:18,borderRadius:9,background:iDone?"#22c55e33":"#1e293b",border:`1px solid ${iDone?"#22c55e55":"#334155"}`,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:"0.6rem",color:iDone?"#22c55e":"#64748b"}}>{iDone?"✓":"○"}</span></div>}
+                      {!hasSubs&&ceItem&&<button className="tog" style={{background:iDone?"#22c55e":"#1e293b"}} onClick={()=>toggleItem(zona.id,item.id,item)}><div className="knob" style={{transform:iDone?"translateX(14px)":"translateX(0)"}}/></button>}
+                      {!hasSubs&&!ceItem&&<div style={{width:32,height:18,borderRadius:9,background:iDone?"#22c55e33":"#1e293b",border:`1px solid ${iDone?"#22c55e55":"#334155"}`,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:"0.6rem",color:iDone?"#22c55e":"#64748b"}}>{iDone?"✓":"○"}</span></div>}
                       {hasSubs&&<div style={{position:"relative",width:30,height:30,flexShrink:0}}>
                         <Ring pct={iPct} size={30} stroke={3} color={ic}/>
                         <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:"0.45rem",fontWeight:800,color:ic}}>{iPct}%</span></div>
@@ -1230,22 +1240,23 @@ export default function SupervisorObra(){
                           {(item.materiales||[]).length>0&&<span style={{fontSize:"0.63rem",color:"#475569"}}>📦 {item.materiales.length}</span>}
                           {hasSubs&&<span style={{fontSize:"0.63rem",color:"#64748b",display:"flex",alignItems:"center",gap:2}}><Ico.List/>{(item.subItems||[]).filter(s=>s.terminado).length}/{(item.subItems||[]).length}</span>}
                           {comentarios.length>0&&<span style={{fontSize:"0.63rem",color:"#64748b",display:"flex",alignItems:"center",gap:2}}><Ico.Chat/>{comentarios.length}</span>}
+                          {/* Badge dueño del ítem */}
+                          {itemOwner&&!ceItem&&<span style={{fontSize:"0.58rem",color:itemOwner.color||"#f59e0b",background:(itemOwner.color||"#f59e0b")+"18",borderRadius:4,padding:"1px 5px"}}>🔒 {itemOwner.nombre}</span>}
                         </div>
                       </div>
                       {!isMateriales&&<span className="badge" style={{background:"#1e293b",color:"#64748b",fontSize:"0.58rem"}}>W{item.peso||1}</span>}
-                      {/* Botones */}
-                      {/* Comentarios toggle */}
                       <button className="ic" title="Comentarios" onClick={()=>setExComents(p=>({...p,[item.id]:!p[item.id]}))} style={{color:comentarios.length>0?"#38bdf8":"#64748b",borderColor:comentarios.length>0?"#38bdf844":"#334155"}}>
                         <Ico.Chat/>{comentarios.length>0&&<span style={{fontSize:"0.65rem",fontWeight:700,marginLeft:1}}>{comentarios.length}</span>}
                       </button>
                       {!isMateriales&&<button className="ic" title="Sub-ítems" onClick={()=>setExSubItems(p=>({...p,[item.id]:!p[item.id]}))} style={{color:hasSubs?"#a78bfa":"#64748b",borderColor:hasSubs?"#a78bfa44":"#334155"}}>
                         <Ico.List/>{hasSubs&&<span style={{fontSize:"0.65rem",fontWeight:700,marginLeft:1}}>{(item.subItems||[]).length}</span>}
                       </button>}
-                      {ceZona&&<>
+                      {ceItem&&<>
                         <button className="ic" onClick={()=>{setForm({nombre:item.nombre,descripcion:item.descripcion||"",peso:item.peso||1,notas:item.notas||"",fechaInicio:item.fechaInicio||"",fechaFin:item.fechaFin||""});setModal({type:"editItem",zId:zona.id,iId:item.id});}}><Ico.Edit/></button>
                         <button className="ic" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))}><Ico.Cam/></button>
                         <button className="ic danger" onClick={()=>delItem(zona.id,item.id)}><Ico.Trash/></button>
                       </>}
+                      {!ceItem&&ceZona&&<button className="ic" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))}><Ico.Cam/></button>}
                       {isMateriales&&<button className="ic" title="Materiales" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))} style={{color:"#a78bfa",borderColor:"#a78bfa44"}}><Ico.Mat/></button>}
                     </div>
 
@@ -1285,7 +1296,7 @@ export default function SupervisorObra(){
                           {/* Fila principal del sub-ítem */}
                           <div style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px"}}>
                             {ceZona
-                              ?<button className="sub-tog" style={{background:si.terminado?"#22c55e":"#1e293b"}} onClick={()=>toggleSubItem(zona.id,item.id,si.id)}><div className="sub-knob" style={{transform:si.terminado?"translateX(10px)":"translateX(0)"}}/></button>
+                              ?<button className="sub-tog" style={{background:si.terminado?"#22c55e":"#1e293b"}} onClick={()=>toggleSubItem(zona.id,item.id,si.id,si)}><div className="sub-knob" style={{transform:si.terminado?"translateX(10px)":"translateX(0)"}}/></button>
                               :<div style={{width:24,height:14,display:"flex",alignItems:"center",justifyContent:"center",color:si.terminado?"#22c55e":"#475569",fontSize:"0.8rem"}}>{si.terminado?"✓":"○"}</div>}
                             <span style={{flex:1,fontSize:"0.82rem",color:si.terminado?"#4ade80":"#94a3b8",textDecoration:si.terminado?"line-through":"none"}}>{si.nombre}</span>
                             {/* Badge materiales */}
@@ -1607,6 +1618,7 @@ export default function SupervisorObra(){
     {scanBoleta&&<ScanBoletaModal onDatos={datos=>handleBoletaDatos(datos,scanBoleta.zId,scanBoleta.iId,scanBoleta.sId||null)} onClose={()=>setScanBoleta(null)}/>}
   </>;
 }
+
 
 
 
