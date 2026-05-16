@@ -483,24 +483,24 @@ function MatForm({mat,onChange}){
 }
 
 // ─── ObraCard (dentro del Dashboard) ─────────────────────────────────────────
-function ObraCard({o,isActive,calcZonePct,calcItemPct,onGoToZonas,onPDF,onCompras,onChangeStatus,currentUser,isExpanded,onToggle}){
+function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onPDF,onCompras,onChangeStatus,currentUser,isExpanded,onToggle}){
   const [itemsPanel,setItemsPanel]=useState(null); // null | "completados" | "pendientes" | "criticos"
 
   const allI=o.zonas.flatMap(z=>z.items||[]);
-  // enriquecer cada ítem con su zona
-  const allIConZona=o.zonas.flatMap(z=>(z.items||[]).map(i=>({...i,_zonaNombre:z.nombre})));
+  // enriquecer cada ítem con su zona y estado real
+  const allIConZona=o.zonas.flatMap(z=>(z.items||[]).map(i=>({...i,_zonaNombre:z.nombre,_done:isItemDone(i)})));
   const allM=allI.flatMap(i=>i.materiales||[]);
   const tw=allI.reduce((s,i)=>s+(i.peso||1),0);
   const dw=allI.reduce((s,i)=>s+(i.peso||1)*(calcItemPct(i)/100),0);
   const pct=allI.length?Math.round((dw/tw)*100):0;
   const pc=pct<30?"#ef4444":pct<70?"#f59e0b":"#22c55e";
-  const done=allIConZona.filter(i=>i.terminado).length;
-  const pend=allIConZona.filter(i=>!i.terminado).length;
-  const crit=allIConZona.filter(i=>(i.peso||1)>=8&&!i.terminado).length;
+  const done=allIConZona.filter(i=>i._done).length;
+  const pend=allIConZona.filter(i=>!i._done).length;
+  const crit=allIConZona.filter(i=>(i.peso||1)>=8&&!i._done).length;
   const presup=allM.reduce((s,m)=>(parseFloat(m.precio)||0)*(parseFloat(m.cantidad)||0)+s,0);
   const gast=allM.filter(m=>["comprado","en_camino","entregado"].includes(m.estado||"")).reduce((s,m)=>(parseFloat(m.precio)||0)*(parseFloat(m.cantidad)||0)+s,0);
   const pendMat=allM.filter(m=>!m.estado||m.estado==="pendiente").length;
-  const alertas=allI.filter(i=>{ const d=daysDiff(i.fechaFin); return !i.terminado&&d!==null&&d<=3; });
+  const alertas=allIConZona.filter(i=>{ const d=daysDiff(i.fechaFin); return !i._done&&d!==null&&d<=3; });
   const sorted=[...o.zonas].sort((a,b)=>calcZonePct(b)-calcZonePct(a));
   const obraEst=OBRA_ESTADOS[o.estado||"en_ejecucion"];
   const hoy=today();
@@ -508,9 +508,9 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,onGoToZonas,onPDF,onCompra
   const ausentes=(o.trabajadores||[]).filter(t=>(t.asistencia||{})[hoy]==="ausente").length;
 
   // Ítems filtrados según panel activo
-  const panelItems = itemsPanel==="completados" ? allIConZona.filter(i=>i.terminado)
-    : itemsPanel==="pendientes" ? allIConZona.filter(i=>!i.terminado)
-    : itemsPanel==="criticos"  ? allIConZona.filter(i=>(i.peso||1)>=8&&!i.terminado)
+  const panelItems = itemsPanel==="completados" ? allIConZona.filter(i=>i._done)
+    : itemsPanel==="pendientes" ? allIConZona.filter(i=>!i._done)
+    : itemsPanel==="criticos"  ? allIConZona.filter(i=>(i.peso||1)>=8&&!i._done)
     : [];
   const panelMeta = {
     completados:{ label:"Completados", color:"#22c55e", icon:"✓" },
@@ -602,16 +602,16 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,onGoToZonas,onPDF,onCompra
           : <div style={{maxHeight:280,overflowY:"auto"}}>
               {panelItems.map(item=>{
                 const d=daysDiff(item.fechaFin);
-                const overdue=d!==null&&d<0&&!item.terminado;
-                const warn=d!==null&&d<=3&&d>=0&&!item.terminado;
+                const overdue=d!==null&&d<0&&!item._done;
+                const warn=d!==null&&d<=3&&d>=0&&!item._done;
                 const hasSubs=(item.subItems||[]).length>0;
                 const subDone=(item.subItems||[]).filter(s=>s.terminado).length;
                 return <div key={item.id} style={{padding:"9px 12px",borderBottom:"1px solid #0d1526",display:"flex",alignItems:"center",gap:10}}>
-                  <div style={{width:28,height:28,borderRadius:"50%",background:item.terminado?"#22c55e22":"#1e293b",border:`1.5px solid ${item.terminado?"#22c55e":"#334155"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.75rem",color:item.terminado?"#22c55e":"#64748b",flexShrink:0,fontWeight:700}}>
-                    {item.terminado?"✓":"○"}
+                  <div style={{width:28,height:28,borderRadius:"50%",background:item._done?"#22c55e22":"#1e293b",border:`1.5px solid ${item._done?"#22c55e":"#334155"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.75rem",color:item._done?"#22c55e":"#64748b",flexShrink:0,fontWeight:700}}>
+                    {item._done?"✓":"○"}
                   </div>
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:"0.84rem",fontWeight:600,color:item.terminado?"#4ade80":"#e2e8f0",textDecoration:item.terminado?"line-through":"none",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.nombre}</div>
+                    <div style={{fontSize:"0.84rem",fontWeight:600,color:item._done?"#4ade80":"#e2e8f0",textDecoration:item._done?"line-through":"none",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.nombre}</div>
                     <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:2}}>
                       <span style={{fontSize:"0.62rem",color:"#f59e0b",background:"#f59e0b18",borderRadius:4,padding:"1px 5px"}}>📍 {item._zonaNombre}</span>
                       {hasSubs&&<span style={{fontSize:"0.62rem",color:"#a78bfa"}}>☰ {subDone}/{(item.subItems||[]).length}</span>}
@@ -660,7 +660,7 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,onGoToZonas,onPDF,onCompra
           <div style={{height:4,background:"#1e293b",borderRadius:2,overflow:"hidden"}}>
             <div style={{height:"100%",width:`${zp}%`,background:zc,borderRadius:2,transition:"width .5s"}}/>
           </div>
-          <div style={{fontSize:"0.6rem",color:"#475569",marginTop:2}}>{(z.items||[]).filter(i=>i.terminado).length}/{(z.items||[]).length} ítems</div>
+          <div style={{fontSize:"0.6rem",color:"#475569",marginTop:2}}>{(z.items||[]).filter(i=>isItemDone(i)).length}/{(z.items||[]).length} ítems</div>
         </div>; })}
       </div>}
 
@@ -673,8 +673,7 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,onGoToZonas,onPDF,onCompra
   </div>;
 }
 
-// ─── Dashboard ────────────────────────────────────────────────────────────────
-function Dashboard({obras,activeId,calcZonePct,calcItemPct,totalPct,onPDF,onCompras,currentUser,onGoToZonas,onChangeStatus,onSetActive}){
+function Dashboard({obras,activeId,calcZonePct,calcItemPct,isItemDone,totalPct,onPDF,onCompras,currentUser,onGoToZonas,onChangeStatus,onSetActive}){
   const [expanded,setExpanded]=useState({[activeId]:true});
   const toggleExpand=(id)=>setExpanded(p=>({...p,[id]:!p[id]}));
 
@@ -687,6 +686,7 @@ function Dashboard({obras,activeId,calcZonePct,calcItemPct,totalPct,onPDF,onComp
         onToggle={()=>{ onSetActive(o.id); toggleExpand(o.id); }}
         calcZonePct={calcZonePct}
         calcItemPct={calcItemPct}
+        isItemDone={isItemDone}
         onGoToZonas={()=>onGoToZonas(o.id)}
         onPDF={()=>onPDF(o.id)}
         onCompras={()=>onCompras(o.id)}
@@ -1065,6 +1065,7 @@ export default function SupervisorObra(){
           activeId={activeId}
           calcZonePct={calcZonePct}
           calcItemPct={calcItemPct}
+          isItemDone={isItemDone}
           totalPct={totalPct}
           onPDF={(oId)=>{ const o=obras.find(x=>x.id===oId); if(!o)return; setExporting(true); exportAvancePDF(o,calcZonePct,()=>{ const all=o.zonas.flatMap(z=>z.items||[]); if(!all.length)return 0; const tw=all.reduce((s,i)=>s+(i.peso||1),0),dw=all.reduce((s,i)=>s+(i.peso||1)*(calcItemPct(i)/100),0); return Math.round((dw/tw)*100); }).catch(()=>toast("Error al generar PDF","err")).finally(()=>setExporting(false)); }}
           onCompras={(oId)=>{ const o=obras.find(x=>x.id===oId); if(!o)return; setExporting(true); exportComprasPDF(o).catch(()=>toast("Error","err")).finally(()=>setExporting(false)); }}
