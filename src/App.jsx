@@ -753,6 +753,7 @@ export default function SupervisorObra(){
   const [exZones,setExZones]=useState({});
   const [exItems,setExItems]=useState({});
   const [exSubItems,setExSubItems]=useState({});
+  const [exSubMats,setExSubMats]=useState({});
   const [exComents,setExComents]=useState({});
   const [modal,setModal]=useState(null);
   const [form,setForm]=useState({});
@@ -838,9 +839,15 @@ export default function SupervisorObra(){
   const toggleItem=(zId,iId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,terminado:!i.terminado}:i)}:z)}));
 
   // ── Sub-Ítems ──
-  const addSubItem=(zId,iId)=>{ if(!form.subNombre?.trim())return; const ns={id:uid(),nombre:form.subNombre.trim(),terminado:false}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:[...(i.subItems||[]),ns]}:i)}:z)})); setForm(p=>({...p,subNombre:""})); };
+  const addSubItem=(zId,iId)=>{ if(!form.subNombre?.trim())return; const ns={id:uid(),nombre:form.subNombre.trim(),terminado:false,materiales:[]}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:[...(i.subItems||[]),ns]}:i)}:z)})); setForm(p=>({...p,subNombre:""})); };
   const toggleSubItem=(zId,iId,sId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).map(s=>s.id===sId?{...s,terminado:!s.terminado}:s)}:i)}:z)}));
   const delSubItem=(zId,iId,sId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).filter(s=>s.id!==sId)}:i)}:z)}));
+
+  // ── Materiales de Sub-Ítems ──
+  const addSubMat=(zId,iId,sId)=>{ if(!matForm.nombre?.trim())return; const m={id:uid(),...matForm,nombre:matForm.nombre.trim(),cantidad:parseFloat(matForm.cantidad)||0,precio:parseFloat(matForm.precio)||0,estado:matForm.estado||"pendiente",agregadoPor:currentUser?.id}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).map(s=>s.id===sId?{...s,materiales:[...(s.materiales||[]),m]}:s)}:i)}:z)})); closeModal(); };
+  const editSubMat=()=>{ const {zId,iId,sId,mId}=modal; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).map(s=>s.id===sId?{...s,materiales:(s.materiales||[]).map(m=>m.id===mId?{...m,...matForm,cantidad:parseFloat(matForm.cantidad)||0,precio:parseFloat(matForm.precio)||0}:m)}:s)}:i)}:z)})); closeModal(); };
+  const delSubMat=(zId,iId,sId,mId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).map(s=>s.id===sId?{...s,materiales:(s.materiales||[]).filter(m=>m.id!==mId)}:s)}:i)}:z)}));
+  const setSubMatStatus=(zId,iId,sId,mId,estado)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).map(s=>s.id===sId?{...s,materiales:(s.materiales||[]).map(m=>m.id===mId?{...m,estado}:m)}:s)}:i)}:z)}));
 
   // ── Comentarios por ítem ──
   const addComment=(zId,iId,texto)=>{
@@ -875,7 +882,18 @@ export default function SupervisorObra(){
   const delFoto=(zId,iId,fId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,fotos:(i.fotos||[]).filter(f=>f.id!==fId)}:i)}:z)}));
   const handleFilePhoto=(zId,iId,e)=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=ev=>addFoto(zId,iId,ev.target.result); r.readAsDataURL(f); e.target.value=""; };
 
-  const handleBoletaDatos=(datos,zId,iId)=>{ if(!datos.materiales?.length){toast("No se encontraron materiales","err");return;} datos.materiales.forEach(m=>{ const mat={id:uid(),nombre:m.nombre||"",estado:"pendiente",cantidad:m.cantidad||0,unidad:m.unidad||"",precio:m.precio||0,proveedor:datos.proveedor||"",fechaCompra:datos.fechaCompra||"",notas:"",agregadoPor:currentUser?.id}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,materiales:[...(i.materiales||[]),mat]}:i)}:z)})); }); toast(`✅ ${datos.materiales.length} material(es) agregado(s)`); };
+  const handleBoletaDatos=(datos,zId,iId,sId)=>{
+    if(!datos.materiales?.length){toast("No se encontraron materiales","err");return;}
+    datos.materiales.forEach(m=>{
+      const mat={id:uid(),nombre:m.nombre||"",estado:"pendiente",cantidad:m.cantidad||0,unidad:m.unidad||"",precio:m.precio||0,proveedor:datos.proveedor||"",fechaCompra:datos.fechaCompra||"",notas:"",agregadoPor:currentUser?.id};
+      if(sId){
+        updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).map(s=>s.id===sId?{...s,materiales:[...(s.materiales||[]),mat]}:s)}:i)}:z)}));
+      } else {
+        updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,materiales:[...(i.materiales||[]),mat]}:i)}:z)}));
+      }
+    });
+    toast(`✅ ${datos.materiales.length} material(es) agregado(s)`);
+  };
 
   const hDS=(e,i)=>{ setDragI(i); e.dataTransfer.effectAllowed="move"; };
   const hDO=(e,i)=>{ e.preventDefault(); setDragO(i); };
@@ -1112,12 +1130,43 @@ export default function SupervisorObra(){
                     {sOpen&&!isMateriales&&<div style={{background:"#070f1e",borderTop:"1px solid #0d1a2e",padding:"8px 14px 10px 28px"}}>
                       <div style={{fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8,display:"flex",alignItems:"center",gap:4}}><Ico.List/> Sub-ítems</div>
                       {(item.subItems||[]).length===0&&<p style={{fontSize:"0.78rem",color:"#334155",margin:"0 0 8px"}}>Sin sub-ítems aún.</p>}
-                      {(item.subItems||[]).map(si=><div key={si.id} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 0",borderBottom:"1px solid #0f1e30"}}>
-                        {ceZona?<button className="sub-tog" style={{background:si.terminado?"#22c55e":"#1e293b"}} onClick={()=>toggleSubItem(zona.id,item.id,si.id)}><div className="sub-knob" style={{transform:si.terminado?"translateX(10px)":"translateX(0)"}}/></button>:<div style={{width:24,height:14,display:"flex",alignItems:"center",justifyContent:"center",color:si.terminado?"#22c55e":"#475569",fontSize:"0.8rem"}}>{si.terminado?"✓":"○"}</div>}
-                        <span style={{flex:1,fontSize:"0.82rem",color:si.terminado?"#4ade80":"#94a3b8",textDecoration:si.terminado?"line-through":"none"}}>{si.nombre}</span>
-                        {ceZona&&<button className="ic danger" style={{padding:"2px 5px"}} onClick={()=>delSubItem(zona.id,item.id,si.id)}><Ico.Trash/></button>}
-                      </div>)}
-                      {ceZona&&<div style={{display:"flex",gap:7,marginTop:10}}>
+                      {(item.subItems||[]).map(si=>{
+                        const siMatOpen=exSubMats[si.id];
+                        const siMats=si.materiales||[];
+                        return <div key={si.id} style={{background:"#0a1628",borderRadius:8,marginBottom:6,overflow:"hidden",border:"1px solid #0f1e30"}}>
+                          {/* Fila principal del sub-ítem */}
+                          <div style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px"}}>
+                            {ceZona
+                              ?<button className="sub-tog" style={{background:si.terminado?"#22c55e":"#1e293b"}} onClick={()=>toggleSubItem(zona.id,item.id,si.id)}><div className="sub-knob" style={{transform:si.terminado?"translateX(10px)":"translateX(0)"}}/></button>
+                              :<div style={{width:24,height:14,display:"flex",alignItems:"center",justifyContent:"center",color:si.terminado?"#22c55e":"#475569",fontSize:"0.8rem"}}>{si.terminado?"✓":"○"}</div>}
+                            <span style={{flex:1,fontSize:"0.82rem",color:si.terminado?"#4ade80":"#94a3b8",textDecoration:si.terminado?"line-through":"none"}}>{si.nombre}</span>
+                            {/* Badge materiales */}
+                            {siMats.length>0&&<span style={{fontSize:"0.6rem",color:"#a78bfa",background:"#a78bfa18",borderRadius:4,padding:"1px 5px"}}>📦 {siMats.length}</span>}
+                            {/* Botón materiales */}
+                            <button className="ic" title="Materiales" onClick={()=>setExSubMats(p=>({...p,[si.id]:!p[si.id]}))}
+                              style={{color:siMats.length>0?"#a78bfa":"#64748b",borderColor:siMats.length>0?"#a78bfa44":"#334155",padding:"3px 5px"}}>
+                              <Ico.Mat/>
+                            </button>
+                            {ceZona&&<button className="ic danger" style={{padding:"2px 5px"}} onClick={()=>delSubItem(zona.id,item.id,si.id)}><Ico.Trash/></button>}
+                          </div>
+
+                          {/* Materiales del sub-ítem */}
+                          {siMatOpen&&<div style={{borderTop:"1px solid #0d1526",background:"#060e1a"}}>
+                            {/* Lista materiales */}
+                            {siMats.length===0&&<p style={{fontSize:"0.72rem",color:"#334155",margin:0,padding:"8px 12px"}}>Sin materiales en este sub-ítem.</p>}
+                            {siMats.map(mat=><MatRow key={mat.id} mat={mat} canEdit={ceMat}
+                              onEdit={()=>{setMatForm({...mat});setModal({type:"editSubMat",zId:zona.id,iId:item.id,sId:si.id,mId:mat.id});}}
+                              onDelete={()=>delSubMat(zona.id,item.id,si.id,mat.id)}
+                              onStatus={s=>setSubMatStatus(zona.id,item.id,si.id,mat.id,s)}/>)}
+                            {/* Botones agregar */}
+                            {ceMat&&<div style={{padding:"7px 10px",display:"flex",gap:6,borderTop:"1px solid #0a1628"}}>
+                              <button style={{...S.btnP,fontSize:"0.68rem",padding:"5px 10px",flex:1,justifyContent:"center"}} onClick={()=>setScanBoleta({zId:zona.id,iId:item.id,sId:si.id})}>🧾 Boleta</button>
+                              <button style={{...S.btnS,fontSize:"0.68rem",padding:"5px 10px"}} onClick={()=>setModal({type:"addSubMat",zId:zona.id,iId:item.id,sId:si.id})}>+ Material</button>
+                            </div>}
+                          </div>}
+                        </div>;
+                      })}
+                      {ceZona&&<div style={{display:"flex",gap:7,marginTop:8}}>
                         <input style={{...S.inp,fontSize:"0.8rem",padding:"7px 10px"}} placeholder="Nombre del sub-ítem…" value={form.subNombre||""} onChange={e=>setForm(p=>({...p,subNombre:e.target.value}))} onKeyDown={e=>{ if(e.key==="Enter") addSubItem(zona.id,item.id); }}/>
                         <button style={{...S.btnP,padding:"7px 12px",fontSize:"0.75rem",flexShrink:0}} onClick={()=>addSubItem(zona.id,item.id)}><Ico.Plus/></button>
                       </div>}
@@ -1281,6 +1330,11 @@ export default function SupervisorObra(){
       </div>
     </Modal>}
 
+    {(modal?.type==="addSubMat"||modal?.type==="editSubMat")&&<Modal title={modal.type==="addSubMat"?"Agregar Material al Sub-ítem":"Editar Material"} onClose={closeModal} wide>
+      <MatForm mat={matForm} onChange={(k,v)=>setMatForm(p=>({...p,[k]:v}))}/>
+      <div style={{display:"flex",gap:7,justifyContent:"flex-end",marginTop:12}}><button style={S.btnS} onClick={closeModal}>Cancelar</button><button style={S.btnP} onClick={modal.type==="addSubMat"?()=>addSubMat(modal.zId,modal.iId,modal.sId):editSubMat}>{modal.type==="addSubMat"?"Agregar":"Guardar"}</button></div>
+    </Modal>}
+
     {(modal?.type==="addMat"||modal?.type==="editMat")&&<Modal title={modal.type==="addMat"?"Agregar Material":"Editar Material"} onClose={closeModal} wide>
       <MatForm mat={matForm} onChange={(k,v)=>setMatForm(p=>({...p,[k]:v}))}/>
       <div style={{display:"flex",gap:7,justifyContent:"flex-end",marginTop:12}}><button style={S.btnS} onClick={closeModal}>Cancelar</button><button style={S.btnP} onClick={modal.type==="addMat"?()=>addMat(modal.zId,modal.iId):editMat}>{modal.type==="addMat"?"Agregar":"Guardar"}</button></div>
@@ -1400,7 +1454,7 @@ export default function SupervisorObra(){
     {modal?.type==="toast"&&<div style={{position:"fixed",bottom:24,left:"50%",transform:"translateX(-50%)",background:"#1e293b",border:`1px solid ${modal.toastType==="err"?"#ef444444":"#334155"}`,borderRadius:12,padding:"10px 20px",fontSize:"0.85rem",color:"#f1f5f9",zIndex:2000,boxShadow:"0 8px 30px rgba(0,0,0,.5)",animation:"fadeUp .25s ease",whiteSpace:"nowrap",maxWidth:"90vw"}}>{modal.msg}</div>}
     {exporting&&<div style={{position:"fixed",bottom:24,right:16,background:"#1e293b",border:"1px solid #f59e0b44",borderRadius:12,padding:"9px 16px",fontSize:"0.8rem",color:"#f59e0b",zIndex:2000,display:"flex",alignItems:"center",gap:7}}><span style={{animation:"spin 1s linear infinite",display:"inline-block"}}>⟳</span> Generando PDF…</div>}
     {cameraFor&&<CameraModal onCapture={data=>addFoto(cameraFor.zId,cameraFor.iId,data)} onClose={()=>setCameraFor(null)}/>}
-    {scanBoleta&&<ScanBoletaModal onDatos={datos=>handleBoletaDatos(datos,scanBoleta.zId,scanBoleta.iId)} onClose={()=>setScanBoleta(null)}/>}
+    {scanBoleta&&<ScanBoletaModal onDatos={datos=>handleBoletaDatos(datos,scanBoleta.zId,scanBoleta.iId,scanBoleta.sId||null)} onClose={()=>setScanBoleta(null)}/>}
   </>;
 }
 
