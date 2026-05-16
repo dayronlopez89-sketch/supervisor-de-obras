@@ -615,24 +615,6 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onP
         <button style={{...S.btnP,fontSize:"0.72rem",padding:"6px 12px"}} onClick={e=>{e.stopPropagation();onPDF();}}>📄 PDF Avance</button>
         <button style={{...S.btnS,fontSize:"0.72rem",padding:"6px 10px"}} onClick={e=>{e.stopPropagation();onCompras(null);}}><Ico.Cart/> PDF Compras (obra)</button>
       </div>
-      {/* PDF por ítem */}
-      {allI.length>0&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:10,padding:"10px 12px"}}>
-        <div style={{fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8,display:"flex",alignItems:"center",gap:4}}><Ico.Cart/> PDF materiales por ítem</div>
-        <div style={{display:"flex",flexDirection:"column",gap:5}}>
-          {o.zonas.flatMap(z=>(z.items||[]).map(item=>({item,zona:z}))).map(({item,zona})=>{
-            const totalMats=(item.materiales||[]).length + (item.subItems||[]).reduce((s,si)=>s+(si.materiales||[]).length,0);
-            if(totalMats===0) return null;
-            return <div key={item.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,background:"#0a1628",borderRadius:7,padding:"6px 10px"}}>
-              <div style={{minWidth:0}}>
-                <div style={{fontSize:"0.78rem",color:"#e2e8f0",fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.nombre}</div>
-                <div style={{fontSize:"0.6rem",color:"#f59e0b"}}>📍 {zona.nombre} · 📦 {totalMats} mat.</div>
-              </div>
-              <button style={{...S.btnG,fontSize:"0.65rem",padding:"4px 9px",flexShrink:0}} onClick={e=>{e.stopPropagation();onCompras(item.id);}}>PDF →</button>
-            </div>;
-          }).filter(Boolean)}
-        </div>
-      </div>}
-
       {alertas.length>0&&<div style={{background:"#450a0a",border:"1px solid #ef444444",borderRadius:10,padding:"10px 12px"}}>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6,color:"#fca5a5",fontSize:"0.7rem",fontWeight:700,textTransform:"uppercase"}}><Ico.Alert/> {alertas.length} ítem(s) próximo(s) a vencer</div>
         {alertas.map(it=>{ const d=daysDiff(it.fechaFin); return <div key={it.id} style={{fontSize:"0.78rem",color:"#fca5a5",marginBottom:2}}>⚠ {it.nombre} — {d<0?`Vencido hace ${Math.abs(d)}d`:`${d}d restante${d!==1?"s":""}`}</div>; })}
@@ -1293,10 +1275,12 @@ export default function SupervisorObra(){
                       </div>}
                     </div>}
 
-                    {/* BOLETA + MATERIAL */}
-                    {ceMat&&<div style={{padding:"6px 12px",borderTop:"1px solid #1e293b22",display:"flex",gap:6}}>
+                    {/* BOLETA + MATERIAL + PDF */}
+                    {ceMat&&<div style={{padding:"6px 12px",borderTop:"1px solid #1e293b22",display:"flex",gap:6,flexWrap:"wrap"}}>
                       <button style={{...S.btnP,fontSize:"0.72rem",padding:"6px 12px",borderRadius:8,flex:1,justifyContent:"center"}} onClick={()=>setScanBoleta({zId:zona.id,iId:item.id})}>🧾 Escanear Boleta</button>
                       <button style={{...S.btnS,fontSize:"0.72rem",padding:"6px 12px",borderRadius:8}} onClick={()=>setModal({type:"addMat",zId:zona.id,iId:item.id})}>+ Material</button>
+                      {((item.materiales||[]).length>0||(item.subItems||[]).some(si=>(si.materiales||[]).length>0))&&
+                        <button style={{...S.btnG,fontSize:"0.72rem",padding:"6px 10px",borderRadius:8}} onClick={()=>{ const o=obras.find(x=>x.id===activeId); if(!o)return; setExporting(true); exportComprasPDF(o,item.id).catch(()=>toast("Error PDF","err")).finally(()=>setExporting(false)); }}><Ico.Down/> PDF</button>}
                     </div>}
 
                     {/* MATERIALES + FOTOS */}
