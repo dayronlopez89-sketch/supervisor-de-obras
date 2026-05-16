@@ -953,8 +953,17 @@ export default function SupervisorObra(){
     return canEditZona(zona);
   };
 
-  const calcItemPct=(item)=>{ const subs=item.subItems||[]; if(!subs.length) return item.terminado?100:0; return Math.round((subs.filter(s=>s.terminado).length/subs.length)*100); };
-  const isItemDone=(item)=>{ const subs=item.subItems||[]; return subs.length?subs.every(s=>s.terminado):item.terminado; };
+  // Estado terminado es COMPARTIDO (el trabajo es real para todos)
+  // pero solo el dueño puede cambiarlo
+  const isTerminado=(item)=>!!item.terminado;
+  const isSubTerminado=(si)=>!!si.terminado;
+
+  const calcItemPct=(item)=>{
+    const subs=item.subItems||[];
+    if(!subs.length) return item.terminado?100:0;
+    return Math.round((subs.filter(s=>s.terminado).length/subs.length)*100);
+  };
+  const isItemDone=(item)=>{ const subs=item.subItems||[]; return subs.length?subs.every(s=>s.terminado):!!item.terminado; };
   const calcZonePct=(zona)=>{ if(!(zona.items||[]).length)return 0; const tw=zona.items.reduce((s,i)=>s+(i.peso||1),0); const dw=zona.items.reduce((s,i)=>s+(i.peso||1)*(calcItemPct(i)/100),0); return Math.round((dw/tw)*100); };
   const totalPct=()=>{ if(!obra)return 0; const all=obra.zonas.flatMap(z=>z.items||[]); if(!all.length)return 0; const tw=all.reduce((s,i)=>s+(i.peso||1),0); const dw=all.reduce((s,i)=>s+(i.peso||1)*(calcItemPct(i)/100),0); return Math.round((dw/tw)*100); };
 
@@ -990,12 +999,18 @@ export default function SupervisorObra(){
   // ── CRUD Items ──
   const addItem=(zId)=>{ if(!form.nombre?.trim())return; const ni={id:uid(),nombre:form.nombre.trim(),descripcion:form.descripcion||"",terminado:false,peso:parseFloat(form.peso)||1,materiales:[],fotos:[],notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||"",subItems:[],comentarios:[],ownerUserId:currentUser?.id||null}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:[...z.items,ni]}:z)})); closeModal(); };
   const editItem=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===modal.zId?{...z,items:z.items.map(i=>i.id===modal.iId?{...i,nombre:form.nombre.trim(),descripcion:form.descripcion||"",peso:parseFloat(form.peso)||1,notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||""}:i)}:z)})); closeModal(); };
-  const delItem=(zId,iId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.filter(i=>i.id!==iId)}:z)}));
-  const toggleItem=(zId,iId,item)=>{ if(!canEditItem(item)){toast("Solo el creador puede marcar este ítem","err");return;} updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,terminado:!i.terminado}:i)}:z)})); };
+  const delItem=(zId,iId)=>{ if(!window.confirm("¿Eliminar ítem?"))return; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.filter(i=>i.id!==iId)}:z)})); };
+  const toggleItem=(zId,iId,item)=>{
+    if(!canEditItem(item)){ toast("Solo el creador puede marcar este ítem","err"); return; }
+    updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,terminado:!i.terminado}:i)}:z)}));
+  };
 
   // ── Sub-Ítems ──
   const addSubItem=(zId,iId)=>{ if(!form.subNombre?.trim())return; const ns={id:uid(),nombre:form.subNombre.trim(),terminado:false,materiales:[],ownerUserId:currentUser?.id||null}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:[...(i.subItems||[]),ns]}:i)}:z)})); setForm(p=>({...p,subNombre:""})); };
-  const toggleSubItem=(zId,iId,sId,si)=>{ if(si&&si.ownerUserId&&si.ownerUserId!==currentUser?.id&&currentUser?.rol!=="admin"){toast("Solo el creador puede marcar este sub-ítem","err");return;} updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).map(s=>s.id===sId?{...s,terminado:!s.terminado}:s)}:i)}:z)})); };
+  const toggleSubItem=(zId,iId,sId,si)=>{
+    if(si?.ownerUserId&&si.ownerUserId!==currentUser?.id&&currentUser?.rol!=="admin"){ toast("Solo el creador puede marcar este sub-ítem","err"); return; }
+    updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).map(s=>s.id===sId?{...s,terminado:!s.terminado}:s)}:i)}:z)}));
+  };
   const delSubItem=(zId,iId,sId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,subItems:(i.subItems||[]).filter(s=>s.id!==sId)}:i)}:z)}));
 
   // ── Materiales de Sub-Ítems ──
