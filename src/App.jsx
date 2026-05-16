@@ -484,15 +484,19 @@ function MatForm({mat,onChange}){
 
 // ─── ObraCard (dentro del Dashboard) ─────────────────────────────────────────
 function ObraCard({o,isActive,calcZonePct,calcItemPct,onGoToZonas,onPDF,onCompras,onChangeStatus,currentUser,isExpanded,onToggle}){
+  const [itemsPanel,setItemsPanel]=useState(null); // null | "completados" | "pendientes" | "criticos"
+
   const allI=o.zonas.flatMap(z=>z.items||[]);
+  // enriquecer cada ítem con su zona
+  const allIConZona=o.zonas.flatMap(z=>(z.items||[]).map(i=>({...i,_zonaNombre:z.nombre})));
   const allM=allI.flatMap(i=>i.materiales||[]);
   const tw=allI.reduce((s,i)=>s+(i.peso||1),0);
   const dw=allI.reduce((s,i)=>s+(i.peso||1)*(calcItemPct(i)/100),0);
   const pct=allI.length?Math.round((dw/tw)*100):0;
   const pc=pct<30?"#ef4444":pct<70?"#f59e0b":"#22c55e";
-  const done=allI.filter(i=>i.terminado).length;
-  const pend=allI.filter(i=>!i.terminado).length;
-  const crit=allI.filter(i=>(i.peso||1)>=8&&!i.terminado).length;
+  const done=allIConZona.filter(i=>i.terminado).length;
+  const pend=allIConZona.filter(i=>!i.terminado).length;
+  const crit=allIConZona.filter(i=>(i.peso||1)>=8&&!i.terminado).length;
   const presup=allM.reduce((s,m)=>(parseFloat(m.precio)||0)*(parseFloat(m.cantidad)||0)+s,0);
   const gast=allM.filter(m=>["comprado","en_camino","entregado"].includes(m.estado||"")).reduce((s,m)=>(parseFloat(m.precio)||0)*(parseFloat(m.cantidad)||0)+s,0);
   const pendMat=allM.filter(m=>!m.estado||m.estado==="pendiente").length;
@@ -502,6 +506,23 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,onGoToZonas,onPDF,onCompra
   const hoy=today();
   const presentes=(o.trabajadores||[]).filter(t=>(t.asistencia||{})[hoy]==="presente").length;
   const ausentes=(o.trabajadores||[]).filter(t=>(t.asistencia||{})[hoy]==="ausente").length;
+
+  // Ítems filtrados según panel activo
+  const panelItems = itemsPanel==="completados" ? allIConZona.filter(i=>i.terminado)
+    : itemsPanel==="pendientes" ? allIConZona.filter(i=>!i.terminado)
+    : itemsPanel==="criticos"  ? allIConZona.filter(i=>(i.peso||1)>=8&&!i.terminado)
+    : [];
+  const panelMeta = {
+    completados:{ label:"Completados", color:"#22c55e", icon:"✓" },
+    pendientes:  { label:"Pendientes",  color:"#f59e0b", icon:"○" },
+    criticos:    { label:"Críticos",    color:"#ef4444", icon:"⚠" },
+  };
+
+  const statCards=[
+    ["completados","Completados",done,"#22c55e"],
+    ["pendientes","Pendientes",pend,"#f59e0b"],
+    ["criticos","Críticos",crit,"#ef4444"],
+  ];
 
   return <div style={{background:"#0a1628",border:`2px solid ${isActive?"#f59e0b44":"#1e293b"}`,borderRadius:16,overflow:"hidden",marginBottom:10}}>
     {/* Cabecera — siempre visible */}
@@ -558,13 +579,52 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,onGoToZonas,onPDF,onCompra
       </div>}
 
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7}}>
-        {[["Completados",done,"#22c55e"],["Pendientes",pend,"#f59e0b"],["Críticos",crit,"#ef4444"]].map(([l,v,c])=>(
-          <div key={l} style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:10,padding:"10px 8px",textAlign:"center"}}>
+        {statCards.map(([key,l,v,c])=>(
+          <button key={key} onClick={()=>setItemsPanel(p=>p===key?null:key)}
+            style={{background:itemsPanel===key?c+"22":"#0f172a",border:`1px solid ${itemsPanel===key?c+"66":"#1e293b"}`,borderRadius:10,padding:"10px 8px",textAlign:"center",cursor:"pointer",transition:"all .2s"}}>
             <div style={{fontSize:"1.6rem",fontWeight:800,color:c,lineHeight:1}}>{v}</div>
-            <div style={{fontSize:"0.58rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",marginTop:3}}>{l}</div>
-          </div>
+            <div style={{fontSize:"0.58rem",color:itemsPanel===key?c:"#64748b",fontWeight:700,textTransform:"uppercase",marginTop:3}}>{l}</div>
+            {v>0&&<div style={{fontSize:"0.55rem",color:c,marginTop:2,opacity:0.8}}>ver →</div>}
+          </button>
         ))}
       </div>
+
+      {/* Panel de ítems filtrado */}
+      {itemsPanel&&<div style={{background:"#060e1a",border:`1px solid ${panelMeta[itemsPanel].color}33`,borderRadius:10,overflow:"hidden"}}>
+        <div style={{padding:"8px 12px",background:panelMeta[itemsPanel].color+"18",borderBottom:`1px solid ${panelMeta[itemsPanel].color}22`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <span style={{fontSize:"0.7rem",fontWeight:700,color:panelMeta[itemsPanel].color,textTransform:"uppercase",letterSpacing:"0.06em"}}>
+            {panelMeta[itemsPanel].icon} {panelMeta[itemsPanel].label} — {panelItems.length} ítem{panelItems.length!==1?"s":""}
+          </span>
+          <button onClick={()=>setItemsPanel(null)} style={{background:"none",border:"none",color:"#64748b",cursor:"pointer",fontSize:"1.1rem",lineHeight:1,padding:"0 2px"}}>×</button>
+        </div>
+        {panelItems.length===0
+          ? <p style={{margin:0,padding:"12px",fontSize:"0.78rem",color:"#334155",textAlign:"center"}}>No hay ítems en esta categoría.</p>
+          : <div style={{maxHeight:280,overflowY:"auto"}}>
+              {panelItems.map(item=>{
+                const d=daysDiff(item.fechaFin);
+                const overdue=d!==null&&d<0&&!item.terminado;
+                const warn=d!==null&&d<=3&&d>=0&&!item.terminado;
+                const hasSubs=(item.subItems||[]).length>0;
+                const subDone=(item.subItems||[]).filter(s=>s.terminado).length;
+                return <div key={item.id} style={{padding:"9px 12px",borderBottom:"1px solid #0d1526",display:"flex",alignItems:"center",gap:10}}>
+                  <div style={{width:28,height:28,borderRadius:"50%",background:item.terminado?"#22c55e22":"#1e293b",border:`1.5px solid ${item.terminado?"#22c55e":"#334155"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.75rem",color:item.terminado?"#22c55e":"#64748b",flexShrink:0,fontWeight:700}}>
+                    {item.terminado?"✓":"○"}
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:"0.84rem",fontWeight:600,color:item.terminado?"#4ade80":"#e2e8f0",textDecoration:item.terminado?"line-through":"none",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.nombre}</div>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:2}}>
+                      <span style={{fontSize:"0.62rem",color:"#f59e0b",background:"#f59e0b18",borderRadius:4,padding:"1px 5px"}}>📍 {item._zonaNombre}</span>
+                      {hasSubs&&<span style={{fontSize:"0.62rem",color:"#a78bfa"}}>☰ {subDone}/{(item.subItems||[]).length}</span>}
+                      {item.fechaFin&&<span style={{fontSize:"0.62rem",color:overdue?"#ef4444":warn?"#f59e0b":"#475569",display:"flex",alignItems:"center",gap:2}}>{overdue?"⚠":warn?"⏰":""} {item.fechaFin}</span>}
+                      {(item.materiales||[]).length>0&&<span style={{fontSize:"0.62rem",color:"#475569"}}>📦 {item.materiales.length}</span>}
+                    </div>
+                  </div>
+                  <span style={{fontSize:"0.6rem",background:"#1e293b",color:"#64748b",borderRadius:4,padding:"2px 6px",flexShrink:0,fontWeight:700}}>W{item.peso||1}</span>
+                </div>;
+              })}
+            </div>
+        }
+      </div>}
 
       {o.trabajadores.length>0&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:11,padding:12}}>
         <div style={{fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8,display:"flex",alignItems:"center",gap:4}}><Ico.Attend/> Asistencia hoy</div>
