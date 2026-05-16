@@ -482,127 +482,158 @@ function MatForm({mat,onChange}){
   </div>;
 }
 
-// ─── Dashboard ────────────────────────────────────────────────────────────────
-function Dashboard({obra,calcZonePct,totalPct,onPDF,onCompras,currentUser,onGoToZonas,onChangeStatus}){
-  const pct=totalPct(),pc=pct<30?"#ef4444":pct<70?"#f59e0b":"#22c55e";
-  const allI=obra.zonas.flatMap(z=>z.items||[]);
+// ─── ObraCard (dentro del Dashboard) ─────────────────────────────────────────
+function ObraCard({o,isActive,calcZonePct,calcItemPct,onGoToZonas,onPDF,onCompras,onChangeStatus,currentUser,isExpanded,onToggle}){
+  const allI=o.zonas.flatMap(z=>z.items||[]);
   const allM=allI.flatMap(i=>i.materiales||[]);
-  const done=allI.filter(i=>i.terminado).length,pend=allI.filter(i=>!i.terminado).length;
+  const tw=allI.reduce((s,i)=>s+(i.peso||1),0);
+  const dw=allI.reduce((s,i)=>s+(i.peso||1)*(calcItemPct(i)/100),0);
+  const pct=allI.length?Math.round((dw/tw)*100):0;
+  const pc=pct<30?"#ef4444":pct<70?"#f59e0b":"#22c55e";
+  const done=allI.filter(i=>i.terminado).length;
+  const pend=allI.filter(i=>!i.terminado).length;
   const crit=allI.filter(i=>(i.peso||1)>=8&&!i.terminado).length;
   const presup=allM.reduce((s,m)=>(parseFloat(m.precio)||0)*(parseFloat(m.cantidad)||0)+s,0);
   const gast=allM.filter(m=>["comprado","en_camino","entregado"].includes(m.estado||"")).reduce((s,m)=>(parseFloat(m.precio)||0)*(parseFloat(m.cantidad)||0)+s,0);
   const pendMat=allM.filter(m=>!m.estado||m.estado==="pendiente").length;
   const alertas=allI.filter(i=>{ const d=daysDiff(i.fechaFin); return !i.terminado&&d!==null&&d<=3; });
-  const sorted=[...obra.zonas].sort((a,b)=>calcZonePct(b)-calcZonePct(a));
-  const obraEst=OBRA_ESTADOS[obra.estado||"en_ejecucion"];
-
-  // Asistencia hoy
+  const sorted=[...o.zonas].sort((a,b)=>calcZonePct(b)-calcZonePct(a));
+  const obraEst=OBRA_ESTADOS[o.estado||"en_ejecucion"];
   const hoy=today();
-  const presentes=(obra.trabajadores||[]).filter(t=>(t.asistencia||{})[hoy]==="presente").length;
-  const ausentes=(obra.trabajadores||[]).filter(t=>(t.asistencia||{})[hoy]==="ausente").length;
+  const presentes=(o.trabajadores||[]).filter(t=>(t.asistencia||{})[hoy]==="presente").length;
+  const ausentes=(o.trabajadores||[]).filter(t=>(t.asistencia||{})[hoy]==="ausente").length;
 
-  return <div style={{display:"flex",flexDirection:"column",gap:12}}>
-
-    {/* Estado de la obra */}
-    <div style={{background:obraEst.bg,border:`1px solid ${obraEst.color}33`,borderRadius:12,padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
-      <div style={{display:"flex",alignItems:"center",gap:8}}>
-        <span style={{fontSize:"1.2rem"}}>{obraEst.icon}</span>
-        <div>
-          <div style={{fontSize:"0.65rem",color:obraEst.color,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em"}}>Estado de la obra</div>
-          <div style={{fontSize:"0.9rem",fontWeight:700,color:"#f1f5f9"}}>{obraEst.label}</div>
+  return <div style={{background:"#0a1628",border:`2px solid ${isActive?"#f59e0b44":"#1e293b"}`,borderRadius:16,overflow:"hidden",marginBottom:10}}>
+    {/* Cabecera — siempre visible */}
+    <div style={{padding:"14px 16px",cursor:"pointer"}} onClick={onToggle}>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <div style={{position:"relative",flexShrink:0}}>
+          <Ring pct={pct} size={64} stroke={5} color={pc}/>
+          <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+            <span style={{fontSize:"0.85rem",fontWeight:800,color:pc,lineHeight:1}}>{pct}%</span>
+          </div>
         </div>
+        <div style={{flex:1,minWidth:0}}>
+          {/* Nombre + estado en la misma línea */}
+          <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",marginBottom:4}}>
+            <span style={{fontWeight:800,fontSize:"1rem",color:"#f1f5f9"}}>{o.nombre}</span>
+            {isActive&&<span style={{fontSize:"0.55rem",background:"#f59e0b",color:"#0f172a",borderRadius:4,padding:"1px 6px",fontWeight:800,letterSpacing:"0.05em"}}>ACTIVA</span>}
+            {/* Estado integrado aquí */}
+            <span style={{fontSize:"0.65rem",background:obraEst.bg,color:obraEst.color,border:`1px solid ${obraEst.color}44`,borderRadius:20,padding:"2px 8px",fontWeight:700}}>{obraEst.icon} {obraEst.label}</span>
+          </div>
+          {o.descripcion&&<div style={{fontSize:"0.72rem",color:"#475569",marginBottom:3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.descripcion}</div>}
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {o.fechaInicio&&<span style={{fontSize:"0.63rem",color:"#475569",display:"flex",alignItems:"center",gap:2}}><Ico.Cal/>{fmtDate(o.fechaInicio)}</span>}
+            {o.fechaFin&&<span style={{fontSize:"0.63rem",color:daysDiff(o.fechaFin)<7?"#ef4444":"#64748b",display:"flex",alignItems:"center",gap:2}}><Ico.Cal/>{fmtDate(o.fechaFin)}</span>}
+            <span style={{fontSize:"0.63rem",color:"#475569"}}>{o.zonas.length} zonas · {allI.length} ítems</span>
+          </div>
+        </div>
+        <Ico.Chev open={isExpanded}/>
       </div>
+      {/* Barra de progreso */}
+      <div style={{height:4,background:"#1e293b",borderRadius:2,overflow:"hidden",marginTop:10}}>
+        <div style={{height:"100%",width:`${pct}%`,background:pc,borderRadius:2,transition:"width .5s"}}/>
+      </div>
+    </div>
+
+    {/* Contenido expandible */}
+    {isExpanded&&<div style={{borderTop:"1px solid #1e293b",padding:"12px 16px",display:"flex",flexDirection:"column",gap:10}}>
+
+      {/* Cambiar estado — solo admin */}
       {currentUser?.rol==="admin"&&<div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
         {Object.entries(OBRA_ESTADOS).map(([k,v])=><button key={k} onClick={()=>onChangeStatus(k)}
-          style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${v.color}44`,background:(obra.estado||"en_ejecucion")===k?v.color+"33":"transparent",color:v.color,fontSize:"0.65rem",fontWeight:700,cursor:"pointer",transition:"all .2s"}}>{v.icon} {v.label}</button>)}
+          style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${v.color}44`,background:(o.estado||"en_ejecucion")===k?v.color+"33":"transparent",color:v.color,fontSize:"0.65rem",fontWeight:700,cursor:"pointer",transition:"all .2s"}}>{v.icon} {v.label}</button>)}
       </div>}
-    </div>
 
-    {/* Tarjeta principal */}
-    <div onClick={onGoToZonas} style={{background:"linear-gradient(135deg,#0f172a,#1e293b)",border:"1px solid #334155",borderRadius:16,padding:18,display:"flex",alignItems:"center",gap:16,cursor:"pointer",transition:"border-color .2s"}}
-      onMouseEnter={e=>e.currentTarget.style.borderColor="#f59e0b55"}
-      onMouseLeave={e=>e.currentTarget.style.borderColor="#334155"}>
-      <div style={{position:"relative",flexShrink:0}}>
-        <Ring pct={pct} size={90} stroke={7} color={pc}/>
-        <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
-          <span style={{fontSize:"1.3rem",fontWeight:800,color:pc,lineHeight:1}}>{pct}%</span>
-          <span style={{fontSize:"0.5rem",color:"#64748b",fontWeight:700,letterSpacing:"0.05em"}}>AVANCE</span>
-        </div>
+      {/* Botones acción */}
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        <button style={{...S.btnP,fontSize:"0.72rem",padding:"6px 12px"}} onClick={e=>{e.stopPropagation();onGoToZonas();}}>Ver zonas →</button>
+        <button style={{...S.btnP,fontSize:"0.72rem",padding:"6px 12px"}} onClick={e=>{e.stopPropagation();onPDF();}}>📄 PDF Avance</button>
+        <button style={{...S.btnS,fontSize:"0.72rem",padding:"6px 10px"}} onClick={e=>{e.stopPropagation();onCompras();}}><Ico.Cart/> PDF Compras</button>
       </div>
-      <div style={{flex:1}}>
-        <div style={{fontSize:"1rem",fontWeight:700,color:"#f1f5f9",marginBottom:2,display:"flex",alignItems:"center",gap:6}}>
-          {obra.nombre||"Sin nombre"}
-          <span style={{fontSize:"0.62rem",color:"#f59e0b",background:"#f59e0b18",border:"1px solid #f59e0b33",borderRadius:5,padding:"1px 6px",fontWeight:700}}>Ver zonas →</span>
-        </div>
-        {obra.descripcion&&<div style={{fontSize:"0.75rem",color:"#64748b",marginBottom:4}}>{obra.descripcion}</div>}
-        {(obra.fechaInicio||obra.fechaFin)&&<div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-          {obra.fechaInicio&&<span style={{fontSize:"0.68rem",color:"#64748b",display:"flex",alignItems:"center",gap:2}}><Ico.Cal/>{fmtDate(obra.fechaInicio)}</span>}
-          {obra.fechaFin&&<span style={{fontSize:"0.68rem",color:daysDiff(obra.fechaFin)<7?"#ef4444":"#64748b",display:"flex",alignItems:"center",gap:2}}><Ico.Cal/>{fmtDate(obra.fechaFin)}</span>}
-        </div>}
-        <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}} onClick={e=>e.stopPropagation()}>
-          <button style={{...S.btnP,fontSize:"0.72rem",padding:"6px 12px"}} onClick={onPDF}>📄 PDF Avance</button>
-          <button style={{...S.btnS,fontSize:"0.72rem",padding:"6px 10px"}} onClick={onCompras}><Ico.Cart/> PDF Compras</button>
-        </div>
-      </div>
-    </div>
 
-    {alertas.length>0&&<div style={{background:"#450a0a",border:"1px solid #ef444444",borderRadius:12,padding:"12px 14px"}}>
-      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8,color:"#fca5a5",fontSize:"0.72rem",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em"}}><Ico.Alert/> {alertas.length} ítem(s) próximo(s) a vencer</div>
-      {alertas.map(it=>{ const d=daysDiff(it.fechaFin); return <div key={it.id} style={{fontSize:"0.8rem",color:"#fca5a5",marginBottom:3}}>⚠ {it.nombre} — {d<0?`Vencido hace ${Math.abs(d)}d`:`${d}d restante${d!==1?"s":""}`}</div>; })}
-    </div>}
+      {alertas.length>0&&<div style={{background:"#450a0a",border:"1px solid #ef444444",borderRadius:10,padding:"10px 12px"}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6,color:"#fca5a5",fontSize:"0.7rem",fontWeight:700,textTransform:"uppercase"}}><Ico.Alert/> {alertas.length} ítem(s) próximo(s) a vencer</div>
+        {alertas.map(it=>{ const d=daysDiff(it.fechaFin); return <div key={it.id} style={{fontSize:"0.78rem",color:"#fca5a5",marginBottom:2}}>⚠ {it.nombre} — {d<0?`Vencido hace ${Math.abs(d)}d`:`${d}d restante${d!==1?"s":""}`}</div>; })}
+      </div>}
 
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
-      {[["Completados",done,"#22c55e"],["Pendientes",pend,"#f59e0b"],["Críticos",crit,"#ef4444"]].map(([l,v,c])=>(
-        <div key={l} style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:12,padding:"13px 10px",textAlign:"center"}}>
-          <div style={{fontSize:"1.8rem",fontWeight:800,color:c,lineHeight:1}}>{v}</div>
-          <div style={{fontSize:"0.62rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em",marginTop:3}}>{l}</div>
-        </div>
-      ))}
-    </div>
-
-    {/* Asistencia hoy */}
-    {obra.trabajadores.length>0&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:13,padding:14}}>
-      <div style={{fontSize:"0.68rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10,display:"flex",alignItems:"center",gap:5}}><Ico.Attend/> Asistencia hoy</div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:8}}>
-        {[["Presentes",presentes,"#22c55e"],["Ausentes",ausentes,"#ef4444"],["Sin registrar",obra.trabajadores.length-presentes-ausentes,"#64748b"]].map(([l,v,c])=>(
-          <div key={l} style={{textAlign:"center"}}>
-            <div style={{fontSize:"1.4rem",fontWeight:800,color:c}}>{v}</div>
-            <div style={{fontSize:"0.58rem",color:"#475569"}}>{l}</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7}}>
+        {[["Completados",done,"#22c55e"],["Pendientes",pend,"#f59e0b"],["Críticos",crit,"#ef4444"]].map(([l,v,c])=>(
+          <div key={l} style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:10,padding:"10px 8px",textAlign:"center"}}>
+            <div style={{fontSize:"1.6rem",fontWeight:800,color:c,lineHeight:1}}>{v}</div>
+            <div style={{fontSize:"0.58rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",marginTop:3}}>{l}</div>
           </div>
         ))}
       </div>
-    </div>}
 
-    {presup>0&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:13,padding:14}}>
-      <div style={{display:"flex",alignItems:"center",gap:5,fontSize:"0.68rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}><Ico.Cart/> Materiales</div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginBottom:10}}>
-        {[["Presupuesto","$"+fmt(presup),"#94a3b8"],["Gastado","$"+fmt(gast),"#f59e0b"],["Pendiente",pendMat+" ítems","#ef4444"]].map(([l,v,c])=>(
-          <div key={l} style={{textAlign:"center"}}><div style={{fontSize:"0.88rem",fontWeight:800,color:c}}>{v}</div><div style={{fontSize:"0.58rem",color:"#475569",marginTop:1}}>{l}</div></div>
-        ))}
-      </div>
-      <div style={{height:5,background:"#1e293b",borderRadius:3,overflow:"hidden",marginBottom:3}}>
-        <div style={{height:"100%",width:`${Math.min(100,(gast/presup)*100)}%`,background:"linear-gradient(90deg,#22c55e,#f59e0b)",borderRadius:3,transition:"width .6s"}}/>
-      </div>
-      <div style={{fontSize:"0.62rem",color:"#475569"}}>{Math.round((gast/presup)*100)}% comprometido</div>
-    </div>}
+      {o.trabajadores.length>0&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:11,padding:12}}>
+        <div style={{fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8,display:"flex",alignItems:"center",gap:4}}><Ico.Attend/> Asistencia hoy</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
+          {[["Presentes",presentes,"#22c55e"],["Ausentes",ausentes,"#ef4444"],["Sin reg.",o.trabajadores.length-presentes-ausentes,"#64748b"]].map(([l,v,c])=>(
+            <div key={l} style={{textAlign:"center"}}>
+              <div style={{fontSize:"1.3rem",fontWeight:800,color:c}}>{v}</div>
+              <div style={{fontSize:"0.58rem",color:"#475569"}}>{l}</div>
+            </div>
+          ))}
+        </div>
+      </div>}
 
-    {sorted.length>0&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:13,padding:14}}>
-      <div style={{fontSize:"0.68rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}>Avance por Zona</div>
-      {sorted.map(z=>{ const zp=calcZonePct(z),zc=zp<30?"#ef4444":zp<70?"#f59e0b":"#22c55e"; return <div key={z.id} style={{marginBottom:10}}>
-        <div style={{display:"flex",justifyContent:"space-between",marginBottom:3,alignItems:"center"}}>
-          <span style={{fontSize:"0.82rem",color:"#e2e8f0",fontWeight:500}}>{z.nombre}</span>
-          <span style={{fontSize:"0.82rem",fontWeight:700,color:zc}}>{zp}%</span>
+      {presup>0&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:11,padding:12}}>
+        <div style={{display:"flex",alignItems:"center",gap:5,fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",marginBottom:8}}><Ico.Cart/> Materiales</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginBottom:8}}>
+          {[["Presupuesto","$"+fmt(presup),"#94a3b8"],["Gastado","$"+fmt(gast),"#f59e0b"],["Pendiente",pendMat+" ítem","#ef4444"]].map(([l,v,c])=>(
+            <div key={l} style={{textAlign:"center"}}><div style={{fontSize:"0.82rem",fontWeight:800,color:c}}>{v}</div><div style={{fontSize:"0.57rem",color:"#475569",marginTop:1}}>{l}</div></div>
+          ))}
         </div>
-        <div style={{height:5,background:"#1e293b",borderRadius:3,overflow:"hidden"}}>
-          <div style={{height:"100%",width:`${zp}%`,background:zc,borderRadius:3,transition:"width .5s"}}/>
+        <div style={{height:4,background:"#1e293b",borderRadius:2,overflow:"hidden"}}>
+          <div style={{height:"100%",width:`${Math.min(100,(gast/presup)*100)}%`,background:"linear-gradient(90deg,#22c55e,#f59e0b)",borderRadius:2,transition:"width .6s"}}/>
         </div>
-        <div style={{fontSize:"0.63rem",color:"#475569",marginTop:2}}>{(z.items||[]).filter(i=>i.terminado).length}/{(z.items||[]).length} ítems</div>
-      </div>; })}
+      </div>}
+
+      {sorted.length>0&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:11,padding:12}}>
+        <div style={{fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8}}>Avance por Zona</div>
+        {sorted.map(z=>{ const zp=calcZonePct(z),zc=zp<30?"#ef4444":zp<70?"#f59e0b":"#22c55e"; return <div key={z.id} style={{marginBottom:8}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
+            <span style={{fontSize:"0.8rem",color:"#e2e8f0"}}>{z.nombre}</span>
+            <span style={{fontSize:"0.8rem",fontWeight:700,color:zc}}>{zp}%</span>
+          </div>
+          <div style={{height:4,background:"#1e293b",borderRadius:2,overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${zp}%`,background:zc,borderRadius:2,transition:"width .5s"}}/>
+          </div>
+          <div style={{fontSize:"0.6rem",color:"#475569",marginTop:2}}>{(z.items||[]).filter(i=>i.terminado).length}/{(z.items||[]).length} ítems</div>
+        </div>; })}
+      </div>}
+
+      {o.notas&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:11,padding:12}}>
+        <div style={{fontSize:"0.63rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",marginBottom:4,display:"flex",alignItems:"center",gap:4}}><Ico.Note/> Notas</div>
+        <p style={{margin:0,fontSize:"0.8rem",color:"#94a3b8",lineHeight:1.5}}>{o.notas}</p>
+      </div>}
+
     </div>}
-    {obra.notas&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:11,padding:13}}>
-      <div style={{fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:5,display:"flex",alignItems:"center",gap:4}}><Ico.Note/> Notas</div>
-      <p style={{margin:0,fontSize:"0.83rem",color:"#94a3b8",lineHeight:1.6}}>{obra.notas}</p>
-    </div>}
+  </div>;
+}
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+function Dashboard({obras,activeId,calcZonePct,calcItemPct,totalPct,onPDF,onCompras,currentUser,onGoToZonas,onChangeStatus,onSetActive}){
+  const [expanded,setExpanded]=useState({[activeId]:true});
+  const toggleExpand=(id)=>setExpanded(p=>({...p,[id]:!p[id]}));
+
+  return <div style={{display:"flex",flexDirection:"column",gap:0}}>
+    {obras.map(o=>(
+      <ObraCard key={o.id}
+        o={o}
+        isActive={o.id===activeId}
+        isExpanded={!!expanded[o.id]}
+        onToggle={()=>{ onSetActive(o.id); toggleExpand(o.id); }}
+        calcZonePct={calcZonePct}
+        calcItemPct={calcItemPct}
+        onGoToZonas={()=>onGoToZonas(o.id)}
+        onPDF={()=>onPDF(o.id)}
+        onCompras={()=>onCompras(o.id)}
+        onChangeStatus={(est)=>onChangeStatus(o.id,est)}
+        currentUser={currentUser}
+      />
+    ))}
   </div>;
 }
 
@@ -951,7 +982,19 @@ export default function SupervisorObra(){
           <span>Acceso de <strong>Encargado de Materiales</strong> — puedes agregar y gestionar materiales en todas las zonas.</span>
         </div>}
 
-        {tab==="dashboard"&&obra&&<Dashboard obra={obra} calcZonePct={calcZonePct} totalPct={totalPct} onPDF={doPDF} onCompras={doCompras} currentUser={currentUser} onGoToZonas={()=>setTab("zonas")} onChangeStatus={changeObraStatus}/>}
+        {tab==="dashboard"&&<Dashboard
+          obras={obras}
+          activeId={activeId}
+          calcZonePct={calcZonePct}
+          calcItemPct={calcItemPct}
+          totalPct={totalPct}
+          onPDF={(oId)=>{ const o=obras.find(x=>x.id===oId); if(!o)return; setExporting(true); exportAvancePDF(o,calcZonePct,()=>{ const all=o.zonas.flatMap(z=>z.items||[]); if(!all.length)return 0; const tw=all.reduce((s,i)=>s+(i.peso||1),0),dw=all.reduce((s,i)=>s+(i.peso||1)*(calcItemPct(i)/100),0); return Math.round((dw/tw)*100); }).catch(()=>toast("Error al generar PDF","err")).finally(()=>setExporting(false)); }}
+          onCompras={(oId)=>{ const o=obras.find(x=>x.id===oId); if(!o)return; setExporting(true); exportComprasPDF(o).catch(()=>toast("Error","err")).finally(()=>setExporting(false)); }}
+          currentUser={currentUser}
+          onGoToZonas={(oId)=>{ setActiveId(oId); ss(ACTIVE_KEY,oId); setTab("zonas"); }}
+          onChangeStatus={(oId,est)=>setObras(prev=>prev.map(o=>o.id===oId?{...o,estado:est}:o))}
+          onSetActive={(oId)=>{ setActiveId(oId); ss(ACTIVE_KEY,oId); }}
+        />}
 
         {tab==="zonas"&&obra&&<div>
           <div style={{display:"flex",gap:8,marginBottom:10,alignItems:"center"}}>
