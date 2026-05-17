@@ -942,7 +942,7 @@ function ObraCard({t,o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,o
 
 
 
-function Dashboard({obras,activeId,calcZonePct,calcItemPct,isItemDone,totalPct,onPDF,onCompras,currentUser,onGoToZonas,onChangeStatus,onSetActive}){
+function Dashboard({t,obras,activeId,calcZonePct,calcItemPct,isItemDone,totalPct,onPDF,onCompras,currentUser,onGoToZonas,onChangeStatus,onSetActive}){
   const [expanded,setExpanded]=useState({[activeId]:true});
   const toggleExpand=(id)=>setExpanded(p=>({...p,[id]:!p[id]}));
 
@@ -1435,6 +1435,7 @@ export default function SupervisorObra(){
         </div>}
 
         {tab==="dashboard"&&<Dashboard
+          t={t}
           obras={obras}
           activeId={activeId}
           calcZonePct={calcZonePct}
