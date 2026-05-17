@@ -497,8 +497,8 @@ function PinRow({value,onChange,refs,onComplete,shake,size=52,height=64}){
 }
 
 // ─── Auth Screen ──────────────────────────────────────────────────────────────
-function AuthScreen({
-  const t=useLang();users,obras,invites,onLogin,onRegister,onAcceptInvite}){
+function AuthScreen({users,obras,invites,onLogin,onRegister,onAcceptInvite}){
+  const t=useLang();
   const [mode,setMode]=useState(users.length===0?"register":"login");
   const [nombre,setNombre]=useState("");
   const [rol,setRol]=useState("admin");
@@ -644,8 +644,8 @@ function AuthScreen({
 }
 
 // ─── Camera Modal ─────────────────────────────────────────────────────────────
-function CameraModal({
-  const t=useLang();onCapture,onClose}){
+function CameraModal({onCapture,onClose}){
+  const t=useLang();
   const videoRef=useRef(); const canvasRef=useRef();
   const [stream,setStream]=useState(null); const [preview,setPreview]=useState(null); const [facingMode,setFacingMode]=useState("environment");
   useEffect(()=>{ startCam(facingMode); return ()=>stopCam(); },[facingMode]);
@@ -674,8 +674,8 @@ function CameraModal({
 }
 
 // ─── Scan Boleta ──────────────────────────────────────────────────────────────
-function ScanBoletaModal({
-  const t=useLang();onDatos,onClose}){
+function ScanBoletaModal({onDatos,onClose}){
+  const t=useLang();
   const [foto,setFoto]=useState(null); const [scanning,setScanning]=useState(false); const [error,setError]=useState(""); const [camMode,setCamMode]=useState(false);
   const videoRef=useRef(); const canvasRef=useRef(); const [stream,setStream]=useState(null);
   const startCam=async()=>{ try{ const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}); setStream(s); setCamMode(true); setTimeout(()=>{ if(videoRef.current){videoRef.current.srcObject=s;videoRef.current.play();} },100); }catch{ setError("No se pudo acceder a la cámara"); } };
@@ -696,8 +696,8 @@ function ScanBoletaModal({
 }
 
 // ─── MatRow ───────────────────────────────────────────────────────────────────
-function MatRow({
-  const t=useLang();mat,onEdit,onDelete,onStatus,canEdit}){
+function MatRow({mat,onEdit,onDelete,onStatus,canEdit}){
+  const t=useLang();
   const est=MAT_EST[mat.estado||"pendiente"],total=(parseFloat(mat.precio)||0)*(parseFloat(mat.cantidad)||0);
   return <div style={{background:"#060e1a",borderTop:"1px solid #0d1526",padding:"7px 14px 7px 20px"}}>
     <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
@@ -719,8 +719,8 @@ function MatRow({
 }
 
 // ─── MatForm ──────────────────────────────────────────────────────────────────
-function MatForm({
-  const t=useLang();mat,onChange}){
+function MatForm({mat,onChange}){
+  const t=useLang();
   const p=parseFloat(mat.precio)||0,q=parseFloat(mat.cantidad)||0,t=p*q;
   return <div style={{display:"flex",flexDirection:"column",gap:9}}>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
@@ -745,8 +745,8 @@ function MatForm({
 }
 
 // ─── ObraCard (dentro del Dashboard) ─────────────────────────────────────────
-function ObraCard({
-  const t=useLang();o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onPDF,onCompras,onChangeStatus,currentUser,isExpanded,onToggle}){
+function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onPDF,onCompras,onChangeStatus,currentUser,isExpanded,onToggle}){
+  const t=useLang();
   const [itemsPanel,setItemsPanel]=useState(null); // null | "completados" | "pendientes" | "criticos"
 
   const allI=o.zonas.flatMap(z=>z.items||[]);
@@ -937,8 +937,8 @@ function ObraCard({
 
 
 
-function Dashboard({
-  const t=useLang();obras,activeId,calcZonePct,calcItemPct,isItemDone,totalPct,onPDF,onCompras,currentUser,onGoToZonas,onChangeStatus,onSetActive}){
+function Dashboard({obras,activeId,calcZonePct,calcItemPct,isItemDone,totalPct,onPDF,onCompras,currentUser,onGoToZonas,onChangeStatus,onSetActive}){
+  const t=useLang();
   const [expanded,setExpanded]=useState({[activeId]:true});
   const toggleExpand=(id)=>setExpanded(p=>({...p,[id]:!p[id]}));
 
