@@ -44,6 +44,42 @@ const TRANSLATIONS = {
     logout:"Salir", login:"Ingresar", newUser:"Nuevo usuario",
     createAccount:"Crear cuenta", onlyOwnerEdit:"Solo el creador puede modificar este ítem",
     present:"Presente", absent:"Ausente", pin:"PIN de",
+    tools:"Herramientas", noTools:"Sin herramientas asignadas", toolPlaceholder:"Ej: Taladro, Nivel...",
+    available:"Disponible", inUse:"En uso", inRepair:"En reparación",
+    attendance:"Asistencia", last7days:"Últimos 7 días", tapToChange:"Toca para cambiar",
+    noStaff:"Sin trabajadores. ¡Agrega el primero!", newWorker:"Nuevo Trabajador", editWorker:"Editar Trabajador",
+    noZoneAssigned:"Sin zona", roleLabel:"Rol / Cargo", phoneLabel:"Teléfono",
+    newZone:"Nueva Zona", editZone:"Editar Zona", zoneAssignedTo:"Zona asignada a",
+    descLabel:"Descripción", nameLabel:"Nombre", namePlaceholder:"Nombre *",
+    subItems:"Sub-ítems", noSubItems:"Sin sub-ítems aún.", subItemPlaceholder:"Nombre del sub-ítem...",
+    comments:"Comentarios", noComments:"Sin comentarios aún.", commentPlaceholder:"Escribe un comentario...",
+    itemNamePlaceholder:"Nombre del ítem *",
+    onlyOwnerSubEdit:t("onlyOwnerSubEdit"),
+    assignOwner:t("assignOwner"), assignOwnerDesc:"Solo esa persona podrá marcarlo como listo, editarlo o eliminarlo.",
+    materials:"Materiales", addMaterial:"Agregar Material", editMaterial:"Editar Material",
+    addSubMaterial:"Agregar Material al Sub-ítem",
+    supplier:"Proveedor", purchaseDate:"Fecha compra", matNamePlaceholder:"Ej: Cemento",
+    budget:"Presupuesto", spent:"Gastado", pending:"Pendiente", pendingMat:"ítem pend.",
+    progressByZone:"Avance por Zona", summary:"Resumen",
+    zonesLabel:"Zonas", itemsLabel:"Ítems", doneLabel:"Listos", pendMatLabel:"Mat. pend.",
+    goToZones:t("goToZones"), pdfProgress:"PDF "+t("pdfProgress"), pdfOrders:"PDF Compras (obra)",
+    expiredDays:"Vencido hace", daysLeft:"día(s) restante(s)",
+    todayAttendance:"Asistencia hoy", presents:"Presentes", absents:"Ausentes", noReg:"Sin reg.",
+    connectingCloud:"Conectando a la nube...",
+    takePhoto:"Tomar Foto", flipCamera:"Voltear", capture:"Capturar", usePhoto:"Usar foto", repeat:"Repetir",
+    scanBoleta:"Escanear Boleta con IA", cameraBtn:"Cámara", galleryBtn:"Galería",
+    analyzeBtn:"Analizar con IA", analyzing:"Analizando...", changePhoto:"Cambiar",
+    noMaterials:"No se encontraron materiales", materialsAdded:"material(es) agregado(s)",
+    cameraError:t("cameraError"),
+    roleAdmin:"Administrador", roleCollab:"Colaborador", roleMat:"Enc. Materiales",
+    roleAdminDesc:"Control total, crea obras y zonas", roleCollabDesc:"Edita sus zonas, ve todo",
+    generatingPDF:"Generando PDF...",
+    dataSection:"Datos", inviteCollab:t("inviteCollab"),
+    validFor:"Válido por 48h, comparte este código",
+    generateCodeBtn:t("generateCodeBtn"), copyCode:"Copiar código", codeCopied:"¡Copiado!",
+    close:"Cerrar", copy:"Copiar",
+    welcomeBack:"Bienvenido de nuevo", selectUser:"Selecciona tu usuario",
+    joinCode:"Tengo un código de invitación",
   },
   en: {
     appName:"Work Supervisor", dashboard:"Home", zones:"Zones", staff:"Staff", settings:"Settings",
@@ -59,6 +95,42 @@ const TRANSLATIONS = {
     logout:"Log out", login:"Log in", newUser:"New user",
     createAccount:"Create account", onlyOwnerEdit:"Only the creator can edit this item",
     present:"Present", absent:"Absent", pin:"PIN for",
+    tools:"Tools", noTools:"No tools assigned", toolPlaceholder:"E.g.: Drill, Level, Shovel...",
+    available:"Available", inUse:"In use", inRepair:"Under repair",
+    attendance:"Attendance", last7days:"Last 7 days", tapToChange:"Tap to change",
+    noStaff:"No workers yet. Add the first one!", newWorker:"New Worker", editWorker:"Edit Worker",
+    noZoneAssigned:"No zone", roleLabel:"Role / Position", phoneLabel:"Phone",
+    newZone:"New Zone", editZone:"Edit Zone", zoneAssignedTo:"Zone assigned to",
+    descLabel:"Description", nameLabel:"Name", namePlaceholder:"Name *",
+    subItems:"Sub-items", noSubItems:"No sub-items yet.", subItemPlaceholder:"Sub-item name...",
+    comments:"Comments", noComments:"No comments yet.", commentPlaceholder:"Write a comment...",
+    itemNamePlaceholder:"Item name *",
+    onlyOwnerSubEdit:"Only the creator can check this sub-item",
+    assignOwner:"Assign item owner", assignOwnerDesc:"Only that person can mark it done, edit or delete it.",
+    materials:"Materials", addMaterial:"Add Material", editMaterial:"Edit Material",
+    addSubMaterial:"Add Material to Sub-item",
+    supplier:"Supplier", purchaseDate:"Purchase date", matNamePlaceholder:"E.g.: Cement",
+    budget:"Budget", spent:"Spent", pending:"Pending", pendingMat:"pend.",
+    progressByZone:"Progress by Zone", summary:"Summary",
+    zonesLabel:"Zones", itemsLabel:"Items", doneLabel:"Done", pendMatLabel:"Mat. pend.",
+    goToZones:"View zones →", pdfProgress:"PDF Progress", pdfOrders:"PDF Orders (project)",
+    expiredDays:"Expired", daysLeft:"day(s) left",
+    todayAttendance:"Today's attendance", presents:"Present", absents:"Absent", noReg:"No record",
+    connectingCloud:"Connecting to cloud...",
+    takePhoto:"Take Photo", flipCamera:"Flip", capture:"Capture", usePhoto:"Use photo", repeat:"Retake",
+    scanBoleta:"Scan Receipt with AI", cameraBtn:"Camera", galleryBtn:"Gallery",
+    analyzeBtn:"Analyze with AI", analyzing:"Analyzing...", changePhoto:"Change",
+    noMaterials:"No materials found", materialsAdded:"material(s) added",
+    cameraError:"Could not access camera",
+    roleAdmin:"Administrator", roleCollab:"Collaborator", roleMat:"Materials Manager",
+    roleAdminDesc:"Full control, creates projects and zones", roleCollabDesc:"Edits own zones, views all",
+    generatingPDF:"Generating PDF...",
+    dataSection:"Data", inviteCollab:"Invite collaborator",
+    validFor:"Valid 48h, share this code",
+    generateCodeBtn:"Generate code", copyCode:"Copy code", codeCopied:"Copied!",
+    close:"Close", copy:"Copy",
+    welcomeBack:"Welcome back", selectUser:"Select your user",
+    joinCode:"I have an invitation code",
   },
   pt: {
     appName:"Supervisor de Obra", dashboard:"Início", zones:"Zonas", staff:"Pessoal", settings:"Config",
@@ -74,6 +146,42 @@ const TRANSLATIONS = {
     logout:"Sair", login:"Entrar", newUser:"Novo usuário",
     createAccount:"Criar conta", onlyOwnerEdit:"Somente o criador pode editar este item",
     present:"Presente", absent:"Ausente", pin:"PIN de",
+    tools:"Ferramentas", noTools:"Sem ferramentas atribuídas", toolPlaceholder:"Ex: Furadeira, Nível...",
+    available:"Disponível", inUse:"Em uso", inRepair:"Em reparo",
+    attendance:"Presença", last7days:"Últimos 7 dias", tapToChange:"Toque para alterar",
+    noStaff:"Sem trabalhadores. Adicione o primeiro!", newWorker:"Novo Trabalhador", editWorker:"Editar Trabalhador",
+    noZoneAssigned:"Sem zona", roleLabel:"Função / Cargo", phoneLabel:"Telefone",
+    newZone:"Nova Zona", editZone:"Editar Zona", zoneAssignedTo:"Zona atribuída a",
+    descLabel:"Descrição", nameLabel:"Nome", namePlaceholder:"Nome *",
+    subItems:"Sub-itens", noSubItems:"Sem sub-itens ainda.", subItemPlaceholder:"Nome do sub-item...",
+    comments:"Comentários", noComments:"Sem comentários ainda.", commentPlaceholder:"Escreva um comentário...",
+    itemNamePlaceholder:"Nome do item *",
+    onlyOwnerSubEdit:"Somente o criador pode marcar este sub-item",
+    assignOwner:"Atribuir responsável pelo item", assignOwnerDesc:"Somente essa pessoa pode marcá-lo, editá-lo ou excluí-lo.",
+    materials:"Materiais", addMaterial:"Adicionar Material", editMaterial:"Editar Material",
+    addSubMaterial:"Adicionar Material ao Sub-item",
+    supplier:"Fornecedor", purchaseDate:"Data de compra", matNamePlaceholder:"Ex: Cimento",
+    budget:"Orçamento", spent:"Gasto", pending:"Pendente", pendingMat:"pend.",
+    progressByZone:"Progresso por Zona", summary:"Resumo",
+    zonesLabel:"Zonas", itemsLabel:"Itens", doneLabel:"Concluídos", pendMatLabel:"Mat. pend.",
+    goToZones:"Ver zonas →", pdfProgress:"PDF Progresso", pdfOrders:"PDF Compras (obra)",
+    expiredDays:"Vencido há", daysLeft:"dia(s) restante(s)",
+    todayAttendance:"Presença hoje", presents:"Presentes", absents:"Ausentes", noReg:"Sem registro",
+    connectingCloud:"Conectando à nuvem...",
+    takePhoto:"Tirar Foto", flipCamera:"Virar", capture:"Capturar", usePhoto:"Usar foto", repeat:"Repetir",
+    scanBoleta:"Escanear Nota com IA", cameraBtn:"Câmera", galleryBtn:"Galeria",
+    analyzeBtn:"Analisar com IA", analyzing:"Analisando...", changePhoto:"Trocar",
+    noMaterials:"Nenhum material encontrado", materialsAdded:"material(is) adicionado(s)",
+    cameraError:"Não foi possível acessar a câmera",
+    roleAdmin:"Administrador", roleCollab:"Colaborador", roleMat:"Resp. Materiais",
+    roleAdminDesc:"Controle total, cria obras e zonas", roleCollabDesc:"Edita suas zonas, vê tudo",
+    generatingPDF:"Gerando PDF...",
+    dataSection:"Dados", inviteCollab:"Convidar colaborador",
+    validFor:"Válido 48h, compartilhe este código",
+    generateCodeBtn:"Gerar código", copyCode:"Copiar código", codeCopied:"Copiado!",
+    close:"Fechar", copy:"Copiar",
+    welcomeBack:"Bem-vindo de volta", selectUser:"Selecione seu usuário",
+    joinCode:"Tenho um código de convite",
   },
   fr: {
     appName:"Superviseur Chantier", dashboard:"Accueil", zones:"Zones", staff:"Personnel", settings:"Config",
@@ -89,6 +197,42 @@ const TRANSLATIONS = {
     logout:"Se déconnecter", login:"Se connecter", newUser:"Nouvel utilisateur",
     createAccount:"Créer un compte", onlyOwnerEdit:"Seul le créateur peut modifier cet élément",
     present:"Présent", absent:"Absent", pin:"PIN de",
+    tools:"Outils", noTools:"Aucun outil attribué", toolPlaceholder:"Ex: Perceuse, Niveau...",
+    available:"Disponible", inUse:"En cours", inRepair:"En réparation",
+    attendance:"Présence", last7days:"7 derniers jours", tapToChange:"Appuyer pour modifier",
+    noStaff:"Aucun ouvrier. Ajoutez le premier!", newWorker:"Nouvel Ouvrier", editWorker:"Modifier Ouvrier",
+    noZoneAssigned:"Sans zone", roleLabel:"Rôle / Poste", phoneLabel:"Téléphone",
+    newZone:"Nouvelle Zone", editZone:"Modifier Zone", zoneAssignedTo:"Zone attribuée à",
+    descLabel:"Description", nameLabel:"Nom", namePlaceholder:"Nom *",
+    subItems:"Sous-éléments", noSubItems:"Aucun sous-élément encore.", subItemPlaceholder:"Nom du sous-élément...",
+    comments:"Commentaires", noComments:"Aucun commentaire encore.", commentPlaceholder:"Écrire un commentaire...",
+    itemNamePlaceholder:"Nom de l'élément *",
+    onlyOwnerSubEdit:"Seul le créateur peut cocher ce sous-élément",
+    assignOwner:"Attribuer responsable", assignOwnerDesc:"Seule cette personne peut le marquer, modifier ou supprimer.",
+    materials:"Matériaux", addMaterial:"Ajouter Matériau", editMaterial:"Modifier Matériau",
+    addSubMaterial:"Ajouter Matériau au Sous-élément",
+    supplier:"Fournisseur", purchaseDate:"Date d'achat", matNamePlaceholder:"Ex: Ciment",
+    budget:"Budget", spent:"Dépensé", pending:"En attente", pendingMat:"att.",
+    progressByZone:"Avancement par Zone", summary:"Résumé",
+    zonesLabel:"Zones", itemsLabel:"Éléments", doneLabel:"Terminés", pendMatLabel:"Mat. att.",
+    goToZones:"Voir zones →", pdfProgress:"PDF Avancement", pdfOrders:"PDF Commandes (projet)",
+    expiredDays:"Expiré depuis", daysLeft:"jour(s) restant(s)",
+    todayAttendance:"Présence aujourd'hui", presents:"Présents", absents:"Absents", noReg:"Sans registre",
+    connectingCloud:"Connexion au cloud...",
+    takePhoto:"Prendre Photo", flipCamera:"Retourner", capture:"Capturer", usePhoto:"Utiliser", repeat:"Reprendre",
+    scanBoleta:"Scanner Reçu avec IA", cameraBtn:"Caméra", galleryBtn:"Galerie",
+    analyzeBtn:"Analyser avec IA", analyzing:"Analyse...", changePhoto:"Changer",
+    noMaterials:"Aucun matériau trouvé", materialsAdded:"matériau(x) ajouté(s)",
+    cameraError:"Impossible d'accéder à la caméra",
+    roleAdmin:"Administrateur", roleCollab:"Collaborateur", roleMat:"Resp. Matériaux",
+    roleAdminDesc:"Contrôle total, crée projets et zones", roleCollabDesc:"Modifie ses zones, voit tout",
+    generatingPDF:"Génération du PDF...",
+    dataSection:"Données", inviteCollab:"Inviter un collaborateur",
+    validFor:"Valide 48h, partagez ce code",
+    generateCodeBtn:"Générer un code", copyCode:"Copier le code", codeCopied:"Copié!",
+    close:"Fermer", copy:"Copier",
+    welcomeBack:"Bon retour", selectUser:"Sélectionnez votre utilisateur",
+    joinCode:"J'ai un code d'invitation",
   },
 };
 const detectLang=()=>{ try{ const s=localStorage.getItem("supervisor_lang"); if(s&&TRANSLATIONS[s])return s; }catch{} const n=navigator.language?.slice(0,2).toLowerCase(); return TRANSLATIONS[n]?n:"es"; };
@@ -121,11 +265,11 @@ const OBRA_ESTADOS = {
   finalizada:   { label:"Finalizada",    color:"#38bdf8", bg:"#38bdf818", icon:"✅" },
 };
 
-const HERRAMIENTA_ESTADOS = {
-  disponible:    { label:"Disponible",    color:"#22c55e", dot:"#22c55e" },
-  en_uso:        { label:"En uso",        color:"#f59e0b", dot:"#f59e0b" },
-  en_reparacion: { label:"En reparación", color:"#ef4444", dot:"#ef4444" },
-};
+const getHerramientaEstados = (t) => ({
+  disponible:    { label:t("available"), color:"#22c55e", dot:"#22c55e" },
+  en_uso:        { label:t("inUse"),     color:"#f59e0b", dot:"#f59e0b" },
+  en_reparacion: { label:t("inRepair"),  color:"#ef4444", dot:"#ef4444" },
+});
 
 // ─── PDF ──────────────────────────────────────────────────────────────────────
 async function getJsPDF(){
@@ -318,7 +462,7 @@ const MAT_EST = {
   entregado:{label:"Entregado",color:"#a78bfa",bg:"#a78bfa18",dot:"#a78bfa"},
 };
 
-const ROLE_META = {
+const getRoleMeta = (t) => ({
   admin:      {label:"Administrador", icon:"👑", desc:"Control total · crea obras y zonas",    color:"#f59e0b"},
   colaborador:{label:"Colaborador",   icon:"🔧", desc:"Edita sus zonas · ve todo",              color:"#38bdf8"},
   materiales: {label:"Enc. Materiales",icon:"📦",desc:"Solo materiales y boletas · ve el avance",color:"#a78bfa"},
@@ -363,7 +507,7 @@ function PinRow({value,onChange,refs,onComplete,shake,size=52,height=64}){
 }
 
 // ─── Auth Screen ──────────────────────────────────────────────────────────────
-function AuthScreen({users,obras,invites,onLogin,onRegister,onAcceptInvite}){
+function AuthScreen({t,users,obras,invites,onLogin,onRegister,onAcceptInvite}){
   const [mode,setMode]=useState(users.length===0?"register":"login");
   const [nombre,setNombre]=useState("");
   const [rol,setRol]=useState("admin");
@@ -381,7 +525,7 @@ function AuthScreen({users,obras,invites,onLogin,onRegister,onAcceptInvite}){
 
   const doLogin=(pinStr)=>{
     const user=users.find(u=>u.id===selUser);
-    if(!user){setError("Selecciona un usuario");return;}
+    if(!user){setError(t("selectUser"));return;}
     if(pinStr!==user.pin){ setShake(true); setError("PIN incorrecto"); setTimeout(()=>{setPin(["","","","",""]);setShake(false);setError("");refs[0].current?.focus();},700); return; }
     onLogin(user);
   };
@@ -509,14 +653,14 @@ function AuthScreen({users,obras,invites,onLogin,onRegister,onAcceptInvite}){
 }
 
 // ─── Camera Modal ─────────────────────────────────────────────────────────────
-function CameraModal({onCapture,onClose}){
+function CameraModal({t,onCapture,onClose}){
   const videoRef=useRef(); const canvasRef=useRef();
   const [stream,setStream]=useState(null); const [preview,setPreview]=useState(null); const [facingMode,setFacingMode]=useState("environment");
   useEffect(()=>{ startCam(facingMode); return ()=>stopCam(); },[facingMode]);
   const startCam=async(mode)=>{ stopCam(); try{ const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:mode,width:{ideal:1280},height:{ideal:720}}}); setStream(s); if(videoRef.current){videoRef.current.srcObject=s;videoRef.current.play();} }catch(e){console.error(e);} };
   const stopCam=()=>{ if(stream) stream.getTracks().forEach(t=>t.stop()); setStream(null); };
   const capture=()=>{ const v=videoRef.current,c=canvasRef.current; c.width=v.videoWidth; c.height=v.videoHeight; c.getContext("2d").drawImage(v,0,0); setPreview(c.toDataURL("image/jpeg",0.85)); };
-  return <Modal title="Tomar Foto" onClose={()=>{stopCam();onClose();}} full>
+  return <Modal title={t("takePhoto")} onClose={()=>{stopCam();onClose();}} full>
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12,height:"100%"}}>
       {!preview?<>
         <div style={{width:"100%",maxWidth:480,background:"#000",borderRadius:12,overflow:"hidden",flex:1,position:"relative"}}><video ref={videoRef} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} playsInline muted/></div>
@@ -524,13 +668,13 @@ function CameraModal({onCapture,onClose}){
         <div style={{display:"flex",gap:12,paddingBottom:8}}>
           <button style={S.btnG} onClick={()=>setFacingMode(f=>f==="environment"?"user":"environment")}>🔄 Voltear</button>
           <button style={{...S.btnP,padding:"14px 36px",fontSize:"1rem",borderRadius:50}} onClick={capture}>📸 Capturar</button>
-          <button style={S.btnG} onClick={()=>{stopCam();onClose();}}>Cancelar</button>
+          <button style={S.btnG} onClick={()=>{stopCam();onClose();}}>{t("cancel")}</button>
         </div>
       </>:<>
         <img src={preview} style={{width:"100%",maxWidth:480,borderRadius:12,maxHeight:"70vh",objectFit:"contain"}} alt="preview"/>
         <div style={{display:"flex",gap:10,paddingBottom:8}}>
           <button style={S.btnG} onClick={()=>setPreview(null)}>🔄 Repetir</button>
-          <button style={S.btnP} onClick={()=>{onCapture(preview);onClose();}}><Ico.Check/> Usar foto</button>
+          <button style={S.btnP} onClick={()=>{onCapture(preview);onClose();}}><Ico.Check/> {t("usePhoto")}</button>
         </div>
       </>}
     </div>
@@ -538,28 +682,28 @@ function CameraModal({onCapture,onClose}){
 }
 
 // ─── Scan Boleta ──────────────────────────────────────────────────────────────
-function ScanBoletaModal({onDatos,onClose}){
+function ScanBoletaModal({t,onDatos,onClose}){
   const [foto,setFoto]=useState(null); const [scanning,setScanning]=useState(false); const [error,setError]=useState(""); const [camMode,setCamMode]=useState(false);
   const videoRef=useRef(); const canvasRef=useRef(); const [stream,setStream]=useState(null);
   const startCam=async()=>{ try{ const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}); setStream(s); setCamMode(true); setTimeout(()=>{ if(videoRef.current){videoRef.current.srcObject=s;videoRef.current.play();} },100); }catch{ setError("No se pudo acceder a la cámara"); } };
   const stopCam=()=>{ stream?.getTracks().forEach(t=>t.stop()); setStream(null); setCamMode(false); };
   const capturar=()=>{ const v=videoRef.current,c=canvasRef.current; c.width=v.videoWidth; c.height=v.videoHeight; c.getContext("2d").drawImage(v,0,0); setFoto(c.toDataURL("image/jpeg",0.9)); stopCam(); };
   const analizar=async()=>{ if(!foto)return; setScanning(true); setError(""); try{ const datos=await escanearBoleta(foto); onDatos(datos); onClose(); }catch(e){ setError("Error: "+e.message); }finally{ setScanning(false); } };
-  return <Modal title="Escanear Boleta con IA" onClose={()=>{stopCam();onClose();}} wide>
+  return <Modal title={t("scanBoleta")} onClose={()=>{stopCam();onClose();}} wide>
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       {!camMode&&!foto&&<div style={{display:"flex",gap:8}}>
-        <button style={{...S.btnP,flex:1,justifyContent:"center"}} onClick={startCam}><Ico.Cam/> Cámara</button>
-        <label style={{...S.btnS,flex:1,justifyContent:"center",cursor:"pointer"}}><Ico.Photo/> Galería<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=ev=>setFoto(ev.target.result); r.readAsDataURL(f); }}/></label>
+        <button style={{...S.btnP,flex:1,justifyContent:"center"}} onClick={startCam}><Ico.Cam/> {t("cameraBtn")}</button>
+        <label style={{...S.btnS,flex:1,justifyContent:"center",cursor:"pointer"}}><Ico.Photo/> {t("galleryBtn")}<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=ev=>setFoto(ev.target.result); r.readAsDataURL(f); }}/></label>
       </div>}
       {camMode&&<><div style={{position:"relative",borderRadius:12,overflow:"hidden",background:"#000"}}><video ref={videoRef} style={{width:"100%",maxHeight:260,objectFit:"cover",display:"block"}} playsInline muted/></div><canvas ref={canvasRef} style={{display:"none"}}/><div style={{display:"flex",gap:8}}><button style={{...S.btnP,flex:1,justifyContent:"center"}} onClick={capturar}>📸 Capturar</button><button style={S.btnS} onClick={stopCam}>Cancelar</button></div></>}
-      {foto&&!camMode&&<><img src={foto} alt="boleta" style={{width:"100%",borderRadius:10,maxHeight:220,objectFit:"contain",border:"1px solid #334155"}}/><div style={{display:"flex",gap:8}}><button style={{...S.btnP,flex:1,justifyContent:"center"}} onClick={analizar} disabled={scanning}>{scanning?"🔍 Analizando…":"🤖 Analizar con IA"}</button><button style={S.btnS} onClick={()=>setFoto(null)}>Cambiar</button></div></>}
+      {foto&&!camMode&&<><img src={foto} alt="boleta" style={{width:"100%",borderRadius:10,maxHeight:220,objectFit:"contain",border:"1px solid #334155"}}/><div style={{display:"flex",gap:8}}><button style={{...S.btnP,flex:1,justifyContent:"center"}} onClick={analizar} disabled={scanning}>{scanning?"🔍 "+t("analyzing"):"🤖 "+t("analyzeBtn")}</button><button style={S.btnS} onClick={()=>setFoto(null)}>{t("changePhoto")}</button></div></>}
       {error&&<div style={{background:"#450a0a",border:"1px solid #ef444444",borderRadius:8,padding:"10px 12px",fontSize:"0.8rem",color:"#fca5a5"}}>{error}</div>}
     </div>
   </Modal>;
 }
 
 // ─── MatRow ───────────────────────────────────────────────────────────────────
-function MatRow({mat,onEdit,onDelete,onStatus,canEdit}){
+function MatRow({t,mat,onEdit,onDelete,onStatus,canEdit}){
   const est=MAT_EST[mat.estado||"pendiente"],total=(parseFloat(mat.precio)||0)*(parseFloat(mat.cantidad)||0);
   return <div style={{background:"#060e1a",borderTop:"1px solid #0d1526",padding:"7px 14px 7px 20px"}}>
     <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
@@ -581,11 +725,11 @@ function MatRow({mat,onEdit,onDelete,onStatus,canEdit}){
 }
 
 // ─── MatForm ──────────────────────────────────────────────────────────────────
-function MatForm({mat,onChange}){
+function MatForm({t,mat,onChange}){
   const p=parseFloat(mat.precio)||0,q=parseFloat(mat.cantidad)||0,t=p*q;
   return <div style={{display:"flex",flexDirection:"column",gap:9}}>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-      <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>Material *</label><input style={S.inp} placeholder="Ej: Cemento" value={mat.nombre||""} onChange={e=>onChange("nombre",e.target.value)}/></div>
+      <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>{t("materials")} *</label><input style={S.inp} placeholder={t("matNamePlaceholder")} value={mat.nombre||""} onChange={e=>onChange("nombre",e.target.value)}/></div>
       <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>Estado</label>
         <select style={{...S.inp,color:"#f1f5f9"}} value={mat.estado||"pendiente"} onChange={e=>onChange("estado",e.target.value)}>
           {Object.entries(MAT_EST).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
@@ -598,15 +742,15 @@ function MatForm({mat,onChange}){
     </div>
     {t>0&&<div style={{background:"#1e293b",borderRadius:8,padding:"7px 12px",display:"flex",justifyContent:"space-between"}}><span style={{fontSize:"0.75rem",color:"#64748b"}}>Total</span><span style={{fontSize:"0.95rem",fontWeight:800,color:"#f59e0b"}}>${fmt(t)}</span></div>}
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-      <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>Proveedor</label><input style={S.inp} placeholder="Nombre" value={mat.proveedor||""} onChange={e=>onChange("proveedor",e.target.value)}/></div>
-      <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>Fecha compra</label><input style={S.inp} type="date" value={mat.fechaCompra||""} onChange={e=>onChange("fechaCompra",e.target.value)}/></div>
+      <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>{t("supplier")}</label><input style={S.inp} placeholder="Nombre" value={mat.proveedor||""} onChange={e=>onChange("proveedor",e.target.value)}/></div>
+      <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>{t("purchaseDate")}</label><input style={S.inp} type="date" value={mat.fechaCompra||""} onChange={e=>onChange("fechaCompra",e.target.value)}/></div>
     </div>
     <input style={S.inp} placeholder="Notas del material" value={mat.notas||""} onChange={e=>onChange("notas",e.target.value)}/>
   </div>;
 }
 
 // ─── ObraCard (dentro del Dashboard) ─────────────────────────────────────────
-function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onPDF,onCompras,onChangeStatus,currentUser,isExpanded,onToggle}){
+function ObraCard({t,o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onPDF,onCompras,onChangeStatus,currentUser,isExpanded,onToggle}){
   const [itemsPanel,setItemsPanel]=useState(null); // null | "completados" | "pendientes" | "criticos"
 
   const allI=o.zonas.flatMap(z=>z.items||[]);
@@ -691,9 +835,9 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onP
 
       {/* Botones acción */}
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-        <button style={{...S.btnP,fontSize:"0.72rem",padding:"6px 12px"}} onClick={e=>{e.stopPropagation();onGoToZonas();}}>Ver zonas →</button>
+        <button style={{...S.btnP,fontSize:"0.72rem",padding:"6px 12px"}} onClick={e=>{e.stopPropagation();onGoToZonas();}}>{t("goToZones")}</button>
         <button style={{...S.btnP,fontSize:"0.72rem",padding:"6px 12px"}} onClick={e=>{e.stopPropagation();onPDF();}}>📄 PDF Avance</button>
-        <button style={{...S.btnS,fontSize:"0.72rem",padding:"6px 10px"}} onClick={e=>{e.stopPropagation();onCompras(null);}}><Ico.Cart/> PDF Compras (obra)</button>
+        <button style={{...S.btnS,fontSize:"0.72rem",padding:"6px 10px"}} onClick={e=>{e.stopPropagation();onCompras(null);}}><Ico.Cart/> {t("pdfOrders")}</button>
       </div>
       {alertas.length>0&&<div style={{background:"#450a0a",border:"1px solid #ef444444",borderRadius:10,padding:"10px 12px"}}>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6,color:"#fca5a5",fontSize:"0.7rem",fontWeight:700,textTransform:"uppercase"}}><Ico.Alert/> {alertas.length} ítem(s) próximo(s) a vencer</div>
@@ -749,9 +893,9 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onP
       </div>}
 
       {o.trabajadores.length>0&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:11,padding:12}}>
-        <div style={{fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8,display:"flex",alignItems:"center",gap:4}}><Ico.Attend/> Asistencia hoy</div>
+        <div style={{fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8,display:"flex",alignItems:"center",gap:4}}><Ico.Attend/> {t("todayAttendance")}</div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
-          {[["Presentes",presentes,"#22c55e"],["Ausentes",ausentes,"#ef4444"],["Sin reg.",o.trabajadores.length-presentes-ausentes,"#64748b"]].map(([l,v,c])=>(
+          {[[t("presents"),presentes,"#22c55e"],[t("absents"),ausentes,"#ef4444"],[t("noReg"),o.trabajadores.length-presentes-ausentes,"#64748b"]].map(([l,v,c])=>(
             <div key={l} style={{textAlign:"center"}}>
               <div style={{fontSize:"1.3rem",fontWeight:800,color:c}}>{v}</div>
               <div style={{fontSize:"0.58rem",color:"#475569"}}>{l}</div>
@@ -761,9 +905,9 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onP
       </div>}
 
       {presup>0&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:11,padding:12}}>
-        <div style={{display:"flex",alignItems:"center",gap:5,fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",marginBottom:8}}><Ico.Cart/> Materiales</div>
+        <div style={{display:"flex",alignItems:"center",gap:5,fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",marginBottom:8}}><Ico.Cart/> {t("materials")}</div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginBottom:8}}>
-          {[["Presupuesto","$"+fmt(presup),"#94a3b8"],["Gastado","$"+fmt(gast),"#f59e0b"],["Pendiente",pendMat+" ítem","#ef4444"]].map(([l,v,c])=>(
+          {[[t("budget"),"$"+fmt(presup),"#94a3b8"],[t("spent"),"$"+fmt(gast),"#f59e0b"],[t("pending"),pendMat+" "+t("pendingMat"),"#ef4444"]].map(([l,v,c])=>(
             <div key={l} style={{textAlign:"center"}}><div style={{fontSize:"0.82rem",fontWeight:800,color:c}}>{v}</div><div style={{fontSize:"0.57rem",color:"#475569",marginTop:1}}>{l}</div></div>
           ))}
         </div>
@@ -773,7 +917,7 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onP
       </div>}
 
       {sorted.length>0&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:11,padding:12}}>
-        <div style={{fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8}}>Avance por Zona</div>
+        <div style={{fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8}}>{t("progressByZone")}</div>
         {sorted.map(z=>{ const zp=calcZonePct(z),zc=zp<30?"#ef4444":zp<70?"#f59e0b":"#22c55e"; return <div key={z.id} style={{marginBottom:8}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
             <span style={{fontSize:"0.8rem",color:"#e2e8f0"}}>{z.nombre}</span>
@@ -787,7 +931,7 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onP
       </div>}
 
       {o.notas&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:11,padding:12}}>
-        <div style={{fontSize:"0.63rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",marginBottom:4,display:"flex",alignItems:"center",gap:4}}><Ico.Note/> Notas</div>
+        <div style={{fontSize:"0.63rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",marginBottom:4,display:"flex",alignItems:"center",gap:4}}><Ico.Note/> {t("notes")}</div>
         <p style={{margin:0,fontSize:"0.8rem",color:"#94a3b8",lineHeight:1.5}}>{o.notas}</p>
       </div>}
 
@@ -804,6 +948,7 @@ function Dashboard({obras,activeId,calcZonePct,calcItemPct,isItemDone,totalPct,o
   return <div style={{display:"flex",flexDirection:"column",gap:0}}>
     {obras.map(o=>(
       <ObraCard key={o.id}
+        t={t}
         o={o}
         isActive={o.id===activeId}
         isExpanded={!!expanded[o.id]}
@@ -822,7 +967,7 @@ function Dashboard({obras,activeId,calcZonePct,calcItemPct,isItemDone,totalPct,o
 }
 
 // ─── Worker Card ─────────────────────────────────────────────────────────────
-function WorkerCard({t,zona,onEdit,onDelete,onToggleAsistencia,onAddHerramienta,onEditHerramienta,onDeleteHerramienta,onSetHerramientaStatus,canEdit}){
+function WorkerCard({t,lang,trab,zona,onEdit,onDelete,onToggleAsistencia,onAddHerramienta,onEditHerramienta,onDeleteHerramienta,onSetHerramientaStatus,canEdit}){
   const [open,setOpen]=useState(false);
   const [tab,setTab]=useState("herramientas");
   const [newTool,setNewTool]=useState("");
@@ -831,7 +976,6 @@ function WorkerCard({t,zona,onEdit,onDelete,onToggleAsistencia,onAddHerramienta,
   const asistHoy=t.asistencia?.[hoy];
   const herramientas=t.herramientas||[];
 
-  // Calcular últimos 7 días para asistencia
   const ultimos7=[];
   for(let i=6;i>=0;i--){
     const d=new Date(); d.setDate(d.getDate()-i);
@@ -846,22 +990,22 @@ function WorkerCard({t,zona,onEdit,onDelete,onToggleAsistencia,onAddHerramienta,
         <div style={{position:"absolute",bottom:-1,right:-1,width:12,height:12,borderRadius:"50%",background:asistHoy==="presente"?"#22c55e":asistHoy==="ausente"?"#ef4444":"#334155",border:"2px solid #0f172a"}}/>
       </div>
       <div style={{flex:1,minWidth:0}}>
-        <div style={{fontWeight:600,fontSize:"0.9rem",color:"#f1f5f9",marginBottom:2}}>{t.nombre}</div>
+        <div style={{fontWeight:600,fontSize:"0.9rem",color:"#f1f5f9",marginBottom:2}}>{trab.nombre}</div>
         <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-          {t.rol&&<span className="badge" style={{background:"#1e293b",color:"#94a3b8"}}>{t.rol}</span>}
-          {t.telefono&&<span style={{fontSize:"0.68rem",color:"#7dd3fc",display:"flex",alignItems:"center",gap:2}}><Ico.Phone/>{t.telefono}</span>}
-          {zona?<span className="badge" style={{background:"#f59e0b22",color:"#f59e0b"}}>📍 {zona.nombre}</span>:<span className="badge" style={{background:"#1e293b",color:"#475569"}}>Sin zona</span>}
+          {trab.rol&&<span className="badge" style={{background:"#1e293b",color:"#94a3b8"}}>{trab.rol}</span>}
+          {trab.telefono&&<span style={{fontSize:"0.68rem",color:"#7dd3fc",display:"flex",alignItems:"center",gap:2}}><Ico.Phone/>{trab.telefono}</span>}
+          {zona?<span className="badge" style={{background:"#f59e0b22",color:"#f59e0b"}}>📍 {zona.nombre}</span>:<span className="badge" style={{background:"#1e293b",color:"#475569"}}>{t("noZoneAssigned")}</span>}
           {herramientas.length>0&&<span className="badge" style={{background:"#1e3a5f",color:"#7dd3fc"}}>🔧 {herramientas.length}</span>}
         </div>
       </div>
       <div style={{display:"flex",gap:5,flexShrink:0}} onClick={e=>e.stopPropagation()}>
         {/* Asistencia rápida hoy */}
-        <button title="Presente" onClick={()=>onToggleAsistencia(t.id,hoy,"presente")}
+        <button title={t("present")} onClick={()=>onToggleAsistencia(trab.id,hoy,"presente")}
           style={{padding:"4px 8px",borderRadius:7,border:`1px solid ${asistHoy==="presente"?"#22c55e":"#334155"}`,background:asistHoy==="presente"?"#22c55e22":"transparent",color:asistHoy==="presente"?"#22c55e":"#64748b",fontSize:"0.7rem",cursor:"pointer",fontWeight:700}}>✓</button>
-        <button title="Ausente" onClick={()=>onToggleAsistencia(t.id,hoy,"ausente")}
+        <button title={t("absent")} onClick={()=>onToggleAsistencia(trab.id,hoy,"ausente")}
           style={{padding:"4px 8px",borderRadius:7,border:`1px solid ${asistHoy==="ausente"?"#ef4444":"#334155"}`,background:asistHoy==="ausente"?"#ef444422":"transparent",color:asistHoy==="ausente"?"#ef4444":"#64748b",fontSize:"0.7rem",cursor:"pointer",fontWeight:700}}>✗</button>
-        {canEdit&&<button className="ic" onClick={()=>onEdit(t)}><Ico.Edit/></button>}
-        {canEdit&&<button className="ic danger" onClick={()=>onDelete(t.id)}><Ico.Trash/></button>}
+        {canEdit&&<button className="ic" onClick={()=>onEdit(trab)}><Ico.Edit/></button>}
+        {canEdit&&<button className="ic danger" onClick={()=>onDelete(trab.id)}><Ico.Trash/></button>}
       </div>
       <Ico.Chev open={open}/>
     </div>
@@ -869,13 +1013,13 @@ function WorkerCard({t,zona,onEdit,onDelete,onToggleAsistencia,onAddHerramienta,
     {open&&<div style={{borderTop:"1px solid #1e293b"}}>
       {/* Tabs */}
       <div style={{display:"flex",borderBottom:"1px solid #1e293b"}}>
-        {[["herramientas","🔧 Herramientas"],["asistencia","📋 Asistencia"]].map(([k,l])=><button key={k} onClick={()=>setTab(k)}
+        {[["herramientas",t("tools")],["asistencia",t("attendance")]].map(([k,l])=><button key={k} onClick={()=>setTab(k)}
           style={{flex:1,padding:"8px",border:"none",background:"transparent",color:tab===k?"#f59e0b":"#64748b",fontWeight:700,fontSize:"0.74rem",cursor:"pointer",borderBottom:tab===k?"2px solid #f59e0b":"2px solid transparent",transition:"all .2s"}}>{l}</button>)}
       </div>
 
       {/* Herramientas */}
       {tab==="herramientas"&&<div style={{padding:"12px"}}>
-        {herramientas.length===0&&<p style={{fontSize:"0.78rem",color:"#334155",margin:"0 0 10px",textAlign:"center"}}>Sin herramientas asignadas</p>}
+        {herramientas.length===0&&<p style={{fontSize:"0.78rem",color:"#334155",margin:"0 0 10px",textAlign:"center"}}>{t("noTools")}</p>}
         <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:10}}>
           {herramientas.map(h=>{
             const hEst=HERRAMIENTA_ESTADOS[h.estado||"disponible"];
@@ -884,45 +1028,45 @@ function WorkerCard({t,zona,onEdit,onDelete,onToggleAsistencia,onAddHerramienta,
                 ? <>
                     <input autoFocus style={{flex:1,background:"#1e293b",border:"1px solid #f59e0b",borderRadius:6,padding:"4px 8px",color:"#f1f5f9",fontSize:"0.82rem",outline:"none"}}
                       value={editingTool.nombre} onChange={e=>setEditingTool(p=>({...p,nombre:e.target.value}))}
-                      onKeyDown={e=>{ if(e.key==="Enter"&&editingTool.nombre.trim()){ onEditHerramienta(t.id,h.id,editingTool.nombre.trim()); setEditingTool(null); } if(e.key==="Escape") setEditingTool(null); }}/>
+                      onKeyDown={e=>{ if(e.key==="Enter"&&editingTool.nombre.trim()){ onEditHerramienta(trab.id,h.id,editingTool.nombre.trim()); setEditingTool(null); } if(e.key==="Escape") setEditingTool(null); }}/>
                     <button style={{...S.btnP,padding:"3px 8px",fontSize:"0.72rem"}} onClick={()=>{ if(editingTool.nombre.trim()){ onEditHerramienta(t.id,h.id,editingTool.nombre.trim()); setEditingTool(null); } }}>✓</button>
                     <button className="ic" onClick={()=>setEditingTool(null)}>✕</button>
                   </>
                 : <>
                     <span style={{width:8,height:8,borderRadius:"50%",background:hEst.dot,flexShrink:0}}/>
                     <span style={{flex:1,fontSize:"0.83rem",color:"#e2e8f0"}}>{h.nombre}</span>
-                    {canEdit?<select value={h.estado||"disponible"} onChange={e=>onSetHerramientaStatus(t.id,h.id,e.target.value)}
+                    {canEdit?<select value={h.estado||"disponible"} onChange={e=>onSetHerramientaStatus(trab.id,h.id,e.target.value)}
                       style={{background:"#1e293b",border:`1px solid ${hEst.dot}44`,borderRadius:6,color:hEst.color,fontSize:"0.65rem",fontWeight:700,padding:"2px 5px",cursor:"pointer",outline:"none"}}>
                       {Object.entries(HERRAMIENTA_ESTADOS).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
                     </select>:<span style={{fontSize:"0.65rem",color:hEst.color,fontWeight:700}}>{hEst.label}</span>}
                     {canEdit&&<button className="ic" onClick={()=>setEditingTool({id:h.id,nombre:h.nombre})}><Ico.Edit/></button>}
-                    {canEdit&&<button className="ic danger" style={{padding:"2px 5px"}} onClick={()=>onDeleteHerramienta(t.id,h.id)}><Ico.Trash/></button>}
+                    {canEdit&&<button className="ic danger" style={{padding:"2px 5px"}} onClick={()=>onDeleteHerramienta(trab.id,h.id)}><Ico.Trash/></button>}
                   </>
               }
             </div>;
           })}
         </div>
         {canEdit&&<div style={{display:"flex",gap:7}}>
-          <input style={{...S.inp,fontSize:"0.8rem",padding:"7px 10px"}} placeholder="Ej: Taladro, Nivel, Pala…" value={newTool}
+          <input style={{...S.inp,fontSize:"0.8rem",padding:"7px 10px"}} placeholder={t("toolPlaceholder")} value={newTool}
             onChange={e=>setNewTool(e.target.value)}
-            onKeyDown={e=>{ if(e.key==="Enter"&&newTool.trim()){ onAddHerramienta(t.id,newTool.trim()); setNewTool(""); } }}/>
+            onKeyDown={e=>{ if(e.key==="Enter"&&newTool.trim()){ onAddHerramienta(trab.id,newTool.trim()); setNewTool(""); } }}/>
           <button style={{...S.btnP,padding:"7px 12px",flexShrink:0,fontSize:"0.75rem"}} onClick={()=>{ if(newTool.trim()){ onAddHerramienta(t.id,newTool.trim()); setNewTool(""); } }}><Ico.Plus/></button>
         </div>}
       </div>}
 
       {/* Asistencia últimos 7 días */}
       {tab==="asistencia"&&<div style={{padding:"12px"}}>
-        <div style={{fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}>Últimos 7 días</div>
+        <div style={{fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}>{t("last7days")}</div>
         <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
           {ultimos7.map(fecha=>{
-            const est=t.asistencia?.[fecha];
+            const est=trab.asistencia?.[fecha];
             const esHoy=fecha===hoy;
-            const diaSemana=new Date(fecha+"T12:00:00").toLocaleDateString("es-ES",{weekday:"short"});
+            const diaSemana=new Date(fecha+"T12:00:00").toLocaleDateString(lang==="en"?"en-US":lang==="fr"?"fr-FR":lang==="pt"?"pt-BR":"es-ES",{weekday:"short"});
             const diaMes=new Date(fecha+"T12:00:00").getDate();
             return <div key={fecha} style={{flex:"1",minWidth:38,textAlign:"center"}}>
               <div style={{fontSize:"0.58rem",color:esHoy?"#f59e0b":"#64748b",fontWeight:esHoy?700:400,marginBottom:4}}>{diaSemana}</div>
               <div style={{fontSize:"0.65rem",color:"#475569",marginBottom:4}}>{diaMes}</div>
-              <button onClick={()=>canEdit&&onToggleAsistencia(t.id,fecha,est==="presente"?"ausente":est==="ausente"?null:"presente")}
+              <button onClick={()=>canEdit&&onToggleAsistencia(trab.id,fecha,est==="presente"?"ausente":est==="ausente"?null:"presente")}
                 style={{width:"100%",aspectRatio:"1",borderRadius:8,border:`1px solid ${est==="presente"?"#22c55e":est==="ausente"?"#ef4444":"#334155"}`,background:est==="presente"?"#22c55e22":est==="ausente"?"#ef444422":"transparent",color:est==="presente"?"#22c55e":est==="ausente"?"#ef4444":"#475569",fontSize:"0.9rem",cursor:canEdit?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center"}}>
                 {est==="presente"?"✓":est==="ausente"?"✗":"·"}
               </button>
@@ -930,8 +1074,8 @@ function WorkerCard({t,zona,onEdit,onDelete,onToggleAsistencia,onAddHerramienta,
           })}
         </div>
         <div style={{display:"flex",gap:12,marginTop:10,fontSize:"0.65rem",color:"#64748b"}}>
-          <span>✓ Presente</span><span>✗ Ausente</span><span>· Sin registrar</span>
-          {canEdit&&<span style={{color:"#475569",fontStyle:"italic"}}>Toca para cambiar</span>}
+          <span>✓ {t("present")}</span><span>✗ {t("absent")}</span><span>· {t("noReg")}</span>
+          {canEdit&&<span style={{color:"#475569",fontStyle:"italic"}}>{t("tapToChange")}</span>}
         </div>
       </div>}
     </div>}
@@ -1181,7 +1325,7 @@ export default function SupervisorObra(){
         updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,materiales:[...(i.materiales||[]),mat]}:i)}:z)}));
       }
     });
-    toast(`✅ ${datos.materiales.length} material(es) agregado(s)`);
+    toast(`✅ ${datos.materiales.length} ${t("materialsAdded")}`);
   };
 
   const hDS=(e,i)=>{ setDragI(i); e.dataTransfer.effectAllowed="move"; };
@@ -1203,14 +1347,14 @@ export default function SupervisorObra(){
     toast(`✅ Usuario "${nu.nombre}" creado`); setForm({});
   };
 
-  if(!ready) return <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#020b18,#0a1628)",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:12,color:"#64748b"}}><span style={{fontSize:"2.5rem",animation:"spin 1s linear infinite",display:"inline-block"}}>⚙</span><span style={{fontSize:"0.82rem"}}>Conectando a la nube…</span></div>;
+  if(!ready) return <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#020b18,#0a1628)",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:12,color:"#64748b"}}><span style={{fontSize:"2.5rem",animation:"spin 1s linear infinite",display:"inline-block"}}>⚙</span><span style={{fontSize:"0.82rem"}}>{t("connectingCloud")}</span></div>;
 
-  if(!currentUser) return <AuthScreen users={users} obras={obras} invites={invites} onLogin={handleLogin} onRegister={handleRegister} onAcceptInvite={handleInvite}/>;
+  if(!currentUser) return <AuthScreen t={t} users={users} obras={obras} invites={invites} onLogin={handleLogin} onRegister={handleRegister} onAcceptInvite={handleInvite}/>;
 
   const pct=obra?totalPct():0; const pc=pct<30?"#ef4444":pct<70?"#f59e0b":"#22c55e";
-  const rm=ROLE_META[currentUser.rol]||ROLE_META.colaborador;
+  const ROLE_META=getRoleMeta(t); const rm=ROLE_META[currentUser.rol]||ROLE_META.colaborador;
 
-  const TABS = [{id:"dashboard",label:"Resumen",icon:<Ico.Chart/>},{id:"zonas",label:"Zonas",icon:<Ico.Zone/>},{id:"personal",label:"Personal",icon:<Ico.Hard/>}];
+  const TABS = [{id:"dashboard",label:t("summary"),icon:<Ico.Chart/>},{id:"zonas",label:t("zones"),icon:<Ico.Zone/>},{id:"personal",label:t("staff"),icon:<Ico.Hard/>}];
 
   const filteredZonas=search.trim()?(obra?.zonas||[]).map(z=>({...z,items:(z.items||[]).filter(i=>i.nombre.toLowerCase().includes(search.toLowerCase()))})).filter(z=>z.items.length>0):(obra?.zonas||[]);
 
@@ -1379,7 +1523,7 @@ export default function SupervisorObra(){
                         </div>
                       </div>
                       {!isMateriales&&<span className="badge" style={{background:"#1e293b",color:"#64748b",fontSize:"0.58rem"}}>W{item.peso||1}</span>}
-                      <button className="ic" title="Comentarios" onClick={()=>setExComents(p=>({...p,[item.id]:!p[item.id]}))} style={{color:comentarios.length>0?"#38bdf8":"#64748b",borderColor:comentarios.length>0?"#38bdf844":"#334155"}}>
+                      <button className="ic" title={t("comments")} onClick={()=>setExComents(p=>({...p,[item.id]:!p[item.id]}))} style={{color:comentarios.length>0?"#38bdf8":"#64748b",borderColor:comentarios.length>0?"#38bdf844":"#334155"}}>
                         <Ico.Chat/>{comentarios.length>0&&<span style={{fontSize:"0.65rem",fontWeight:700,marginLeft:1}}>{comentarios.length}</span>}
                       </button>
                       {!isMateriales&&<button className="ic" title="Sub-ítems" onClick={()=>setExSubItems(p=>({...p,[item.id]:!p[item.id]}))} style={{color:hasSubs?"#a78bfa":"#64748b",borderColor:hasSubs?"#a78bfa44":"#334155"}}>
@@ -1395,13 +1539,13 @@ export default function SupervisorObra(){
                         <button className="ic danger" onClick={()=>delItem(zona.id,item.id)}><Ico.Trash/></button>
                       </>}
                       {!isMateriales&&<button className="ic" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))}><Ico.Cam/></button>}
-                      {isMateriales&&<button className="ic" title="Materiales" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))} style={{color:"#a78bfa",borderColor:"#a78bfa44"}}><Ico.Mat/></button>}
+                      {isMateriales&&<button className="ic" title={t("materials")} onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))} style={{color:"#a78bfa",borderColor:"#a78bfa44"}}><Ico.Mat/></button>}
                     </div>
 
                     {/* COMENTARIOS */}
                     {cOpen&&<div style={{background:"#050d1a",borderTop:"1px solid #0d1a2e",padding:"10px 14px 12px 28px"}}>
                       <div style={{fontSize:"0.65rem",color:"#38bdf8",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8,display:"flex",alignItems:"center",gap:4}}><Ico.Chat/> Comentarios</div>
-                      {comentarios.length===0&&<p style={{fontSize:"0.75rem",color:"#334155",margin:"0 0 8px"}}>Sin comentarios aún.</p>}
+                      {comentarios.length===0&&<p style={{fontSize:"0.75rem",color:"#334155",margin:"0 0 8px"}}>{t("noComments")}</p>}
                       <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:10}}>
                         {comentarios.map(c=><div key={c.id} style={{background:"#0f172a",borderRadius:8,padding:"7px 10px",display:"flex",gap:8,alignItems:"flex-start"}}>
                           <div style={{width:22,height:22,borderRadius:"50%",background:"#1e293b",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.65rem",fontWeight:800,color:"#94a3b8",flexShrink:0}}>{c.autor[0].toUpperCase()}</div>
@@ -1416,7 +1560,7 @@ export default function SupervisorObra(){
                         </div>)}
                       </div>
                       <div style={{display:"flex",gap:7}}>
-                        <input style={{...S.inp,fontSize:"0.8rem",padding:"7px 10px"}} placeholder="Escribe un comentario…" value={newComment[item.id]||""}
+                        <input style={{...S.inp,fontSize:"0.8rem",padding:"7px 10px"}} placeholder={t("commentPlaceholder")} value={newComment[item.id]||""}
                           onChange={e=>setNewComment(p=>({...p,[item.id]:e.target.value}))}
                           onKeyDown={e=>{ if(e.key==="Enter") addComment(zona.id,item.id,newComment[item.id]); }}/>
                         <button style={{...S.btnT,padding:"7px 10px",flexShrink:0}} onClick={()=>addComment(zona.id,item.id,newComment[item.id])}><Ico.Send/></button>
@@ -1426,7 +1570,7 @@ export default function SupervisorObra(){
                     {/* SUB-ÍTEMS */}
                     {sOpen&&!isMateriales&&<div style={{background:"#070f1e",borderTop:"1px solid #0d1a2e",padding:"8px 14px 10px 28px"}}>
                       <div style={{fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8,display:"flex",alignItems:"center",gap:4}}><Ico.List/> Sub-ítems</div>
-                      {(item.subItems||[]).length===0&&<p style={{fontSize:"0.78rem",color:"#334155",margin:"0 0 8px"}}>Sin sub-ítems aún.</p>}
+                      {(item.subItems||[]).length===0&&<p style={{fontSize:"0.78rem",color:"#334155",margin:"0 0 8px"}}>{t("noSubItems")}</p>}
                       {(item.subItems||[]).map(si=>{
                         const siMatOpen=exSubMats[si.id];
                         const siMats=si.materiales||[];
@@ -1440,7 +1584,7 @@ export default function SupervisorObra(){
                             {/* Badge materiales */}
                             {siMats.length>0&&<span style={{fontSize:"0.6rem",color:"#a78bfa",background:"#a78bfa18",borderRadius:4,padding:"1px 5px"}}>📦 {siMats.length}</span>}
                             {/* Botón materiales */}
-                            <button className="ic" title="Materiales" onClick={()=>setExSubMats(p=>({...p,[si.id]:!p[si.id]}))}
+                            <button className="ic" title={t("materials")} onClick={()=>setExSubMats(p=>({...p,[si.id]:!p[si.id]}))}
                               style={{color:siMats.length>0?"#a78bfa":"#64748b",borderColor:siMats.length>0?"#a78bfa44":"#334155",padding:"3px 5px"}}>
                               <Ico.Mat/>
                             </button>
@@ -1451,20 +1595,20 @@ export default function SupervisorObra(){
                           {siMatOpen&&<div style={{borderTop:"1px solid #0d1526",background:"#060e1a"}}>
                             {/* Lista materiales */}
                             {siMats.length===0&&<p style={{fontSize:"0.72rem",color:"#334155",margin:0,padding:"8px 12px"}}>Sin materiales en este sub-ítem.</p>}
-                            {siMats.map(mat=><MatRow key={mat.id} mat={mat} canEdit={ceMat}
+                            {siMats.map(mat=><MatRow key={mat.id} t={t} mat={mat} canEdit={ceMat}
                               onEdit={()=>{setMatForm({...mat});setModal({type:"editSubMat",zId:zona.id,iId:item.id,sId:si.id,mId:mat.id});}}
                               onDelete={()=>delSubMat(zona.id,item.id,si.id,mat.id)}
                               onStatus={s=>setSubMatStatus(zona.id,item.id,si.id,mat.id,s)}/>)}
                             {/* Botones agregar */}
                             {ceMat&&<div style={{padding:"7px 10px",display:"flex",gap:6,borderTop:"1px solid #0a1628"}}>
                               <button style={{...S.btnP,fontSize:"0.68rem",padding:"5px 10px",flex:1,justifyContent:"center"}} onClick={()=>setScanBoleta({zId:zona.id,iId:item.id,sId:si.id})}>🧾 Boleta</button>
-                              <button style={{...S.btnS,fontSize:"0.68rem",padding:"5px 10px"}} onClick={()=>setModal({type:"addSubMat",zId:zona.id,iId:item.id,sId:si.id})}>+ Material</button>
+                              <button style={{...S.btnS,fontSize:"0.68rem",padding:"5px 10px"}} onClick={()=>setModal({type:"addSubMat",zId:zona.id,iId:item.id,sId:si.id})}>+ {t("materials")}</button>
                             </div>}
                           </div>}
                         </div>;
                       })}
                       {ceItem&&<div style={{display:"flex",gap:7,marginTop:8}}>
-                        <input style={{...S.inp,fontSize:"0.8rem",padding:"7px 10px"}} placeholder="Nombre del sub-ítem…" value={form.subNombre||""} onChange={e=>setForm(p=>({...p,subNombre:e.target.value}))} onKeyDown={e=>{ if(e.key==="Enter") addSubItem(zona.id,item.id); }}/>
+                        <input style={{...S.inp,fontSize:"0.8rem",padding:"7px 10px"}} placeholder={t("subItemPlaceholder")} value={form.subNombre||""} onChange={e=>setForm(p=>({...p,subNombre:e.target.value}))} onKeyDown={e=>{ if(e.key==="Enter") addSubItem(zona.id,item.id); }}/>
                         <button style={{...S.btnP,padding:"7px 12px",fontSize:"0.75rem",flexShrink:0}} onClick={()=>addSubItem(zona.id,item.id)}><Ico.Plus/></button>
                       </div>}
                     </div>}
@@ -1472,14 +1616,14 @@ export default function SupervisorObra(){
                     {/* BOLETA + MATERIAL + PDF */}
                     {ceMat&&<div style={{padding:"6px 12px",borderTop:"1px solid #1e293b22",display:"flex",gap:6,flexWrap:"wrap"}}>
                       <button style={{...S.btnP,fontSize:"0.72rem",padding:"6px 12px",borderRadius:8,flex:1,justifyContent:"center"}} onClick={()=>setScanBoleta({zId:zona.id,iId:item.id})}>🧾 Escanear Boleta</button>
-                      <button style={{...S.btnS,fontSize:"0.72rem",padding:"6px 12px",borderRadius:8}} onClick={()=>setModal({type:"addMat",zId:zona.id,iId:item.id})}>+ Material</button>
+                      <button style={{...S.btnS,fontSize:"0.72rem",padding:"6px 12px",borderRadius:8}} onClick={()=>setModal({type:"addMat",zId:zona.id,iId:item.id})}>+ {t("materials")}</button>
                       {((item.materiales||[]).length>0||(item.subItems||[]).some(si=>(si.materiales||[]).length>0))&&
                         <button style={{...S.btnG,fontSize:"0.72rem",padding:"6px 10px",borderRadius:8}} onClick={()=>{ const o=obras.find(x=>x.id===activeId); if(!o)return; setExporting(true); exportComprasPDF(o,item.id).catch(()=>toast("Error PDF","err")).finally(()=>setExporting(false)); }}><Ico.Down/> PDF</button>}
                     </div>}
 
                     {/* MATERIALES + FOTOS */}
                     {iOpen&&<>
-                      {(item.materiales||[]).map(mat=><MatRow key={mat.id} mat={mat} canEdit={ceMat}
+                      {(item.materiales||[]).map(mat=><MatRow key={mat.id} t={t} mat={mat} canEdit={ceMat}
                         onEdit={()=>{setMatForm({...mat});setModal({type:"editMat",zId:zona.id,iId:item.id,mId:mat.id});}}
                         onDelete={()=>delMat(zona.id,item.id,mat.id)}
                         onStatus={s=>setMatStatus(zona.id,item.id,mat.id,s)}/>)}
@@ -1529,10 +1673,10 @@ export default function SupervisorObra(){
             <span style={{fontSize:"1.1rem"}}>📦</span>
             <span>Vista de <strong>Encargado de Materiales</strong> — puedes ver el personal y sus herramientas.</span>
           </div>}
-          {!obra.trabajadores.length&&<div style={{textAlign:"center",padding:"50px 20px",color:"#334155"}}><Ico.Hard/><p style={{marginTop:10}}>Sin trabajadores registrados</p></div>}
+          {!obra.trabajadores.length&&<div style={{textAlign:"center",padding:"50px 20px",color:"#334155"}}><Ico.Hard/><p style={{marginTop:10}}>{t("noStaff")}</p></div>}
           {obra.trabajadores.map(t=>{
             const zona=obra.zonas.find(z=>z.id===t.zonaId);
-            return <WorkerCard key={t.id} t={t} zona={zona}
+            return <WorkerCard key={t.id} trab={t} t={t} lang={lang} zona={zona}
               onEdit={(tr)=>{setForm({nombre:tr.nombre,rol:tr.rol||"",zonaId:tr.zonaId||"",telefono:tr.telefono||""});setModal({type:"editTrab",tId:tr.id});}}
               onDelete={delTrab}
               onToggleAsistencia={toggleAsistencia}
@@ -1602,7 +1746,7 @@ export default function SupervisorObra(){
               </div>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",borderTop:"1px solid #1e293b"}}>
-              {[["Zonas",o.zonas.length,"#64748b"],["Ítems",allI.length,"#64748b"],["Listos",doneI,"#22c55e"],["Mat. pend.",pendM,"#f59e0b"]].map(([l,v,c])=><div key={l} style={{padding:"8px 6px",textAlign:"center",borderRight:"1px solid #1e293b"}}>
+              {[[t("zonesLabel"),o.zonas.length,"#64748b"],[t("itemsLabel"),allI.length,"#64748b"],[t("doneLabel"),doneI,"#22c55e"],[t("pendMatLabel"),pendM,"#f59e0b"]].map(([l,v,c])=><div key={l} style={{padding:"8px 6px",textAlign:"center",borderRight:"1px solid #1e293b"}}>
                 <div style={{fontSize:"1rem",fontWeight:800,color:c,lineHeight:1}}>{v}</div>
                 <div style={{fontSize:"0.55rem",color:"#475569",marginTop:2,fontWeight:600,textTransform:"uppercase"}}>{l}</div>
               </div>)}
@@ -1612,7 +1756,7 @@ export default function SupervisorObra(){
       </div>
     </Modal>}
 
-    {modal?.type==="newObra"&&<Modal title="Nueva Obra" onClose={closeModal}>
+    {modal?.type==="newObra"&&<Modal title={t("newObra")} onClose={closeModal}>
       <div style={{display:"flex",flexDirection:"column",gap:9}}>
         <input style={S.inp} placeholder="Nombre de la obra *" value={form.nombre||""} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))}/>
         <input style={S.inp} placeholder="Descripción (opcional)" value={form.descripcion||""} onChange={e=>setForm(p=>({...p,descripcion:e.target.value}))}/>
@@ -1624,9 +1768,9 @@ export default function SupervisorObra(){
       </div>
     </Modal>}
 
-    {(modal?.type==="addZona"||modal?.type==="editZona")&&<Modal title={modal.type==="addZona"?"Nueva Zona":"Editar Zona"} onClose={closeModal}>
+    {(modal?.type==="addZona"||modal?.type==="editZona")&&<Modal title={modal.type==="addZona"?t("newZone"):t("editZone")} onClose={closeModal}>
       <div style={{display:"flex",flexDirection:"column",gap:9}}>
-        <input style={S.inp} placeholder="Nombre *" value={form.nombre||""} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))}/>
+        <input style={S.inp} placeholder={t("namePlaceholder")} value={form.nombre||""} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))}/>
         <input style={S.inp} placeholder="Descripción" value={form.descripcion||""} onChange={e=>setForm(p=>({...p,descripcion:e.target.value}))}/>
         <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>Peso (1–10)</label><input style={{...S.inp,width:80}} type="number" min="1" max="10" value={form.peso||1} onChange={e=>setForm(p=>({...p,peso:e.target.value}))}/></div>
         {modal.type==="addZona"&&<div style={{background:"#1e293b",borderRadius:8,padding:"10px 12px",fontSize:"0.78rem",color:"#64748b",display:"flex",gap:6,alignItems:"flex-start"}}><Ico.Shield/><span>Zona asignada a <strong style={{color:"#f59e0b"}}>{currentUser?.nombre}</strong>.</span></div>}
@@ -1636,7 +1780,7 @@ export default function SupervisorObra(){
 
     {(modal?.type==="addItem"||modal?.type==="editItem")&&<Modal title={modal.type==="addItem"?t("newItem"):t("editItem")} onClose={closeModal} wide>
       <div style={{display:"flex",flexDirection:"column",gap:9}}>
-        <input style={S.inp} placeholder="Nombre del ítem *" value={form.nombre||""} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))}/>
+        <input style={S.inp} placeholder={t("itemNamePlaceholder")} value={form.nombre||""} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))}/>
         <input style={S.inp} placeholder="Descripción" value={form.descripcion||""} onChange={e=>setForm(p=>({...p,descripcion:e.target.value}))}/>
         <textarea style={S.inp} placeholder={t("notes")} value={form.notas||""} onChange={e=>setForm(p=>({...p,notas:e.target.value}))}/>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
@@ -1651,21 +1795,21 @@ export default function SupervisorObra(){
       </div>
     </Modal>}
 
-    {(modal?.type==="addSubMat"||modal?.type==="editSubMat")&&<Modal title={modal.type==="addSubMat"?"Agregar Material al Sub-ítem":"Editar Material"} onClose={closeModal} wide>
-      <MatForm mat={matForm} onChange={(k,v)=>setMatForm(p=>({...p,[k]:v}))}/>
+    {(modal?.type==="addSubMat"||modal?.type==="editSubMat")&&<Modal title={modal.type==="addSubMat"?t("addSubMaterial"):t("editMaterial")} onClose={closeModal} wide>
+      <MatForm t={t} mat={matForm} onChange={(k,v)=>setMatForm(p=>({...p,[k]:v}))}/>
       <div style={{display:"flex",gap:7,justifyContent:"flex-end",marginTop:12}}><button style={S.btnS} onClick={closeModal}>Cancelar</button><button style={S.btnP} onClick={modal.type==="addSubMat"?()=>addSubMat(modal.zId,modal.iId,modal.sId):editSubMat}>{modal.type==="addSubMat"?"Agregar":"Guardar"}</button></div>
     </Modal>}
 
-    {(modal?.type==="addMat"||modal?.type==="editMat")&&<Modal title={modal.type==="addMat"?"Agregar Material":"Editar Material"} onClose={closeModal} wide>
-      <MatForm mat={matForm} onChange={(k,v)=>setMatForm(p=>({...p,[k]:v}))}/>
+    {(modal?.type==="addMat"||modal?.type==="editMat")&&<Modal title={modal.type==="addMat"?t("addMaterial"):t("editMaterial")} onClose={closeModal} wide>
+      <MatForm t={t} mat={matForm} onChange={(k,v)=>setMatForm(p=>({...p,[k]:v}))}/>
       <div style={{display:"flex",gap:7,justifyContent:"flex-end",marginTop:12}}><button style={S.btnS} onClick={closeModal}>Cancelar</button><button style={S.btnP} onClick={modal.type==="addMat"?()=>addMat(modal.zId,modal.iId):editMat}>{modal.type==="addMat"?"Agregar":"Guardar"}</button></div>
     </Modal>}
 
-    {(modal?.type==="addTrab"||modal?.type==="editTrab")&&<Modal title={modal.type==="addTrab"?"Nuevo Trabajador":"Editar Trabajador"} onClose={closeModal}>
+    {(modal?.type==="addTrab"||modal?.type==="editTrab")&&<Modal title={modal.type==="addTrab"?t("newWorker"):t("editWorker")} onClose={closeModal}>
       <div style={{display:"flex",flexDirection:"column",gap:9}}>
         <input style={S.inp} placeholder="Nombre completo *" value={form.nombre||""} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))}/>
-        <input style={S.inp} placeholder="Rol / Cargo (ej: Albañil, Electricista)" value={form.rol||""} onChange={e=>setForm(p=>({...p,rol:e.target.value}))}/>
-        <input style={S.inp} placeholder="Teléfono" value={form.telefono||""} onChange={e=>setForm(p=>({...p,telefono:e.target.value}))}/>
+        <input style={S.inp} placeholder={t("roleLabel")} value={form.rol||""} onChange={e=>setForm(p=>({...p,rol:e.target.value}))}/>
+        <input style={S.inp} placeholder={t("phoneLabel")} value={form.telefono||""} onChange={e=>setForm(p=>({...p,telefono:e.target.value}))}/>
         <select style={{...S.inp,color:form.zonaId?"#f1f5f9":"#64748b"}} value={form.zonaId||""} onChange={e=>setForm(p=>({...p,zonaId:e.target.value}))}>
           <option value="">Sin zona asignada</option>
           {(obra?.zonas||[]).map(z=><option key={z.id} value={z.id}>{z.nombre}</option>)}
@@ -1715,9 +1859,9 @@ export default function SupervisorObra(){
 
         {obra&&<div style={{display:"flex",flexDirection:"column",gap:10}}>
           <label style={{fontSize:"0.72rem",color:"#94a3b8",display:"block",marginBottom:2,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>{t("activeObraLabel")} — {obra.nombre}</label>
-          <input style={{...S.inp}} placeholder="Nombre" value={obra.nombre||""} onChange={e=>updObra(o=>({...o,nombre:e.target.value}))}/>
+          <input style={{...S.inp}} placeholder={t("nameLabel")} value={obra.nombre||""} onChange={e=>updObra(o=>({...o,nombre:e.target.value}))}/>
           <input style={{...S.inp}} placeholder="Descripción" value={obra.descripcion||""} onChange={e=>updObra(o=>({...o,descripcion:e.target.value}))}/>
-          <textarea style={S.inp} placeholder="Notas generales" value={obra.notas||""} onChange={e=>updObra(o=>({...o,notas:e.target.value}))}/>
+          <textarea style={S.inp} placeholder={t("notes")} value={obra.notas||""} onChange={e=>updObra(o=>({...o,notas:e.target.value}))}/>
 
         </div>}
 
@@ -1761,7 +1905,7 @@ export default function SupervisorObra(){
         </div>
 
         <div>
-          <label style={{fontSize:"0.72rem",color:"#94a3b8",display:"block",marginBottom:7,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>Datos</label>
+          <label style={{fontSize:"0.72rem",color:"#94a3b8",display:"block",marginBottom:7,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>{t("dataSection")}</label>
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
             <button style={S.btnG} onClick={doExportJSON}><Ico.Down/> Exportar JSON</button>
             <label style={{...S.btnG,cursor:"pointer"}}><Ico.Up/> Importar JSON<input type="file" accept=".json" style={{display:"none"}} onChange={doImportJSON}/></label>
@@ -1788,7 +1932,7 @@ export default function SupervisorObra(){
             ? <div style={{display:"flex",flexDirection:"column",gap:8}}>
                 <div style={{background:"#1e293b",borderRadius:8,padding:"12px",textAlign:"center"}}>
                   <div style={{fontSize:"2rem",fontWeight:800,letterSpacing:"0.25em",color:"#f59e0b",fontFamily:"monospace"}}>{form.inviteCode}</div>
-                  <div style={{fontSize:"0.65rem",color:"#475569",marginTop:4}}>Válido por 48 horas · comparte este código</div>
+                  <div style={{fontSize:"0.65rem",color:"#475569",marginTop:4}}>{t("validFor")}</div>
                 </div>
                 <div style={{display:"flex",gap:7}}>
                   <button style={{...S.btnT,flex:1,justifyContent:"center"}} onClick={()=>{ navigator.clipboard?.writeText(form.inviteCode).then(()=>toast("📋 Código copiado")); }}><Ico.Copy/> Copiar</button>
@@ -1809,11 +1953,12 @@ export default function SupervisorObra(){
     </Modal>}
 
     {modal?.type==="toast"&&<div style={{position:"fixed",bottom:24,left:"50%",transform:"translateX(-50%)",background:"#1e293b",border:`1px solid ${modal.toastType==="err"?"#ef444444":"#334155"}`,borderRadius:12,padding:"10px 20px",fontSize:"0.85rem",color:"#f1f5f9",zIndex:2000,boxShadow:"0 8px 30px rgba(0,0,0,.5)",animation:"fadeUp .25s ease",whiteSpace:"nowrap",maxWidth:"90vw"}}>{modal.msg}</div>}
-    {exporting&&<div style={{position:"fixed",bottom:24,right:16,background:"#1e293b",border:"1px solid #f59e0b44",borderRadius:12,padding:"9px 16px",fontSize:"0.8rem",color:"#f59e0b",zIndex:2000,display:"flex",alignItems:"center",gap:7}}><span style={{animation:"spin 1s linear infinite",display:"inline-block"}}>⟳</span> Generando PDF…</div>}
-    {cameraFor&&<CameraModal onCapture={data=>addFoto(cameraFor.zId,cameraFor.iId,data)} onClose={()=>setCameraFor(null)}/>}
-    {scanBoleta&&<ScanBoletaModal onDatos={datos=>handleBoletaDatos(datos,scanBoleta.zId,scanBoleta.iId,scanBoleta.sId||null)} onClose={()=>setScanBoleta(null)}/>}
+    {exporting&&<div style={{position:"fixed",bottom:24,right:16,background:"#1e293b",border:"1px solid #f59e0b44",borderRadius:12,padding:"9px 16px",fontSize:"0.8rem",color:"#f59e0b",zIndex:2000,display:"flex",alignItems:"center",gap:7}}><span style={{animation:"spin 1s linear infinite",display:"inline-block"}}>⟳</span> {t("generatingPDF")}</div>}
+    {cameraFor&&<CameraModal t={t} onCapture={data=>addFoto(cameraFor.zId,cameraFor.iId,data)} onClose={()=>setCameraFor(null)}/>}
+    {scanBoleta&&<ScanBoletaModal t={t} onDatos={datos=>handleBoletaDatos(datos,scanBoleta.zId,scanBoleta.iId,scanBoleta.sId||null)} onClose={()=>setScanBoleta(null)}/>}
   </>;
 }
+
 
 
 
