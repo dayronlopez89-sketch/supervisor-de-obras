@@ -37,7 +37,9 @@ const TRANSLATIONS = {
     save:"Guardar", cancel:"Cancelar", add:"Agregar", create:"Crear", del:"Eliminar",
     noZones:"Sin zonas. ¡Crea la primera!",
     lang:"Idioma", langEs:"Español", langEn:"English", langPt:"Português", langFr:"Français",
-    activeTag:"ACTIVA", newObra:"Nueva Obra", resetAll:"Resetear todo",
+    activeTag:"ACTIVA", statusRunning:"En ejecución", statusPaused:"Pausada", statusDone:"Finalizada",
+    panelDone:"Completados", panelPend:"Pendientes", panelCrit:"Críticos",
+    zonesItems:"zonas", itemsWord:"ítems", viewArrow:"ver →", noItemsCategory:"No hay ítems en esta categoría.", newObra:"Nueva Obra", resetAll:"Resetear todo",
     exportJSON:"Exportar JSON", importJSON:"Importar JSON",
     myObras:"Mis Obras", activeObraLabel:"Obra Activa",
     registeredUsers:"Usuarios registrados", addUser:"Agregar usuario",
@@ -92,7 +94,9 @@ const TRANSLATIONS = {
     save:"Save", cancel:"Cancel", add:"Add", create:"Create", del:"Delete",
     noZones:"No zones yet. Create the first one!",
     lang:"Language", langEs:"Español", langEn:"English", langPt:"Português", langFr:"Français",
-    activeTag:"ACTIVE", newObra:"New Project", resetAll:"Reset all",
+    activeTag:"ACTIVE", statusRunning:"Running", statusPaused:"Paused", statusDone:"Finished",
+    panelDone:"Completed", panelPend:"Pending", panelCrit:"Critical",
+    zonesItems:"zones", itemsWord:"items", viewArrow:"view →", noItemsCategory:"No items in this category.", newObra:"New Project", resetAll:"Reset all",
     exportJSON:"Export JSON", importJSON:"Import JSON",
     myObras:"My Projects", activeObraLabel:"Active Project",
     registeredUsers:"Registered users", addUser:"Add user",
@@ -147,7 +151,9 @@ const TRANSLATIONS = {
     save:"Salvar", cancel:"Cancelar", add:"Adicionar", create:"Criar", del:"Excluir",
     noZones:"Sem zonas. Crie a primeira!",
     lang:"Idioma", langEs:"Español", langEn:"English", langPt:"Português", langFr:"Français",
-    activeTag:"ATIVA", newObra:"Nova Obra", resetAll:"Resetar tudo",
+    activeTag:"ATIVA", statusRunning:"Em execução", statusPaused:"Pausada", statusDone:"Finalizada",
+    panelDone:"Concluídos", panelPend:"Pendentes", panelCrit:"Críticos",
+    zonesItems:"zonas", itemsWord:"itens", viewArrow:"ver →", noItemsCategory:"Nenhum item nesta categoria.", newObra:"Nova Obra", resetAll:"Resetar tudo",
     exportJSON:"Exportar JSON", importJSON:"Importar JSON",
     myObras:"Minhas Obras", activeObraLabel:"Obra Ativa",
     registeredUsers:"Usuários registrados", addUser:"Adicionar usuário",
@@ -202,7 +208,9 @@ const TRANSLATIONS = {
     save:"Enregistrer", cancel:"Annuler", add:"Ajouter", create:"Créer", del:"Supprimer",
     noZones:"Aucune zone. Créez la première!",
     lang:"Langue", langEs:"Español", langEn:"English", langPt:"Português", langFr:"Français",
-    activeTag:"ACTIF", newObra:"Nouveau Projet", resetAll:"Tout réinitialiser",
+    activeTag:"ACTIF", statusRunning:"En cours", statusPaused:"En pause", statusDone:"Terminé",
+    panelDone:"Terminés", panelPend:"En attente", panelCrit:"Critiques",
+    zonesItems:"zones", itemsWord:"éléments", viewArrow:"voir →", noItemsCategory:"Aucun élément dans cette catégorie.", newObra:"Nouveau Projet", resetAll:"Tout réinitialiser",
     exportJSON:"Exporter JSON", importJSON:"Importer JSON",
     myObras:"Mes Projets", activeObraLabel:"Projet Actif",
     registeredUsers:"Utilisateurs enregistrés", addUser:"Ajouter utilisateur",
@@ -277,11 +285,11 @@ const emptyObra = (nombre="") => ({
   zonas:[], trabajadores:[],
 });
 
-const OBRA_ESTADOS = {
-  en_ejecucion: { label:"En ejecución", color:"#22c55e", bg:"#22c55e18", icon:"🏗️" },
-  pausada:      { label:"Pausada",       color:"#f59e0b", bg:"#f59e0b18", icon:"⏸️" },
-  finalizada:   { label:"Finalizada",    color:"#38bdf8", bg:"#38bdf818", icon:"✅" },
-};
+const getObraEstados = (t) => ({
+  en_ejecucion: { label:t("statusRunning")||"En ejecución", color:"#22c55e", bg:"#22c55e18", icon:"🏗️" },
+  pausada:      { label:t("statusPaused")||"Pausada",      color:"#f59e0b", bg:"#f59e0b18", icon:"⏸️" },
+  finalizada:   { label:t("statusDone")||"Finalizada",    color:"#38bdf8", bg:"#38bdf818", icon:"✅" },
+});
 
 // HERRAMIENTA_ESTADOS se crea dinámicamente con useLang en cada componente que lo usa
 
@@ -771,6 +779,7 @@ function MatForm({mat,onChange}){
 // ─── ObraCard (dentro del Dashboard) ─────────────────────────────────────────
 function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onPDF,onCompras,onChangeStatus,currentUser,isExpanded,onToggle}){
   const t=useLang();
+  const OBRA_ESTADOS=getObraEstados(t);
   const [itemsPanel,setItemsPanel]=useState(null); // null | "completados" | "pendientes" | "criticos"
 
   const allI=o.zonas.flatMap(z=>z.items||[]);
@@ -800,15 +809,15 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onP
     : itemsPanel==="criticos"  ? allIConZona.filter(i=>(i.peso||1)>=8&&!i._done)
     : [];
   const panelMeta = {
-    completados:{ label:"Completados", color:"#22c55e", icon:"✓" },
-    pendientes:  { label:"Pendientes",  color:"#f59e0b", icon:"○" },
-    criticos:    { label:"Críticos",    color:"#ef4444", icon:"⚠" },
+    completados:{ label:t("panelDone"), color:"#22c55e", icon:"✓" },
+    pendientes:  { label:t("panelPend"),  color:"#f59e0b", icon:"○" },
+    criticos:    { label:t("panelCrit"),    color:"#ef4444", icon:"⚠" },
   };
 
   const statCards=[
-    ["completados","Completados",done,"#22c55e"],
-    ["pendientes","Pendientes",pend,"#f59e0b"],
-    ["criticos","Críticos",crit,"#ef4444"],
+    ["completados",t("panelDone"),done,"#22c55e"],
+    ["pendientes",t("panelPend"),pend,"#f59e0b"],
+    ["criticos",t("panelCrit"),crit,"#ef4444"],
   ];
 
   return <div style={{background:"#0a1628",border:`2px solid ${isActive?"#f59e0b44":"#1e293b"}`,borderRadius:16,overflow:"hidden",marginBottom:10}}>
@@ -825,7 +834,7 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onP
           {/* Nombre + estado en la misma línea */}
           <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",marginBottom:4}}>
             <span style={{fontWeight:800,fontSize:"1rem",color:"#f1f5f9"}}>{o.nombre}</span>
-            {isActive&&<span style={{fontSize:"0.55rem",background:"#f59e0b",color:"#0f172a",borderRadius:4,padding:"1px 6px",fontWeight:800,letterSpacing:"0.05em"}}>ACTIVA</span>}
+            {isActive&&<span style={{fontSize:"0.55rem",background:"#f59e0b",color:"#0f172a",borderRadius:4,padding:"1px 6px",fontWeight:800,letterSpacing:"0.05em"}}>{t("activeTag")}</span>}
             {/* Estado integrado aquí */}
             <span style={{fontSize:"0.65rem",background:obraEst.bg,color:obraEst.color,border:`1px solid ${obraEst.color}44`,borderRadius:20,padding:"2px 8px",fontWeight:700}}>{obraEst.icon} {obraEst.label}</span>
           </div>
@@ -833,7 +842,7 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onP
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
             {o.fechaInicio&&<span style={{fontSize:"0.63rem",color:"#475569",display:"flex",alignItems:"center",gap:2}}><Ico.Cal/>{fmtDate(o.fechaInicio)}</span>}
             {o.fechaFin&&<span style={{fontSize:"0.63rem",color:daysDiff(o.fechaFin)<7?"#ef4444":"#64748b",display:"flex",alignItems:"center",gap:2}}><Ico.Cal/>{fmtDate(o.fechaFin)}</span>}
-            <span style={{fontSize:"0.63rem",color:"#475569"}}>{o.zonas.length} zonas · {allI.length} ítems</span>
+            <span style={{fontSize:"0.63rem",color:"#475569"}}>{o.zonas.length} {t("zonesItems")} · {allI.length} {t("itemsWord")}</span>
           </div>
         </div>
         <Ico.Chev open={isExpanded}/>
@@ -870,7 +879,7 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onP
             style={{background:itemsPanel===key?c+"22":"#0f172a",border:`1px solid ${itemsPanel===key?c+"66":"#1e293b"}`,borderRadius:10,padding:"10px 8px",textAlign:"center",cursor:"pointer",transition:"all .2s"}}>
             <div style={{fontSize:"1.6rem",fontWeight:800,color:c,lineHeight:1}}>{v}</div>
             <div style={{fontSize:"0.58rem",color:itemsPanel===key?c:"#64748b",fontWeight:700,textTransform:"uppercase",marginTop:3}}>{l}</div>
-            {v>0&&<div style={{fontSize:"0.55rem",color:c,marginTop:2,opacity:0.8}}>ver →</div>}
+            {v>0&&<div style={{fontSize:"0.55rem",color:c,marginTop:2,opacity:0.8}}>{t("viewArrow")}</div>}
           </button>
         ))}
       </div>
@@ -884,7 +893,7 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onP
           <button onClick={()=>setItemsPanel(null)} style={{background:"none",border:"none",color:"#64748b",cursor:"pointer",fontSize:"1.1rem",lineHeight:1,padding:"0 2px"}}>×</button>
         </div>
         {panelItems.length===0
-          ? <p style={{margin:0,padding:"12px",fontSize:"0.78rem",color:"#334155",textAlign:"center"}}>No hay ítems en esta categoría.</p>
+          ? <p style={{margin:0,padding:"12px",fontSize:"0.78rem",color:"#334155",textAlign:"center"}}>{t("noItemsCategory")}</p>
           : <div style={{maxHeight:280,overflowY:"auto"}}>
               {panelItems.map(item=>{
                 const d=daysDiff(item.fechaFin);
@@ -946,7 +955,7 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onP
           <div style={{height:4,background:"#1e293b",borderRadius:2,overflow:"hidden"}}>
             <div style={{height:"100%",width:`${zp}%`,background:zc,borderRadius:2,transition:"width .5s"}}/>
           </div>
-          <div style={{fontSize:"0.6rem",color:"#475569",marginTop:2}}>{(z.items||[]).filter(i=>isItemDone(i)).length}/{(z.items||[]).length} ítems</div>
+          <div style={{fontSize:"0.6rem",color:"#475569",marginTop:2}}>{(z.items||[]).filter(i=>isItemDone(i)).length}/{(z.items||[]).length} {t("itemsWord")}</div>
         </div>; })}
       </div>}
 
@@ -1762,7 +1771,7 @@ export default function SupervisorObra(){
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontWeight:700,fontSize:"1rem",color:"#f1f5f9",display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
                   {o.nombre}
-                  {isActive&&<span style={{fontSize:"0.58rem",background:"#f59e0b",color:"#0f172a",borderRadius:4,padding:"1px 6px",fontWeight:800}}>ACTIVA</span>}
+                  {isActive&&<span style={{fontSize:"0.58rem",background:"#f59e0b",color:"#0f172a",borderRadius:4,padding:"1px 6px",fontWeight:800}}>{t("activeTag")}</span>}
                   <span style={{fontSize:"0.6rem",background:oEst.bg,color:oEst.color,borderRadius:4,padding:"1px 6px",fontWeight:700}}>{oEst.icon} {oEst.label}</span>
                 </div>
                 {o.descripcion&&<div style={{fontSize:"0.72rem",color:"#475569",marginTop:2}}>{o.descripcion}</div>}
@@ -1874,7 +1883,7 @@ export default function SupervisorObra(){
                     {o.nombre}
                     {isActive&&<span style={{fontSize:"0.55rem",background:"#f59e0b",color:"#0f172a",borderRadius:3,padding:"1px 5px",fontWeight:800}}>{t("activeTag")}</span>}
                   </div>
-                  <div style={{fontSize:"0.65rem",color:"#475569"}}>{o.zonas.length} zonas · {o.zonas.flatMap(z=>z.items||[]).length} ítems</div>
+                  <div style={{fontSize:"0.65rem",color:"#475569"}}>{o.zonas.length} zonas · {o.zonas.flatMap(z=>z.items||[]).length} {t("itemsWord")}</div>
                 </div>
                 {currentUser?.rol==="admin"&&<button className="ic danger" style={{padding:"3px 5px"}} onClick={e=>{e.stopPropagation();deleteObra(o.id);}}><Ico.Trash/></button>}
               </div>;
