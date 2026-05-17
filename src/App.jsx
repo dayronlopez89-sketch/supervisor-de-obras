@@ -28,6 +28,95 @@ function fbSave(data){
   }, 800);
 }
 
+// ─── i18n ─────────────────────────────────────────────────────────────────────
+const TRANSLATIONS = {
+  es: {
+    appName:"Supervisor de Obra", dashboard:"Inicio", zones:"Zonas", staff:"Personal", settings:"Config",
+    newItem:"Nuevo Ítem", editItem:"Editar Ítem", addItem:"Agregar ítem", weight:"Peso",
+    startDate:"Fecha inicio", endDate:"Fecha límite", notes:"Notas / Observaciones",
+    save:"Guardar", cancel:"Cancelar", add:"Agregar", create:"Crear", del:"Eliminar",
+    noZones:"Sin zonas. ¡Crea la primera!", locationSystem:"Sistema de Ubicación",
+    enableLocation:"Activar sistema de ubicación para esta obra",
+    level1:"Nivel 1", level2:"Nivel 2", level3:"Nivel 3",
+    selectL1:"Seleccionar {{l}}", selectL2:"Seleccionar {{l}}", selectL3:"Seleccionar {{l}}",
+    manageLocations:"Gestionar Ubicaciones", addLocation:"Agregar ubicación",
+    locationName:"Nombre *", parentLabel:"Pertenece a", noLocations:"Sin ubicaciones aún.",
+    assignedLocs:"Ubicaciones asignadas", locationConfig:"Nombres de niveles",
+    lang:"Idioma", langEs:"Español", langEn:"English", langPt:"Português", langFr:"Français",
+    activeTag:"ACTIVA", newObra:"Nueva Obra", resetAll:"Resetear todo",
+    exportJSON:"Exportar JSON", importJSON:"Importar JSON",
+    myObras:"Mis Obras", activeObraLabel:"Obra Activa",
+    registeredUsers:"Usuarios registrados", addUser:"Agregar usuario",
+    logout:"Salir", login:"Ingresar", newUser:"Nuevo usuario",
+    createAccount:"Crear cuenta", onlyOwnerEdit:"Solo el creador puede modificar este ítem",
+    present:"Presente", absent:"Ausente", pin:"PIN de",
+  },
+  en: {
+    appName:"Work Supervisor", dashboard:"Home", zones:"Zones", staff:"Staff", settings:"Settings",
+    newItem:"New Item", editItem:"Edit Item", addItem:"Add item", weight:"Weight",
+    startDate:"Start date", endDate:"Deadline", notes:"Notes / Observations",
+    save:"Save", cancel:"Cancel", add:"Add", create:"Create", del:"Delete",
+    noZones:"No zones yet. Create the first one!", locationSystem:"Location System",
+    enableLocation:"Enable location system for this project",
+    level1:"Level 1", level2:"Level 2", level3:"Level 3",
+    selectL1:"Select {{l}}", selectL2:"Select {{l}}", selectL3:"Select {{l}}",
+    manageLocations:"Manage Locations", addLocation:"Add location",
+    locationName:"Name *", parentLabel:"Belongs to", noLocations:"No locations yet.",
+    assignedLocs:"Assigned locations", locationConfig:"Level names",
+    lang:"Language", langEs:"Español", langEn:"English", langPt:"Português", langFr:"Français",
+    activeTag:"ACTIVE", newObra:"New Project", resetAll:"Reset all",
+    exportJSON:"Export JSON", importJSON:"Import JSON",
+    myObras:"My Projects", activeObraLabel:"Active Project",
+    registeredUsers:"Registered users", addUser:"Add user",
+    logout:"Log out", login:"Log in", newUser:"New user",
+    createAccount:"Create account", onlyOwnerEdit:"Only the creator can edit this item",
+    present:"Present", absent:"Absent", pin:"PIN for",
+  },
+  pt: {
+    appName:"Supervisor de Obra", dashboard:"Início", zones:"Zonas", staff:"Pessoal", settings:"Config",
+    newItem:"Novo Item", editItem:"Editar Item", addItem:"Adicionar item", weight:"Peso",
+    startDate:"Data início", endDate:"Prazo", notes:"Notas / Observações",
+    save:"Salvar", cancel:"Cancelar", add:"Adicionar", create:"Criar", del:"Excluir",
+    noZones:"Sem zonas. Crie a primeira!", locationSystem:"Sistema de Localização",
+    enableLocation:"Ativar sistema de localização para esta obra",
+    level1:"Nível 1", level2:"Nível 2", level3:"Nível 3",
+    selectL1:"Selecionar {{l}}", selectL2:"Selecionar {{l}}", selectL3:"Selecionar {{l}}",
+    manageLocations:"Gerenciar Localizações", addLocation:"Adicionar localização",
+    locationName:"Nome *", parentLabel:"Pertence a", noLocations:"Sem localizações ainda.",
+    assignedLocs:"Localizações atribuídas", locationConfig:"Nomes dos níveis",
+    lang:"Idioma", langEs:"Español", langEn:"English", langPt:"Português", langFr:"Français",
+    activeTag:"ATIVA", newObra:"Nova Obra", resetAll:"Resetar tudo",
+    exportJSON:"Exportar JSON", importJSON:"Importar JSON",
+    myObras:"Minhas Obras", activeObraLabel:"Obra Ativa",
+    registeredUsers:"Usuários registrados", addUser:"Adicionar usuário",
+    logout:"Sair", login:"Entrar", newUser:"Novo usuário",
+    createAccount:"Criar conta", onlyOwnerEdit:"Somente o criador pode editar este item",
+    present:"Presente", absent:"Ausente", pin:"PIN de",
+  },
+  fr: {
+    appName:"Superviseur Chantier", dashboard:"Accueil", zones:"Zones", staff:"Personnel", settings:"Config",
+    newItem:"Nouvel élément", editItem:"Modifier élément", addItem:"Ajouter élément", weight:"Poids",
+    startDate:"Date début", endDate:"Date limite", notes:"Notes / Observations",
+    save:"Enregistrer", cancel:"Annuler", add:"Ajouter", create:"Créer", del:"Supprimer",
+    noZones:"Aucune zone. Créez la première!", locationSystem:"Système d'emplacement",
+    enableLocation:"Activer le système d'emplacement pour ce projet",
+    level1:"Niveau 1", level2:"Niveau 2", level3:"Niveau 3",
+    selectL1:"Sélectionner {{l}}", selectL2:"Sélectionner {{l}}", selectL3:"Sélectionner {{l}}",
+    manageLocations:"Gérer emplacements", addLocation:"Ajouter emplacement",
+    locationName:"Nom *", parentLabel:"Appartient à", noLocations:"Aucun emplacement encore.",
+    assignedLocs:"Emplacements assignés", locationConfig:"Noms des niveaux",
+    lang:"Langue", langEs:"Español", langEn:"English", langPt:"Português", langFr:"Français",
+    activeTag:"ACTIF", newObra:"Nouveau Projet", resetAll:"Tout réinitialiser",
+    exportJSON:"Exporter JSON", importJSON:"Importer JSON",
+    myObras:"Mes Projets", activeObraLabel:"Projet Actif",
+    registeredUsers:"Utilisateurs enregistrés", addUser:"Ajouter utilisateur",
+    logout:"Se déconnecter", login:"Se connecter", newUser:"Nouvel utilisateur",
+    createAccount:"Créer un compte", onlyOwnerEdit:"Seul le créateur peut modifier cet élément",
+    present:"Présent", absent:"Absent", pin:"PIN de",
+  },
+};
+const detectLang=()=>{ try{ const s=localStorage.getItem("supervisor_lang"); if(s&&TRANSLATIONS[s])return s; }catch{} const n=navigator.language?.slice(0,2).toLowerCase(); return TRANSLATIONS[n]?n:"es"; };
+
 // ─── Storage Keys (solo datos locales del dispositivo) ────────────────────────
 const SESSION_KEY = "supervisor_session_v5";
 const ACTIVE_KEY  = "supervisor_active_v5";
@@ -47,7 +136,11 @@ function sd(key){ try{ localStorage.removeItem(key); }catch{}}
 const emptyObra = (nombre="") => ({
   id:uid(), nombre, descripcion:"", fechaInicio:today(), fechaFin:"", notas:"",
   estado:"en_ejecucion",
-  zonas:[], trabajadores:[]
+  zonas:[], trabajadores:[],
+  // Sistema de ubicación (opcional)
+  locationEnabled: false,
+  locationLevels: { l1:"", l2:"", l3:"" },
+  locations: [], // [{id, nombre, level:1|2|3, parentId:null|id}]
 });
 
 const OBRA_ESTADOS = {
@@ -730,6 +823,151 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onP
   </div>;
 }
 
+// ─── Location Picker ─────────────────────────────────────────────────────────
+function LocationPicker({obra, selected=[], onChange, t}){
+  const lvls = obra.locationLevels||{};
+  const locs = obra.locations||[];
+  const l1Name = lvls.l1||t("level1");
+  const l2Name = lvls.l2||t("level2");
+  const l3Name = lvls.l3||t("level3");
+
+  const l1Items = locs.filter(l=>l.level===1);
+  const [selL1,setSelL1]=useState(()=>{
+    // Detect l1 from current selection
+    if(!selected.length)return "";
+    const l3=locs.find(l=>l.id===selected[0]&&l.level===3);
+    if(l3){ const l2=locs.find(l=>l.id===l3.parentId); return l2?.parentId||""; }
+    const l2=locs.find(l=>l.id===selected[0]&&l.level===2);
+    return l2?.parentId||"";
+  });
+  const [selL2,setSelL2]=useState(()=>{
+    if(!selected.length)return "";
+    const l3=locs.find(l=>l.id===selected[0]&&l.level===3);
+    return l3?.parentId||"";
+  });
+
+  const l2Items = locs.filter(l=>l.level===2&&l.parentId===selL1);
+  const l3Items = locs.filter(l=>l.level===3&&l.parentId===selL2);
+
+  const toggleL3=(id)=>{
+    if(selected.includes(id)) onChange(selected.filter(x=>x!==id));
+    else onChange([...selected,id]);
+  };
+
+  if(!locs.length) return <div style={{fontSize:"0.78rem",color:"#475569",padding:"8px 0"}}>{t("noLocations")}</div>;
+
+  return <div style={{display:"flex",flexDirection:"column",gap:8}}>
+    {/* Nivel 1 */}
+    {l1Items.length>0&&<div>
+      <label style={{fontSize:"0.7rem",color:"#64748b",display:"block",marginBottom:4,fontWeight:600}}>{l1Name}</label>
+      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+        {l1Items.map(l=><button key={l.id} onClick={()=>{setSelL1(l.id===selL1?"":l.id);setSelL2("");}}
+          style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${selL1===l.id?"#f59e0b44":"#334155"}`,background:selL1===l.id?"#f59e0b22":"transparent",color:selL1===l.id?"#f59e0b":"#94a3b8",fontSize:"0.72rem",fontWeight:600,cursor:"pointer"}}>{l.nombre}</button>)}
+      </div>
+    </div>}
+    {/* Nivel 2 */}
+    {selL1&&l2Items.length>0&&<div>
+      <label style={{fontSize:"0.7rem",color:"#64748b",display:"block",marginBottom:4,fontWeight:600}}>{l2Name}</label>
+      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+        {l2Items.map(l=><button key={l.id} onClick={()=>setSelL2(l.id===selL2?"":l.id)}
+          style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${selL2===l.id?"#38bdf844":"#334155"}`,background:selL2===l.id?"#38bdf822":"transparent",color:selL2===l.id?"#38bdf8":"#94a3b8",fontSize:"0.72rem",fontWeight:600,cursor:"pointer"}}>{l.nombre}</button>)}
+      </div>
+    </div>}
+    {/* Nivel 3 — selección múltiple */}
+    {selL2&&l3Items.length>0&&<div>
+      <label style={{fontSize:"0.7rem",color:"#64748b",display:"block",marginBottom:4,fontWeight:600}}>{l3Name} <span style={{color:"#475569",fontWeight:400}}>(múltiple)</span></label>
+      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+        {l3Items.map(l=><button key={l.id} onClick={()=>toggleL3(l.id)}
+          style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${selected.includes(l.id)?"#a78bfa44":"#334155"}`,background:selected.includes(l.id)?"#a78bfa22":"transparent",color:selected.includes(l.id)?"#a78bfa":"#94a3b8",fontSize:"0.72rem",fontWeight:600,cursor:"pointer"}}>{l.nombre}</button>)}
+      </div>
+    </div>}
+    {/* Mostrar seleccionados */}
+    {selected.length>0&&<div style={{display:"flex",gap:4,flexWrap:"wrap",marginTop:2}}>
+      {selected.map(id=>{ const loc=locs.find(l=>l.id===id); return loc?<span key={id} style={{fontSize:"0.65rem",background:"#a78bfa22",color:"#a78bfa",borderRadius:4,padding:"2px 7px",display:"flex",alignItems:"center",gap:3}}>{loc.nombre}<button onClick={()=>onChange(selected.filter(x=>x!==id))} style={{background:"none",border:"none",color:"#a78bfa",cursor:"pointer",padding:0,fontWeight:800,lineHeight:1}}>×</button></span>:null; })}
+    </div>}
+  </div>;
+}
+
+// ─── Location Manager Modal Content ──────────────────────────────────────────
+function LocationManager({obra, onAdd, onDelete, onUpdateLevels, t}){
+  const [newName,setNewName]=useState("");
+  const [newLevel,setNewLevel]=useState(1);
+  const [newParent,setNewParent]=useState("");
+  const lvls=obra.locationLevels||{};
+  const locs=obra.locations||[];
+  const l1Name=lvls.l1||t("level1");
+  const l2Name=lvls.l2||t("level2");
+  const l3Name=lvls.l3||t("level3");
+
+  const l1=(locs||[]).filter(l=>l.level===1);
+  const l2=(locs||[]).filter(l=>l.level===2);
+  const l3=(locs||[]).filter(l=>l.level===3);
+
+  const parentOptions=newLevel===2?l1:newLevel===3?l2:[];
+
+  return <div style={{display:"flex",flexDirection:"column",gap:14}}>
+    {/* Config nombres de niveles */}
+    <div style={{background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,padding:12}}>
+      <div style={{fontSize:"0.7rem",color:"#38bdf8",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>{t("locationConfig")}</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7}}>
+        {[["l1",l1Name,t("level1")],["l2",l2Name,t("level2")],["l3",l3Name,t("level3")]].map(([key,val,ph])=>(
+          <input key={key} style={{background:"#1e293b",border:"1px solid #334155",borderRadius:7,padding:"7px 9px",color:"#f1f5f9",fontSize:"0.78rem",outline:"none",width:"100%",boxSizing:"border-box"}}
+            placeholder={ph} value={val} onChange={e=>onUpdateLevels({[key]:e.target.value})}/>
+        ))}
+      </div>
+    </div>
+
+    {/* Árbol de ubicaciones */}
+    {locs.length>0&&<div style={{display:"flex",flexDirection:"column",gap:4}}>
+      {l1.map(a=><div key={a.id}>
+        <div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",background:"#1e293b",borderRadius:7,marginBottom:3}}>
+          <span style={{fontSize:"0.65rem",background:"#f59e0b22",color:"#f59e0b",borderRadius:3,padding:"1px 5px",fontWeight:700}}>{l1Name}</span>
+          <span style={{flex:1,fontSize:"0.82rem",color:"#f1f5f9",fontWeight:600}}>{a.nombre}</span>
+          <button onClick={()=>onDelete(a.id)} style={{background:"none",border:"none",color:"#ef4444",cursor:"pointer",fontSize:"0.75rem",padding:"0 3px"}}>✕</button>
+        </div>
+        {l2.filter(b=>b.parentId===a.id).map(b=><div key={b.id} style={{marginLeft:14}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",background:"#162032",borderRadius:7,marginBottom:3}}>
+            <span style={{fontSize:"0.65rem",background:"#38bdf822",color:"#38bdf8",borderRadius:3,padding:"1px 5px",fontWeight:700}}>{l2Name}</span>
+            <span style={{flex:1,fontSize:"0.8rem",color:"#e2e8f0"}}>{b.nombre}</span>
+            <button onClick={()=>onDelete(b.id)} style={{background:"none",border:"none",color:"#ef4444",cursor:"pointer",fontSize:"0.75rem",padding:"0 3px"}}>✕</button>
+          </div>
+          {l3.filter(c=>c.parentId===b.id).map(c=><div key={c.id} style={{marginLeft:14,display:"flex",alignItems:"center",gap:6,padding:"4px 8px",background:"#0f172a",borderRadius:6,marginBottom:2}}>
+            <span style={{fontSize:"0.65rem",background:"#a78bfa22",color:"#a78bfa",borderRadius:3,padding:"1px 5px",fontWeight:700}}>{l3Name}</span>
+            <span style={{flex:1,fontSize:"0.78rem",color:"#cbd5e1"}}>{c.nombre}</span>
+            <button onClick={()=>onDelete(c.id)} style={{background:"none",border:"none",color:"#ef4444",cursor:"pointer",fontSize:"0.75rem",padding:"0 3px"}}>✕</button>
+          </div>)}
+        </div>)}
+      </div>)}
+    </div>}
+    {locs.length===0&&<p style={{fontSize:"0.78rem",color:"#334155",textAlign:"center",margin:0}}>{t("noLocations")}</p>}
+
+    {/* Agregar nueva ubicación */}
+    <div style={{background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,padding:12}}>
+      <div style={{fontSize:"0.7rem",color:"#22c55e",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>{t("addLocation")}</div>
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        <div style={{display:"flex",gap:6}}>
+          {[[1,l1Name,"#f59e0b"],[2,l2Name,"#38bdf8"],[3,l3Name,"#a78bfa"]].map(([lv,name,color])=>(
+            <button key={lv} onClick={()=>{setNewLevel(lv);setNewParent("");}}
+              style={{flex:1,padding:"6px",borderRadius:7,border:`2px solid ${newLevel===lv?color+"66":"#1e293b"}`,background:newLevel===lv?color+"22":"transparent",color:newLevel===lv?color:"#64748b",fontWeight:700,fontSize:"0.7rem",cursor:"pointer"}}>{name}</button>
+          ))}
+        </div>
+        {parentOptions.length>0&&<select value={newParent} onChange={e=>setNewParent(e.target.value)}
+          style={{background:"#1e293b",border:"1px solid #334155",borderRadius:7,padding:"7px 10px",color:newParent?"#f1f5f9":"#64748b",fontSize:"0.8rem",outline:"none"}}>
+          <option value="">{t("parentLabel")}…</option>
+          {parentOptions.map(p=><option key={p.id} value={p.id}>{p.nombre}</option>)}
+        </select>}
+        <div style={{display:"flex",gap:7}}>
+          <input style={{flex:1,background:"#1e293b",border:"1px solid #334155",borderRadius:7,padding:"7px 10px",color:"#f1f5f9",fontSize:"0.8rem",outline:"none"}}
+            placeholder={t("locationName")} value={newName} onChange={e=>setNewName(e.target.value)}
+            onKeyDown={e=>{ if(e.key==="Enter"&&newName.trim()){ onAdd(newName.trim(),newLevel,newParent||null); setNewName(""); }}}/>
+          <button onClick={()=>{ if(newName.trim()){ onAdd(newName.trim(),newLevel,newParent||null); setNewName(""); }}}
+            style={{background:"#22c55e",color:"#0f172a",border:"none",borderRadius:7,padding:"7px 14px",fontWeight:700,fontSize:"0.8rem",cursor:"pointer"}}>+</button>
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
 function Dashboard({obras,activeId,calcZonePct,calcItemPct,isItemDone,totalPct,onPDF,onCompras,currentUser,onGoToZonas,onChangeStatus,onSetActive}){
   const [expanded,setExpanded]=useState({[activeId]:true});
   const toggleExpand=(id)=>setExpanded(p=>({...p,[id]:!p[id]}));
@@ -860,6 +1098,11 @@ function WorkerCard({t,zona,onEdit,onDelete,onToggleAsistencia,onAddHerramienta,
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function SupervisorObra(){
+  // ── Idioma ──
+  const [lang,setLang]=useState(detectLang);
+  const t=(key,vars={})=>{ let s=(TRANSLATIONS[lang]||TRANSLATIONS.es)[key]||key; Object.entries(vars).forEach(([k,v])=>{s=s.replace("{{"+k+"}}",v);}); return s; };
+  const changeLang=(l)=>{ setLang(l); try{localStorage.setItem("supervisor_lang",l);}catch{} };
+
   const [ready,setReady]=useState(false);
   const [obras,setObras]=useState([]);
   const [users,setUsers]=useState([]);
@@ -1012,18 +1255,35 @@ export default function SupervisorObra(){
   const editZona=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===modal.zId?{...z,nombre:form.nombre.trim(),descripcion:form.descripcion||"",peso:parseFloat(form.peso)||1}:z)})); closeModal(); };
   const delZona=(id)=>{ if(!window.confirm("¿Eliminar zona?"))return; updObra(o=>({...o,zonas:o.zonas.filter(z=>z.id!==id),trabajadores:o.trabajadores.map(t=>t.zonaId===id?{...t,zonaId:null}:t)})); };
 
+  // ── Sistema de Ubicación ──
+  const toggleLocationSystem=()=>updObra(o=>({...o,locationEnabled:!o.locationEnabled}));
+  const updateLocationLevels=(levels)=>updObra(o=>({...o,locationLevels:{...o.locationLevels,...levels}}));
+  const addLocation=(nombre,level,parentId=null)=>{
+    if(!nombre?.trim())return;
+    const loc={id:uid(),nombre:nombre.trim(),level,parentId};
+    updObra(o=>({...o,locations:[...(o.locations||[]),loc]}));
+  };
+  const delLocation=(locId)=>{
+    updObra(o=>({
+      ...o,
+      locations:(o.locations||[]).filter(l=>l.id!==locId&&l.parentId!==locId),
+      // Quitar ubicaciones de ítems que tenían esta location
+      zonas:o.zonas.map(z=>({...z,items:z.items.map(i=>({...i,locationIds:(i.locationIds||[]).filter(id=>id!==locId)}))}))
+    }));
+  };
+
   // ── CRUD Items ──
   const addItem=(zId)=>{
     if(!form.nombre?.trim())return;
     if(!currentUser?.id){toast("Error: no hay sesión activa","err");return;}
-    const ni={id:uid(),nombre:form.nombre.trim(),descripcion:form.descripcion||"",terminado:false,peso:parseFloat(form.peso)||1,materiales:[],fotos:[],notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||"",subItems:[],comentarios:[],ownerUserId:currentUser.id};
+    const ni={id:uid(),nombre:form.nombre.trim(),descripcion:form.descripcion||"",terminado:false,peso:parseFloat(form.peso)||1,materiales:[],fotos:[],notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||"",subItems:[],comentarios:[],ownerUserId:currentUser.id,locationIds:form.locationIds||[]};
     updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:[...z.items,ni]}:z)}));
     closeModal();
   };
-  const editItem=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===modal.zId?{...z,items:z.items.map(i=>i.id===modal.iId?{...i,nombre:form.nombre.trim(),descripcion:form.descripcion||"",peso:parseFloat(form.peso)||1,notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||""}:i)}:z)})); closeModal(); };
+  const editItem=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===modal.zId?{...z,items:z.items.map(i=>i.id===modal.iId?{...i,nombre:form.nombre.trim(),descripcion:form.descripcion||"",peso:parseFloat(form.peso)||1,notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||"",locationIds:form.locationIds||[]}:i)}:z)})); closeModal(); };
   const delItem=(zId,iId)=>{ if(!window.confirm("¿Eliminar ítem?"))return; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.filter(i=>i.id!==iId)}:z)})); };
   const toggleItem=(zId,iId,item)=>{
-    if(!canEditItem(item)){ toast("Solo el creador puede marcar este ítem","err"); return; }
+    if(!canEditItem(item)){ toast(t("onlyOwnerEdit"),"err"); return; }
     updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,terminado:!i.terminado}:i)}:z)}));
   };
 
@@ -1219,7 +1479,7 @@ export default function SupervisorObra(){
           </div>
 
           {filteredZonas.length===0&&<div style={{textAlign:"center",padding:"50px 20px",color:"#334155"}}>
-            {search?<p>Sin resultados</p>:<p>{isMateriales?"No hay zonas en esta obra":"Sin zonas. ¡Crea la primera!"}</p>}
+            {search?<p>Sin resultados</p>:<p>{isMateriales?t("noZones"):t("noZones")}</p>}
           </div>}
 
           {filteredZonas.map((zona,zi)=>{
@@ -1276,6 +1536,7 @@ export default function SupervisorObra(){
                         <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:2}}>
                           {item.fechaFin&&<span style={{fontSize:"0.63rem",color:overdue?"#ef4444":warning?"#f59e0b":"#475569",display:"flex",alignItems:"center",gap:2}}>{overdue?"⚠":warning?"⏰":""}<Ico.Cal/>{item.fechaFin}</span>}
                           {(item.fotos||[]).length>0&&<span style={{fontSize:"0.63rem",color:"#475569",display:"flex",alignItems:"center",gap:2}}><Ico.Photo/>{item.fotos.length}</span>}
+                          {obra?.locationEnabled&&(item.locationIds||[]).length>0&&<span style={{fontSize:"0.63rem",color:"#a78bfa",background:"#a78bfa18",borderRadius:4,padding:"1px 5px",display:"flex",alignItems:"center",gap:2}}>📍 {(item.locationIds||[]).map(id=>(obra.locations||[]).find(l=>l.id===id)?.nombre).filter(Boolean).join(", ")}</span>}
                           {(item.materiales||[]).length>0&&<span style={{fontSize:"0.63rem",color:"#475569"}}>📦 {item.materiales.length}</span>}
                           {hasSubs&&<span style={{fontSize:"0.63rem",color:"#64748b",display:"flex",alignItems:"center",gap:2}}><Ico.List/>{(item.subItems||[]).filter(s=>s.terminado).length}/{(item.subItems||[]).length}</span>}
                           {comentarios.length>0&&<span style={{fontSize:"0.63rem",color:"#64748b",display:"flex",alignItems:"center",gap:2}}><Ico.Chat/>{comentarios.length}</span>}
@@ -1296,7 +1557,7 @@ export default function SupervisorObra(){
                         👤+
                       </button>}
                       {ceItem&&<>
-                        <button className="ic" onClick={()=>{setForm({nombre:item.nombre,descripcion:item.descripcion||"",peso:item.peso||1,notas:item.notas||"",fechaInicio:item.fechaInicio||"",fechaFin:item.fechaFin||""});setModal({type:"editItem",zId:zona.id,iId:item.id});}}><Ico.Edit/></button>
+                        <button className="ic" onClick={()=>{setForm({nombre:item.nombre,descripcion:item.descripcion||"",peso:item.peso||1,notas:item.notas||"",fechaInicio:item.fechaInicio||"",fechaFin:item.fechaFin||"",locationIds:item.locationIds||[]});setModal({type:"editItem",zId:zona.id,iId:item.id});}}><Ico.Edit/></button>
                         <button className="ic danger" onClick={()=>delItem(zona.id,item.id)}><Ico.Trash/></button>
                       </>}
                       {!isMateriales&&<button className="ic" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))}><Ico.Cam/></button>}
@@ -1411,7 +1672,7 @@ export default function SupervisorObra(){
                   </div>;
                 })}
                 {canAddItemInZona(zona)&&<div style={{padding:"8px 12px",borderTop:"1px solid #1e293b"}}>
-                  <button style={{...S.btnS,fontSize:"0.72rem",padding:"5px 10px"}} onClick={()=>setModal({type:"addItem",zId:zona.id})}><Ico.Plus/> Agregar ítem</button>
+                  <button style={{...S.btnS,fontSize:"0.72rem",padding:"5px 10px"}} onClick={()=>setModal({type:"addItem",zId:zona.id})}><Ico.Plus/> {t("addItem")}</button>
                 </div>}
               </div>}
             </div>;
@@ -1539,20 +1800,27 @@ export default function SupervisorObra(){
       </div>
     </Modal>}
 
-    {(modal?.type==="addItem"||modal?.type==="editItem")&&<Modal title={modal.type==="addItem"?"Nuevo Ítem":"Editar Ítem"} onClose={closeModal} wide>
+    {(modal?.type==="addItem"||modal?.type==="editItem")&&<Modal title={modal.type==="addItem"?t("newItem"):t("editItem")} onClose={closeModal} wide>
       <div style={{display:"flex",flexDirection:"column",gap:9}}>
-        <input style={S.inp} placeholder="Nombre *" value={form.nombre||""} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))}/>
+        <input style={S.inp} placeholder={t("locationName").replace(" *","")} value={form.nombre||""} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))}/>
         <input style={S.inp} placeholder="Descripción" value={form.descripcion||""} onChange={e=>setForm(p=>({...p,descripcion:e.target.value}))}/>
-        <textarea style={S.inp} placeholder="Notas / Observaciones" value={form.notas||""} onChange={e=>setForm(p=>({...p,notas:e.target.value}))}/>
+        <textarea style={S.inp} placeholder={t("notes")} value={form.notas||""} onChange={e=>setForm(p=>({...p,notas:e.target.value}))}/>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-          <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>Fecha inicio</label><input style={S.inp} type="date" value={form.fechaInicio||""} onChange={e=>setForm(p=>({...p,fechaInicio:e.target.value}))}/></div>
-          <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>Fecha límite</label><input style={S.inp} type="date" value={form.fechaFin||""} onChange={e=>setForm(p=>({...p,fechaFin:e.target.value}))}/></div>
+          <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>{t("startDate")}</label><input style={S.inp} type="date" value={form.fechaInicio||""} onChange={e=>setForm(p=>({...p,fechaInicio:e.target.value}))}/></div>
+          <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>{t("endDate")}</label><input style={S.inp} type="date" value={form.fechaFin||""} onChange={e=>setForm(p=>({...p,fechaFin:e.target.value}))}/></div>
         </div>
-        <div><label style={{fontSize:"0.72rem",color:"#94a3b8",display:"block",marginBottom:3}}>Peso (1–10)</label>
+        <div><label style={{fontSize:"0.72rem",color:"#94a3b8",display:"block",marginBottom:3}}>{t("weight")} (1–10)</label>
           <input style={{...S.inp,width:80}} type="number" min="1" max="10" value={form.peso||1} onChange={e=>setForm(p=>({...p,peso:e.target.value}))}/>
           <div style={{height:4,background:"#1e293b",borderRadius:2,overflow:"hidden",marginTop:5}}><div style={{height:"100%",width:`${((parseFloat(form.peso)||1)/10)*100}%`,background:"linear-gradient(90deg,#22c55e,#f59e0b,#ef4444)",borderRadius:2,transition:"width .2s"}}/></div>
         </div>
-        <div style={{display:"flex",gap:7,justifyContent:"flex-end"}}><button style={S.btnS} onClick={closeModal}>Cancelar</button><button style={S.btnP} onClick={modal.type==="addItem"?()=>addItem(modal.zId):editItem}>{modal.type==="addItem"?"Agregar":"Guardar"}</button></div>
+        {/* Ubicación — solo si está habilitado en la obra */}
+        {obra?.locationEnabled&&(obra?.locations||[]).length>0&&<div style={{background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,padding:12}}>
+          <div style={{fontSize:"0.7rem",color:"#a78bfa",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10,display:"flex",alignItems:"center",gap:5}}>
+            📍 {t("location")}
+          </div>
+          <LocationPicker obra={obra} selected={form.locationIds||[]} onChange={ids=>setForm(p=>({...p,locationIds:ids}))} t={t}/>
+        </div>}
+        <div style={{display:"flex",gap:7,justifyContent:"flex-end"}}><button style={S.btnS} onClick={closeModal}>{t("cancel")}</button><button style={S.btnP} onClick={modal.type==="addItem"?()=>addItem(modal.zId):editItem}>{modal.type==="addItem"?t("add"):t("save")}</button></div>
       </div>
     </Modal>}
 
@@ -1587,10 +1855,10 @@ export default function SupervisorObra(){
       </div>
     </div>}
 
-    {modal?.type==="settings"&&<Modal title="Configuración" onClose={closeModal} wide>
+    {modal?.type==="settings"&&<Modal title={t("settings")} onClose={closeModal} wide>
       <div style={{display:"flex",flexDirection:"column",gap:16}}>
         <div>
-          <label style={{fontSize:"0.72rem",color:"#94a3b8",display:"flex",alignItems:"center",gap:4,marginBottom:8,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}><Ico.Building/> Mis Obras</label>
+          <label style={{fontSize:"0.72rem",color:"#94a3b8",display:"flex",alignItems:"center",gap:4,marginBottom:8,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}><Ico.Building/> {t("myObras")}</label>
           <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:8}}>
             {obras.map(o=>{
               const aPct=()=>{ const all=o.zonas.flatMap(z=>z.items||[]); if(!all.length)return 0; const tw=all.reduce((s,i)=>s+(i.peso||1),0),dw=all.reduce((s,i)=>s+(i.peso||1)*(calcItemPct(i)/100),0); return Math.round((dw/tw)*100); };
@@ -1607,7 +1875,7 @@ export default function SupervisorObra(){
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontWeight:700,fontSize:"0.88rem",color:"#f1f5f9",display:"flex",alignItems:"center",gap:5}}>
                     {o.nombre}
-                    {isActive&&<span style={{fontSize:"0.55rem",background:"#f59e0b",color:"#0f172a",borderRadius:3,padding:"1px 5px",fontWeight:800}}>ACTIVA</span>}
+                    {isActive&&<span style={{fontSize:"0.55rem",background:"#f59e0b",color:"#0f172a",borderRadius:3,padding:"1px 5px",fontWeight:800}}>{t("activeTag")}</span>}
                   </div>
                   <div style={{fontSize:"0.65rem",color:"#475569"}}>{o.zonas.length} zonas · {o.zonas.flatMap(z=>z.items||[]).length} ítems</div>
                 </div>
@@ -1615,14 +1883,28 @@ export default function SupervisorObra(){
               </div>;
             })}
           </div>
-          {currentUser?.rol==="admin"&&<button style={{...S.btnP,justifyContent:"center",width:"100%"}} onClick={()=>{closeModal();setModal({type:"newObra"});}}><Ico.Plus/> Nueva Obra</button>}
+          {currentUser?.rol==="admin"&&<button style={{...S.btnP,justifyContent:"center",width:"100%"}} onClick={()=>{closeModal();setModal({type:"newObra"});}}><Ico.Plus/> {t("newObra")}</button>}
         </div>
 
-        {obra&&<div>
-          <label style={{fontSize:"0.72rem",color:"#94a3b8",display:"block",marginBottom:5,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>Obra Activa — {obra.nombre}</label>
-          <input style={{...S.inp,marginBottom:7}} placeholder="Nombre" value={obra.nombre||""} onChange={e=>updObra(o=>({...o,nombre:e.target.value}))}/>
-          <input style={{...S.inp,marginBottom:7}} placeholder="Descripción" value={obra.descripcion||""} onChange={e=>updObra(o=>({...o,descripcion:e.target.value}))}/>
+        {obra&&<div style={{display:"flex",flexDirection:"column",gap:10}}>
+          <label style={{fontSize:"0.72rem",color:"#94a3b8",display:"block",marginBottom:2,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>{t("activeObraLabel")} — {obra.nombre}</label>
+          <input style={{...S.inp}} placeholder="Nombre" value={obra.nombre||""} onChange={e=>updObra(o=>({...o,nombre:e.target.value}))}/>
+          <input style={{...S.inp}} placeholder="Descripción" value={obra.descripcion||""} onChange={e=>updObra(o=>({...o,descripcion:e.target.value}))}/>
           <textarea style={S.inp} placeholder="Notas generales" value={obra.notas||""} onChange={e=>updObra(o=>({...o,notas:e.target.value}))}/>
+          {/* Sistema de Ubicación */}
+          <div style={{background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,padding:12}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:obra.locationEnabled?12:0}}>
+              <div>
+                <div style={{fontSize:"0.78rem",fontWeight:700,color:"#a78bfa",display:"flex",alignItems:"center",gap:5}}>📍 {t("locationSystem")}</div>
+                <div style={{fontSize:"0.65rem",color:"#475569",marginTop:2}}>{t("enableLocation")}</div>
+              </div>
+              <button onClick={toggleLocationSystem}
+                style={{width:42,height:24,borderRadius:12,border:"none",background:obra.locationEnabled?"#a78bfa":"#334155",cursor:"pointer",position:"relative",transition:"background .2s",flexShrink:0}}>
+                <div style={{position:"absolute",top:3,left:obra.locationEnabled?20:3,width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left .2s"}}/>
+              </button>
+            </div>
+            {obra.locationEnabled&&<LocationManager obra={obra} onAdd={addLocation} onDelete={delLocation} onUpdateLevels={updateLocationLevels} t={t}/>}
+          </div>
         </div>}
 
         <div>
@@ -1671,8 +1953,21 @@ export default function SupervisorObra(){
             <label style={{...S.btnG,cursor:"pointer"}}><Ico.Up/> Importar JSON<input type="file" accept=".json" style={{display:"none"}} onChange={doImportJSON}/></label>
           </div>
         </div>
+        {/* Selector de idioma */}
+        <div>
+          <label style={{fontSize:"0.72rem",color:"#94a3b8",display:"block",marginBottom:8,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>🌐 {t("lang")}</label>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+            {[["es","🇪🇸 Español"],["en","🇺🇸 English"],["pt","🇧🇷 Português"],["fr","🇫🇷 Français"]].map(([code,label])=>(
+              <button key={code} onClick={()=>changeLang(code)}
+                style={{padding:"8px 10px",borderRadius:8,border:`2px solid ${lang===code?"#f59e0b66":"#1e293b"}`,background:lang===code?"#f59e0b18":"#0f172a",color:lang===code?"#f59e0b":"#64748b",fontWeight:700,fontSize:"0.78rem",cursor:"pointer",textAlign:"left",transition:"all .2s"}}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {currentUser?.rol==="admin"&&<div style={{borderTop:"1px solid #1e293b",paddingTop:12}}>
-          <button style={S.btnD} onClick={()=>{if(window.confirm("¿Resetear TODOS los datos?")){ const fresh=[emptyObra("Mi Obra")]; setObras(fresh); setActiveId(fresh[0].id); ss(ACTIVE_KEY,fresh[0].id); closeModal(); }}}>🗑️ Resetear todo</button>
+          <button style={S.btnD} onClick={()=>{if(window.confirm("¿Resetear TODOS los datos?")){ const fresh=[emptyObra("Mi Obra")]; setObras(fresh); setActiveId(fresh[0].id); ss(ACTIVE_KEY,fresh[0].id); closeModal(); }}}>🗑️ {t("resetAll")}</button>
         </div>}
       </div>
     </Modal>}
