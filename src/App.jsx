@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, createContext, useContext } from "react";
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, setDoc, onSnapshot } from "firebase/firestore";
 
@@ -44,42 +44,40 @@ const TRANSLATIONS = {
     logout:"Salir", login:"Ingresar", newUser:"Nuevo usuario",
     createAccount:"Crear cuenta", onlyOwnerEdit:"Solo el creador puede modificar este ítem",
     present:"Presente", absent:"Ausente", pin:"PIN de",
-    tools:"Herramientas", noTools:"Sin herramientas asignadas", toolPlaceholder:"Ej: Taladro, Nivel...",
     available:"Disponible", inUse:"En uso", inRepair:"En reparación",
+    tools:"Herramientas", noTools:"Sin herramientas asignadas", toolPlaceholder:"Ej: Taladro, Nivel, Pala…",
     attendance:"Asistencia", last7days:"Últimos 7 días", tapToChange:"Toca para cambiar",
     noStaff:"Sin trabajadores. ¡Agrega el primero!", newWorker:"Nuevo Trabajador", editWorker:"Editar Trabajador",
     noZoneAssigned:"Sin zona", roleLabel:"Rol / Cargo", phoneLabel:"Teléfono",
-    newZone:"Nueva Zona", editZone:"Editar Zona", zoneAssignedTo:"Zona asignada a",
+    newZone:"Nueva Zona", editZone:"Editar Zona",
     descLabel:"Descripción", nameLabel:"Nombre", namePlaceholder:"Nombre *",
-    subItems:"Sub-ítems", noSubItems:"Sin sub-ítems aún.", subItemPlaceholder:"Nombre del sub-ítem...",
-    comments:"Comentarios", noComments:"Sin comentarios aún.", commentPlaceholder:"Escribe un comentario...",
+    subItems:"Sub-ítems", noSubItems:"Sin sub-ítems aún.", subItemPlaceholder:"Nombre del sub-ítem…",
+    comments:"Comentarios", noComments:"Sin comentarios aún.", commentPlaceholder:"Escribe un comentario…",
     itemNamePlaceholder:"Nombre del ítem *",
-    onlyOwnerSubEdit:t("onlyOwnerSubEdit"),
-    assignOwner:t("assignOwner"), assignOwnerDesc:"Solo esa persona podrá marcarlo como listo, editarlo o eliminarlo.",
+    onlyOwnerSubEdit:"Solo el creador puede marcar este sub-ítem",
+    assignOwner:"Asignar responsable del ítem",
+    assignOwnerDesc:"Solo esa persona podrá marcarlo como listo, editarlo o eliminarlo.",
     materials:"Materiales", addMaterial:"Agregar Material", editMaterial:"Editar Material",
     addSubMaterial:"Agregar Material al Sub-ítem",
     supplier:"Proveedor", purchaseDate:"Fecha compra", matNamePlaceholder:"Ej: Cemento",
     budget:"Presupuesto", spent:"Gastado", pending:"Pendiente", pendingMat:"ítem pend.",
     progressByZone:"Avance por Zona", summary:"Resumen",
     zonesLabel:"Zonas", itemsLabel:"Ítems", doneLabel:"Listos", pendMatLabel:"Mat. pend.",
-    goToZones:t("goToZones"), pdfProgress:"PDF "+t("pdfProgress"), pdfOrders:"PDF Compras (obra)",
-    expiredDays:"Vencido hace", daysLeft:"día(s) restante(s)",
+    goToZones:"Ver zonas →", pdfProgress:"PDF Avance", pdfOrders:"PDF Compras",
     todayAttendance:"Asistencia hoy", presents:"Presentes", absents:"Ausentes", noReg:"Sin reg.",
-    connectingCloud:"Conectando a la nube...",
+    connectingCloud:"Conectando a la nube…",
     takePhoto:"Tomar Foto", flipCamera:"Voltear", capture:"Capturar", usePhoto:"Usar foto", repeat:"Repetir",
     scanBoleta:"Escanear Boleta con IA", cameraBtn:"Cámara", galleryBtn:"Galería",
-    analyzeBtn:"Analizar con IA", analyzing:"Analizando...", changePhoto:"Cambiar",
+    analyzeBtn:"Analizar con IA", analyzing:"Analizando…", changePhoto:"Cambiar",
     noMaterials:"No se encontraron materiales", materialsAdded:"material(es) agregado(s)",
-    cameraError:t("cameraError"),
+    cameraError:"No se pudo acceder a la cámara",
     roleAdmin:"Administrador", roleCollab:"Colaborador", roleMat:"Enc. Materiales",
-    roleAdminDesc:"Control total, crea obras y zonas", roleCollabDesc:"Edita sus zonas, ve todo",
-    generatingPDF:"Generando PDF...",
-    dataSection:"Datos", inviteCollab:t("inviteCollab"),
-    validFor:"Válido por 48h, comparte este código",
-    generateCodeBtn:t("generateCodeBtn"), copyCode:"Copiar código", codeCopied:"¡Copiado!",
-    close:"Cerrar", copy:"Copiar",
-    welcomeBack:"Bienvenido de nuevo", selectUser:"Selecciona tu usuario",
-    joinCode:"Tengo un código de invitación",
+    roleAdminDesc:"Control total · crea obras y zonas", roleCollabDesc:"Edita sus zonas · ve todo",
+    generatingPDF:"Generando PDF…",
+    dataSection:"Datos", inviteCollab:"Invitar colaborador",
+    validFor:"Válido por 48h · comparte este código",
+    generateCodeBtn:"Generar código", copyCode:"Copiar código", codeCopied:"¡Copiado!",
+    close:"Cerrar", selectUser:"Selecciona tu usuario", joinCode:"Tengo un código de invitación",
   },
   en: {
     appName:"Work Supervisor", dashboard:"Home", zones:"Zones", staff:"Staff", settings:"Settings",
@@ -95,42 +93,40 @@ const TRANSLATIONS = {
     logout:"Log out", login:"Log in", newUser:"New user",
     createAccount:"Create account", onlyOwnerEdit:"Only the creator can edit this item",
     present:"Present", absent:"Absent", pin:"PIN for",
-    tools:"Tools", noTools:"No tools assigned", toolPlaceholder:"E.g.: Drill, Level, Shovel...",
     available:"Available", inUse:"In use", inRepair:"Under repair",
+    tools:"Tools", noTools:"No tools assigned", toolPlaceholder:"E.g.: Drill, Level, Shovel…",
     attendance:"Attendance", last7days:"Last 7 days", tapToChange:"Tap to change",
     noStaff:"No workers yet. Add the first one!", newWorker:"New Worker", editWorker:"Edit Worker",
     noZoneAssigned:"No zone", roleLabel:"Role / Position", phoneLabel:"Phone",
-    newZone:"New Zone", editZone:"Edit Zone", zoneAssignedTo:"Zone assigned to",
+    newZone:"New Zone", editZone:"Edit Zone",
     descLabel:"Description", nameLabel:"Name", namePlaceholder:"Name *",
-    subItems:"Sub-items", noSubItems:"No sub-items yet.", subItemPlaceholder:"Sub-item name...",
-    comments:"Comments", noComments:"No comments yet.", commentPlaceholder:"Write a comment...",
+    subItems:"Sub-items", noSubItems:"No sub-items yet.", subItemPlaceholder:"Sub-item name…",
+    comments:"Comments", noComments:"No comments yet.", commentPlaceholder:"Write a comment…",
     itemNamePlaceholder:"Item name *",
     onlyOwnerSubEdit:"Only the creator can check this sub-item",
-    assignOwner:"Assign item owner", assignOwnerDesc:"Only that person can mark it done, edit or delete it.",
+    assignOwner:"Assign item owner",
+    assignOwnerDesc:"Only that person can mark it done, edit or delete it.",
     materials:"Materials", addMaterial:"Add Material", editMaterial:"Edit Material",
     addSubMaterial:"Add Material to Sub-item",
     supplier:"Supplier", purchaseDate:"Purchase date", matNamePlaceholder:"E.g.: Cement",
     budget:"Budget", spent:"Spent", pending:"Pending", pendingMat:"pend.",
     progressByZone:"Progress by Zone", summary:"Summary",
     zonesLabel:"Zones", itemsLabel:"Items", doneLabel:"Done", pendMatLabel:"Mat. pend.",
-    goToZones:"View zones →", pdfProgress:"PDF Progress", pdfOrders:"PDF Orders (project)",
-    expiredDays:"Expired", daysLeft:"day(s) left",
+    goToZones:"View zones →", pdfProgress:"PDF Progress", pdfOrders:"PDF Orders",
     todayAttendance:"Today's attendance", presents:"Present", absents:"Absent", noReg:"No record",
-    connectingCloud:"Connecting to cloud...",
+    connectingCloud:"Connecting to cloud…",
     takePhoto:"Take Photo", flipCamera:"Flip", capture:"Capture", usePhoto:"Use photo", repeat:"Retake",
     scanBoleta:"Scan Receipt with AI", cameraBtn:"Camera", galleryBtn:"Gallery",
-    analyzeBtn:"Analyze with AI", analyzing:"Analyzing...", changePhoto:"Change",
+    analyzeBtn:"Analyze with AI", analyzing:"Analyzing…", changePhoto:"Change",
     noMaterials:"No materials found", materialsAdded:"material(s) added",
     cameraError:"Could not access camera",
     roleAdmin:"Administrator", roleCollab:"Collaborator", roleMat:"Materials Manager",
-    roleAdminDesc:"Full control, creates projects and zones", roleCollabDesc:"Edits own zones, views all",
-    generatingPDF:"Generating PDF...",
+    roleAdminDesc:"Full control · creates projects and zones", roleCollabDesc:"Edits own zones · views all",
+    generatingPDF:"Generating PDF…",
     dataSection:"Data", inviteCollab:"Invite collaborator",
-    validFor:"Valid 48h, share this code",
+    validFor:"Valid 48h · share this code",
     generateCodeBtn:"Generate code", copyCode:"Copy code", codeCopied:"Copied!",
-    close:"Close", copy:"Copy",
-    welcomeBack:"Welcome back", selectUser:"Select your user",
-    joinCode:"I have an invitation code",
+    close:"Close", selectUser:"Select your user", joinCode:"I have an invitation code",
   },
   pt: {
     appName:"Supervisor de Obra", dashboard:"Início", zones:"Zonas", staff:"Pessoal", settings:"Config",
@@ -146,42 +142,40 @@ const TRANSLATIONS = {
     logout:"Sair", login:"Entrar", newUser:"Novo usuário",
     createAccount:"Criar conta", onlyOwnerEdit:"Somente o criador pode editar este item",
     present:"Presente", absent:"Ausente", pin:"PIN de",
-    tools:"Ferramentas", noTools:"Sem ferramentas atribuídas", toolPlaceholder:"Ex: Furadeira, Nível...",
     available:"Disponível", inUse:"Em uso", inRepair:"Em reparo",
+    tools:"Ferramentas", noTools:"Sem ferramentas atribuídas", toolPlaceholder:"Ex: Furadeira, Nível…",
     attendance:"Presença", last7days:"Últimos 7 dias", tapToChange:"Toque para alterar",
     noStaff:"Sem trabalhadores. Adicione o primeiro!", newWorker:"Novo Trabalhador", editWorker:"Editar Trabalhador",
     noZoneAssigned:"Sem zona", roleLabel:"Função / Cargo", phoneLabel:"Telefone",
-    newZone:"Nova Zona", editZone:"Editar Zona", zoneAssignedTo:"Zona atribuída a",
+    newZone:"Nova Zona", editZone:"Editar Zona",
     descLabel:"Descrição", nameLabel:"Nome", namePlaceholder:"Nome *",
-    subItems:"Sub-itens", noSubItems:"Sem sub-itens ainda.", subItemPlaceholder:"Nome do sub-item...",
-    comments:"Comentários", noComments:"Sem comentários ainda.", commentPlaceholder:"Escreva um comentário...",
+    subItems:"Sub-itens", noSubItems:"Sem sub-itens ainda.", subItemPlaceholder:"Nome do sub-item…",
+    comments:"Comentários", noComments:"Sem comentários ainda.", commentPlaceholder:"Escreva um comentário…",
     itemNamePlaceholder:"Nome do item *",
     onlyOwnerSubEdit:"Somente o criador pode marcar este sub-item",
-    assignOwner:"Atribuir responsável pelo item", assignOwnerDesc:"Somente essa pessoa pode marcá-lo, editá-lo ou excluí-lo.",
+    assignOwner:"Atribuir responsável pelo item",
+    assignOwnerDesc:"Somente essa pessoa pode marcá-lo, editá-lo ou excluí-lo.",
     materials:"Materiais", addMaterial:"Adicionar Material", editMaterial:"Editar Material",
     addSubMaterial:"Adicionar Material ao Sub-item",
     supplier:"Fornecedor", purchaseDate:"Data de compra", matNamePlaceholder:"Ex: Cimento",
     budget:"Orçamento", spent:"Gasto", pending:"Pendente", pendingMat:"pend.",
     progressByZone:"Progresso por Zona", summary:"Resumo",
     zonesLabel:"Zonas", itemsLabel:"Itens", doneLabel:"Concluídos", pendMatLabel:"Mat. pend.",
-    goToZones:"Ver zonas →", pdfProgress:"PDF Progresso", pdfOrders:"PDF Compras (obra)",
-    expiredDays:"Vencido há", daysLeft:"dia(s) restante(s)",
+    goToZones:"Ver zonas →", pdfProgress:"PDF Progresso", pdfOrders:"PDF Compras",
     todayAttendance:"Presença hoje", presents:"Presentes", absents:"Ausentes", noReg:"Sem registro",
-    connectingCloud:"Conectando à nuvem...",
+    connectingCloud:"Conectando à nuvem…",
     takePhoto:"Tirar Foto", flipCamera:"Virar", capture:"Capturar", usePhoto:"Usar foto", repeat:"Repetir",
     scanBoleta:"Escanear Nota com IA", cameraBtn:"Câmera", galleryBtn:"Galeria",
-    analyzeBtn:"Analisar com IA", analyzing:"Analisando...", changePhoto:"Trocar",
+    analyzeBtn:"Analisar com IA", analyzing:"Analisando…", changePhoto:"Trocar",
     noMaterials:"Nenhum material encontrado", materialsAdded:"material(is) adicionado(s)",
     cameraError:"Não foi possível acessar a câmera",
     roleAdmin:"Administrador", roleCollab:"Colaborador", roleMat:"Resp. Materiais",
-    roleAdminDesc:"Controle total, cria obras e zonas", roleCollabDesc:"Edita suas zonas, vê tudo",
-    generatingPDF:"Gerando PDF...",
+    roleAdminDesc:"Controle total · cria obras e zonas", roleCollabDesc:"Edita suas zonas · vê tudo",
+    generatingPDF:"Gerando PDF…",
     dataSection:"Dados", inviteCollab:"Convidar colaborador",
-    validFor:"Válido 48h, compartilhe este código",
+    validFor:"Válido 48h · compartilhe este código",
     generateCodeBtn:"Gerar código", copyCode:"Copiar código", codeCopied:"Copiado!",
-    close:"Fechar", copy:"Copiar",
-    welcomeBack:"Bem-vindo de volta", selectUser:"Selecione seu usuário",
-    joinCode:"Tenho um código de convite",
+    close:"Fechar", selectUser:"Selecione seu usuário", joinCode:"Tenho um código de convite",
   },
   fr: {
     appName:"Superviseur Chantier", dashboard:"Accueil", zones:"Zones", staff:"Personnel", settings:"Config",
@@ -197,45 +191,45 @@ const TRANSLATIONS = {
     logout:"Se déconnecter", login:"Se connecter", newUser:"Nouvel utilisateur",
     createAccount:"Créer un compte", onlyOwnerEdit:"Seul le créateur peut modifier cet élément",
     present:"Présent", absent:"Absent", pin:"PIN de",
-    tools:"Outils", noTools:"Aucun outil attribué", toolPlaceholder:"Ex: Perceuse, Niveau...",
     available:"Disponible", inUse:"En cours", inRepair:"En réparation",
+    tools:"Outils", noTools:"Aucun outil attribué", toolPlaceholder:"Ex: Perceuse, Niveau…",
     attendance:"Présence", last7days:"7 derniers jours", tapToChange:"Appuyer pour modifier",
     noStaff:"Aucun ouvrier. Ajoutez le premier!", newWorker:"Nouvel Ouvrier", editWorker:"Modifier Ouvrier",
     noZoneAssigned:"Sans zone", roleLabel:"Rôle / Poste", phoneLabel:"Téléphone",
-    newZone:"Nouvelle Zone", editZone:"Modifier Zone", zoneAssignedTo:"Zone attribuée à",
+    newZone:"Nouvelle Zone", editZone:"Modifier Zone",
     descLabel:"Description", nameLabel:"Nom", namePlaceholder:"Nom *",
-    subItems:"Sous-éléments", noSubItems:"Aucun sous-élément encore.", subItemPlaceholder:"Nom du sous-élément...",
-    comments:"Commentaires", noComments:"Aucun commentaire encore.", commentPlaceholder:"Écrire un commentaire...",
+    subItems:"Sous-éléments", noSubItems:"Aucun sous-élément encore.", subItemPlaceholder:"Nom du sous-élément…",
+    comments:"Commentaires", noComments:"Aucun commentaire encore.", commentPlaceholder:"Écrire un commentaire…",
     itemNamePlaceholder:"Nom de l'élément *",
     onlyOwnerSubEdit:"Seul le créateur peut cocher ce sous-élément",
-    assignOwner:"Attribuer responsable", assignOwnerDesc:"Seule cette personne peut le marquer, modifier ou supprimer.",
+    assignOwner:"Attribuer responsable",
+    assignOwnerDesc:"Seule cette personne peut le marquer, modifier ou supprimer.",
     materials:"Matériaux", addMaterial:"Ajouter Matériau", editMaterial:"Modifier Matériau",
     addSubMaterial:"Ajouter Matériau au Sous-élément",
     supplier:"Fournisseur", purchaseDate:"Date d'achat", matNamePlaceholder:"Ex: Ciment",
     budget:"Budget", spent:"Dépensé", pending:"En attente", pendingMat:"att.",
     progressByZone:"Avancement par Zone", summary:"Résumé",
     zonesLabel:"Zones", itemsLabel:"Éléments", doneLabel:"Terminés", pendMatLabel:"Mat. att.",
-    goToZones:"Voir zones →", pdfProgress:"PDF Avancement", pdfOrders:"PDF Commandes (projet)",
-    expiredDays:"Expiré depuis", daysLeft:"jour(s) restant(s)",
+    goToZones:"Voir zones →", pdfProgress:"PDF Avancement", pdfOrders:"PDF Commandes",
     todayAttendance:"Présence aujourd'hui", presents:"Présents", absents:"Absents", noReg:"Sans registre",
-    connectingCloud:"Connexion au cloud...",
+    connectingCloud:"Connexion au cloud…",
     takePhoto:"Prendre Photo", flipCamera:"Retourner", capture:"Capturer", usePhoto:"Utiliser", repeat:"Reprendre",
     scanBoleta:"Scanner Reçu avec IA", cameraBtn:"Caméra", galleryBtn:"Galerie",
-    analyzeBtn:"Analyser avec IA", analyzing:"Analyse...", changePhoto:"Changer",
+    analyzeBtn:"Analyser avec IA", analyzing:"Analyse…", changePhoto:"Changer",
     noMaterials:"Aucun matériau trouvé", materialsAdded:"matériau(x) ajouté(s)",
     cameraError:"Impossible d'accéder à la caméra",
     roleAdmin:"Administrateur", roleCollab:"Collaborateur", roleMat:"Resp. Matériaux",
-    roleAdminDesc:"Contrôle total, crée projets et zones", roleCollabDesc:"Modifie ses zones, voit tout",
-    generatingPDF:"Génération du PDF...",
+    roleAdminDesc:"Contrôle total · crée projets et zones", roleCollabDesc:"Modifie ses zones · voit tout",
+    generatingPDF:"Génération du PDF…",
     dataSection:"Données", inviteCollab:"Inviter un collaborateur",
-    validFor:"Valide 48h, partagez ce code",
+    validFor:"Valide 48h · partagez ce code",
     generateCodeBtn:"Générer un code", copyCode:"Copier le code", codeCopied:"Copié!",
-    close:"Fermer", copy:"Copier",
-    welcomeBack:"Bon retour", selectUser:"Sélectionnez votre utilisateur",
-    joinCode:"J'ai un code d'invitation",
+    close:"Fermer", selectUser:"Sélectionnez votre utilisateur", joinCode:"J'ai un code d'invitation",
   },
 };
 const detectLang=()=>{ try{ const s=localStorage.getItem("supervisor_lang"); if(s&&TRANSLATIONS[s])return s; }catch{} const n=navigator.language?.slice(0,2).toLowerCase(); return TRANSLATIONS[n]?n:"es"; };
+const LangContext = createContext(k=>k);
+const useLang = () => useContext(LangContext);
 
 // ─── Storage Keys (solo datos locales del dispositivo) ────────────────────────
 const SESSION_KEY = "supervisor_session_v5";
@@ -265,11 +259,7 @@ const OBRA_ESTADOS = {
   finalizada:   { label:"Finalizada",    color:"#38bdf8", bg:"#38bdf818", icon:"✅" },
 };
 
-const getHerramientaEstados = (t) => ({
-  disponible:    { label:t("available"), color:"#22c55e", dot:"#22c55e" },
-  en_uso:        { label:t("inUse"),     color:"#f59e0b", dot:"#f59e0b" },
-  en_reparacion: { label:t("inRepair"),  color:"#ef4444", dot:"#ef4444" },
-});
+// HERRAMIENTA_ESTADOS se crea dinámicamente con useLang en cada componente que lo usa
 
 // ─── PDF ──────────────────────────────────────────────────────────────────────
 async function getJsPDF(){
@@ -462,11 +452,11 @@ const MAT_EST = {
   entregado:{label:"Entregado",color:"#a78bfa",bg:"#a78bfa18",dot:"#a78bfa"},
 };
 
-const getRoleMeta = (t) => ({
-  admin:      {label:t("roleAdmin"),  icon:"👑", desc:t("roleAdminDesc"), color:"#f59e0b"},
-  colaborador:{label:t("roleCollab"), icon:"🔧", desc:t("roleCollabDesc"),color:"#38bdf8"},
-  materiales: {label:t("roleMat"),    icon:"📦", desc:t("roleMat"),       color:"#a78bfa"},
-});
+const ROLE_META = {
+  admin:      {label:"Administrador", icon:"👑", desc:"Control total · crea obras y zonas",    color:"#f59e0b"},
+  colaborador:{label:"Colaborador",   icon:"🔧", desc:"Edita sus zonas · ve todo",              color:"#38bdf8"},
+  materiales: {label:"Enc. Materiales",icon:"📦",desc:"Solo materiales y boletas · ve el avance",color:"#a78bfa"},
+};
 
 // ─── Progress Ring ────────────────────────────────────────────────────────────
 function Ring({pct,size=56,stroke=5,color="#f59e0b"}){
@@ -507,8 +497,8 @@ function PinRow({value,onChange,refs,onComplete,shake,size=52,height=64}){
 }
 
 // ─── Auth Screen ──────────────────────────────────────────────────────────────
-function AuthScreen({t,users,obras,invites,onLogin,onRegister,onAcceptInvite}){
-  const ROLE_META=getRoleMeta(t);
+function AuthScreen({
+  const t=useLang();users,obras,invites,onLogin,onRegister,onAcceptInvite}){
   const [mode,setMode]=useState(users.length===0?"register":"login");
   const [nombre,setNombre]=useState("");
   const [rol,setRol]=useState("admin");
@@ -526,7 +516,7 @@ function AuthScreen({t,users,obras,invites,onLogin,onRegister,onAcceptInvite}){
 
   const doLogin=(pinStr)=>{
     const user=users.find(u=>u.id===selUser);
-    if(!user){setError(t("selectUser"));return;}
+    if(!user){setError("Selecciona un usuario");return;}
     if(pinStr!==user.pin){ setShake(true); setError("PIN incorrecto"); setTimeout(()=>{setPin(["","","","",""]);setShake(false);setError("");refs[0].current?.focus();},700); return; }
     onLogin(user);
   };
@@ -654,7 +644,8 @@ function AuthScreen({t,users,obras,invites,onLogin,onRegister,onAcceptInvite}){
 }
 
 // ─── Camera Modal ─────────────────────────────────────────────────────────────
-function CameraModal({t,onCapture,onClose}){
+function CameraModal({
+  const t=useLang();onCapture,onClose}){
   const videoRef=useRef(); const canvasRef=useRef();
   const [stream,setStream]=useState(null); const [preview,setPreview]=useState(null); const [facingMode,setFacingMode]=useState("environment");
   useEffect(()=>{ startCam(facingMode); return ()=>stopCam(); },[facingMode]);
@@ -683,7 +674,8 @@ function CameraModal({t,onCapture,onClose}){
 }
 
 // ─── Scan Boleta ──────────────────────────────────────────────────────────────
-function ScanBoletaModal({t,onDatos,onClose}){
+function ScanBoletaModal({
+  const t=useLang();onDatos,onClose}){
   const [foto,setFoto]=useState(null); const [scanning,setScanning]=useState(false); const [error,setError]=useState(""); const [camMode,setCamMode]=useState(false);
   const videoRef=useRef(); const canvasRef=useRef(); const [stream,setStream]=useState(null);
   const startCam=async()=>{ try{ const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}); setStream(s); setCamMode(true); setTimeout(()=>{ if(videoRef.current){videoRef.current.srcObject=s;videoRef.current.play();} },100); }catch{ setError("No se pudo acceder a la cámara"); } };
@@ -704,7 +696,8 @@ function ScanBoletaModal({t,onDatos,onClose}){
 }
 
 // ─── MatRow ───────────────────────────────────────────────────────────────────
-function MatRow({t,mat,onEdit,onDelete,onStatus,canEdit}){
+function MatRow({
+  const t=useLang();mat,onEdit,onDelete,onStatus,canEdit}){
   const est=MAT_EST[mat.estado||"pendiente"],total=(parseFloat(mat.precio)||0)*(parseFloat(mat.cantidad)||0);
   return <div style={{background:"#060e1a",borderTop:"1px solid #0d1526",padding:"7px 14px 7px 20px"}}>
     <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
@@ -726,11 +719,12 @@ function MatRow({t,mat,onEdit,onDelete,onStatus,canEdit}){
 }
 
 // ─── MatForm ──────────────────────────────────────────────────────────────────
-function MatForm({t,mat,onChange}){
-  const p=parseFloat(mat.precio)||0,q=parseFloat(mat.cantidad)||0,total=p*q;
+function MatForm({
+  const t=useLang();mat,onChange}){
+  const p=parseFloat(mat.precio)||0,q=parseFloat(mat.cantidad)||0,t=p*q;
   return <div style={{display:"flex",flexDirection:"column",gap:9}}>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-      <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>{t("materials")} *</label><input style={S.inp} placeholder={t("matNamePlaceholder")} value={mat.nombre||""} onChange={e=>onChange("nombre",e.target.value)}/></div>
+      <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>Material *</label><input style={S.inp} placeholder={t("matNamePlaceholder")} value={mat.nombre||""} onChange={e=>onChange("nombre",e.target.value)}/></div>
       <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>Estado</label>
         <select style={{...S.inp,color:"#f1f5f9"}} value={mat.estado||"pendiente"} onChange={e=>onChange("estado",e.target.value)}>
           {Object.entries(MAT_EST).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
@@ -741,7 +735,7 @@ function MatForm({t,mat,onChange}){
       <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>Unidad</label><input style={S.inp} placeholder="kg, m²" value={mat.unidad||""} onChange={e=>onChange("unidad",e.target.value)}/></div>
       <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>Precio u.</label><input style={S.inp} type="number" min="0" step="any" placeholder="0" value={mat.precio||""} onChange={e=>onChange("precio",e.target.value)}/></div>
     </div>
-    {total>0&&<div style={{background:"#1e293b",borderRadius:8,padding:"7px 12px",display:"flex",justifyContent:"space-between"}}><span style={{fontSize:"0.75rem",color:"#64748b"}}>Total</span><span style={{fontSize:"0.95rem",fontWeight:800,color:"#f59e0b"}}>${fmt(total)}</span></div>}
+    {t>0&&<div style={{background:"#1e293b",borderRadius:8,padding:"7px 12px",display:"flex",justifyContent:"space-between"}}><span style={{fontSize:"0.75rem",color:"#64748b"}}>Total</span><span style={{fontSize:"0.95rem",fontWeight:800,color:"#f59e0b"}}>${fmt(t)}</span></div>}
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
       <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>{t("supplier")}</label><input style={S.inp} placeholder="Nombre" value={mat.proveedor||""} onChange={e=>onChange("proveedor",e.target.value)}/></div>
       <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>{t("purchaseDate")}</label><input style={S.inp} type="date" value={mat.fechaCompra||""} onChange={e=>onChange("fechaCompra",e.target.value)}/></div>
@@ -751,7 +745,8 @@ function MatForm({t,mat,onChange}){
 }
 
 // ─── ObraCard (dentro del Dashboard) ─────────────────────────────────────────
-function ObraCard({t,o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onPDF,onCompras,onChangeStatus,currentUser,isExpanded,onToggle}){
+function ObraCard({
+  const t=useLang();o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onPDF,onCompras,onChangeStatus,currentUser,isExpanded,onToggle}){
   const [itemsPanel,setItemsPanel]=useState(null); // null | "completados" | "pendientes" | "criticos"
 
   const allI=o.zonas.flatMap(z=>z.items||[]);
@@ -942,14 +937,14 @@ function ObraCard({t,o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,o
 
 
 
-function Dashboard({t,obras,activeId,calcZonePct,calcItemPct,isItemDone,totalPct,onPDF,onCompras,currentUser,onGoToZonas,onChangeStatus,onSetActive}){
+function Dashboard({
+  const t=useLang();obras,activeId,calcZonePct,calcItemPct,isItemDone,totalPct,onPDF,onCompras,currentUser,onGoToZonas,onChangeStatus,onSetActive}){
   const [expanded,setExpanded]=useState({[activeId]:true});
   const toggleExpand=(id)=>setExpanded(p=>({...p,[id]:!p[id]}));
 
   return <div style={{display:"flex",flexDirection:"column",gap:0}}>
     {obras.map(o=>(
       <ObraCard key={o.id}
-        t={t}
         o={o}
         isActive={o.id===activeId}
         isExpanded={!!expanded[o.id]}
@@ -968,15 +963,21 @@ function Dashboard({t,obras,activeId,calcZonePct,calcItemPct,isItemDone,totalPct
 }
 
 // ─── Worker Card ─────────────────────────────────────────────────────────────
-function WorkerCard({t,lang,trab,zona,onEdit,onDelete,onToggleAsistencia,onAddHerramienta,onEditHerramienta,onDeleteHerramienta,onSetHerramientaStatus,canEdit}){
-  const [open,setOpen]=useState(false);
+function WorkerCard({trab,zona,onEdit,onDelete,onToggleAsistencia,onAddHerramienta,onEditHerramienta,onDeleteHerramienta,onSetHerramientaStatus,canEdit}){
+  const t=useLang();
+  const HERRAMIENTA_ESTADOS={
+    disponible:    { label:t("available")||"Disponible",    color:"#22c55e", dot:"#22c55e" },
+    en_uso:        { label:t("inUse")||"En uso",            color:"#f59e0b", dot:"#f59e0b" },
+    en_reparacion: { label:t("inRepair")||"En reparación",  color:"#ef4444", dot:"#ef4444" },
+  };
   const [tab,setTab]=useState("herramientas");
   const [newTool,setNewTool]=useState("");
   const [editingTool,setEditingTool]=useState(null); // {id, nombre}
   const hoy=today();
-  const asistHoy=t.asistencia?.[hoy];
-  const herramientas=t.herramientas||[];
+  const asistHoy=trab.asistencia?.[hoy];
+  const herramientas=trab.herramientas||[];
 
+  // Calcular últimos 7 días para asistencia
   const ultimos7=[];
   for(let i=6;i>=0;i--){
     const d=new Date(); d.setDate(d.getDate()-i);
@@ -1030,7 +1031,7 @@ function WorkerCard({t,lang,trab,zona,onEdit,onDelete,onToggleAsistencia,onAddHe
                     <input autoFocus style={{flex:1,background:"#1e293b",border:"1px solid #f59e0b",borderRadius:6,padding:"4px 8px",color:"#f1f5f9",fontSize:"0.82rem",outline:"none"}}
                       value={editingTool.nombre} onChange={e=>setEditingTool(p=>({...p,nombre:e.target.value}))}
                       onKeyDown={e=>{ if(e.key==="Enter"&&editingTool.nombre.trim()){ onEditHerramienta(trab.id,h.id,editingTool.nombre.trim()); setEditingTool(null); } if(e.key==="Escape") setEditingTool(null); }}/>
-                    <button style={{...S.btnP,padding:"3px 8px",fontSize:"0.72rem"}} onClick={()=>{ if(editingTool.nombre.trim()){ onEditHerramienta(t.id,h.id,editingTool.nombre.trim()); setEditingTool(null); } }}>✓</button>
+                    <button style={{...S.btnP,padding:"3px 8px",fontSize:"0.72rem"}} onClick={()=>{ if(editingTool.nombre.trim()){ onEditHerramienta(trab.id,h.id,editingTool.nombre.trim()); setEditingTool(null); } }}>✓</button>
                     <button className="ic" onClick={()=>setEditingTool(null)}>✕</button>
                   </>
                 : <>
@@ -1051,7 +1052,7 @@ function WorkerCard({t,lang,trab,zona,onEdit,onDelete,onToggleAsistencia,onAddHe
           <input style={{...S.inp,fontSize:"0.8rem",padding:"7px 10px"}} placeholder={t("toolPlaceholder")} value={newTool}
             onChange={e=>setNewTool(e.target.value)}
             onKeyDown={e=>{ if(e.key==="Enter"&&newTool.trim()){ onAddHerramienta(trab.id,newTool.trim()); setNewTool(""); } }}/>
-          <button style={{...S.btnP,padding:"7px 12px",flexShrink:0,fontSize:"0.75rem"}} onClick={()=>{ if(newTool.trim()){ onAddHerramienta(t.id,newTool.trim()); setNewTool(""); } }}><Ico.Plus/></button>
+          <button style={{...S.btnP,padding:"7px 12px",flexShrink:0,fontSize:"0.75rem"}} onClick={()=>{ if(newTool.trim()){ onAddHerramienta(trab.id,newTool.trim()); setNewTool(""); } }}><Ico.Plus/></button>
         </div>}
       </div>}
 
@@ -1062,7 +1063,7 @@ function WorkerCard({t,lang,trab,zona,onEdit,onDelete,onToggleAsistencia,onAddHe
           {ultimos7.map(fecha=>{
             const est=trab.asistencia?.[fecha];
             const esHoy=fecha===hoy;
-            const diaSemana=new Date(fecha+"T12:00:00").toLocaleDateString(lang==="en"?"en-US":lang==="fr"?"fr-FR":lang==="pt"?"pt-BR":"es-ES",{weekday:"short"});
+            const diaSemana=new Date(fecha+"T12:00:00").toLocaleDateString("es-ES",{weekday:"short"});
             const diaMes=new Date(fecha+"T12:00:00").getDate();
             return <div key={fecha} style={{flex:"1",minWidth:38,textAlign:"center"}}>
               <div style={{fontSize:"0.58rem",color:esHoy?"#f59e0b":"#64748b",fontWeight:esHoy?700:400,marginBottom:4}}>{diaSemana}</div>
@@ -1075,7 +1076,7 @@ function WorkerCard({t,lang,trab,zona,onEdit,onDelete,onToggleAsistencia,onAddHe
           })}
         </div>
         <div style={{display:"flex",gap:12,marginTop:10,fontSize:"0.65rem",color:"#64748b"}}>
-          <span>✓ {t("present")}</span><span>✗ {t("absent")}</span><span>· {t("noReg")}</span>
+          <span>{t("present")}</span><span>✗ {t("absent")}</span><span>· {t("noReg")}</span>
           {canEdit&&<span style={{color:"#475569",fontStyle:"italic"}}>{t("tapToChange")}</span>}
         </div>
       </div>}
@@ -1303,13 +1304,13 @@ export default function SupervisorObra(){
   const delTrab=(id)=>updObra(o=>({...o,trabajadores:o.trabajadores.filter(t=>t.id!==id)}));
 
   // ── Herramientas ──
-  const addHerramienta=(tId,nombre)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,herramientas:[...(t.herramientas||[]),{id:uid(),nombre,estado:"disponible"}]}:t)}));
-  const editHerramienta=(tId,hId,nombre)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,herramientas:(t.herramientas||[]).map(h=>h.id===hId?{...h,nombre}:h)}:t)}));
-  const deleteHerramienta=(tId,hId)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,herramientas:(t.herramientas||[]).filter(h=>h.id!==hId)}:t)}));
-  const setHerramientaStatus=(tId,hId,estado)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,herramientas:(t.herramientas||[]).map(h=>h.id===hId?{...h,estado}:h)}:t)}));
+  const addHerramienta=(tId,nombre)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,herramientas:[...(trab.herramientas||[]),{id:uid(),nombre,estado:"disponible"}]}:t)}));
+  const editHerramienta=(tId,hId,nombre)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,herramientas:(trab.herramientas||[]).map(h=>h.id===hId?{...h,nombre}:h)}:t)}));
+  const deleteHerramienta=(tId,hId)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,herramientas:(trab.herramientas||[]).filter(h=>h.id!==hId)}:t)}));
+  const setHerramientaStatus=(tId,hId,estado)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,herramientas:(trab.herramientas||[]).map(h=>h.id===hId?{...h,estado}:h)}:t)}));
 
   // ── Asistencia ──
-  const toggleAsistencia=(tId,fecha,val)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>{ if(t.id!==tId)return t; const a={...(t.asistencia||{})}; if(val===null){delete a[fecha];}else{a[fecha]=val;} return{...t,asistencia:a}; })}));
+  const toggleAsistencia=(tId,fecha,val)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>{ if(t.id!==tId)return t; const a={...(trab.asistencia||{})}; if(val===null){delete a[fecha];}else{a[fecha]=val;} return{...t,asistencia:a}; })}));
 
   // ── Fotos ──
   const addFoto=(zId,iId,data)=>{ const f={id:uid(),data,fecha:new Date().toLocaleDateString("es-ES"),hora:new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,fotos:[...(i.fotos||[]),f]}:i)}:z)})); toast("📸 Foto guardada"); };
@@ -1326,7 +1327,7 @@ export default function SupervisorObra(){
         updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,materiales:[...(i.materiales||[]),mat]}:i)}:z)}));
       }
     });
-    toast(`✅ ${datos.materiales.length} ${t("materialsAdded")}`);
+    toast(`✅ ${datos.materiales.length} materialsAdded` )`;
   };
 
   const hDS=(e,i)=>{ setDragI(i); e.dataTransfer.effectAllowed="move"; };
@@ -1350,16 +1351,16 @@ export default function SupervisorObra(){
 
   if(!ready) return <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#020b18,#0a1628)",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:12,color:"#64748b"}}><span style={{fontSize:"2.5rem",animation:"spin 1s linear infinite",display:"inline-block"}}>⚙</span><span style={{fontSize:"0.82rem"}}>{t("connectingCloud")}</span></div>;
 
-  if(!currentUser) return <AuthScreen t={t} users={users} obras={obras} invites={invites} onLogin={handleLogin} onRegister={handleRegister} onAcceptInvite={handleInvite}/>;
+  if(!currentUser) return <AuthScreen users={users} obras={obras} invites={invites} onLogin={handleLogin} onRegister={handleRegister} onAcceptInvite={handleInvite}/>;
 
   const pct=obra?totalPct():0; const pc=pct<30?"#ef4444":pct<70?"#f59e0b":"#22c55e";
-  const ROLE_META=getRoleMeta(t); const rm=ROLE_META[currentUser.rol]||ROLE_META.colaborador;
+  const rm=ROLE_META[currentUser.rol]||ROLE_META.colaborador;
 
   const TABS = [{id:"dashboard",label:t("summary"),icon:<Ico.Chart/>},{id:"zonas",label:t("zones"),icon:<Ico.Zone/>},{id:"personal",label:t("staff"),icon:<Ico.Hard/>}];
 
   const filteredZonas=search.trim()?(obra?.zonas||[]).map(z=>({...z,items:(z.items||[]).filter(i=>i.nombre.toLowerCase().includes(search.toLowerCase()))})).filter(z=>z.items.length>0):(obra?.zonas||[]);
 
-  return <>
+  return <LangContext.Provider value={t}>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
     <style>{`
       *{box-sizing:border-box;} body{margin:0;background:#020b18;font-family:'DM Sans',sans-serif;}
@@ -1435,7 +1436,6 @@ export default function SupervisorObra(){
         </div>}
 
         {tab==="dashboard"&&<Dashboard
-          t={t}
           obras={obras}
           activeId={activeId}
           calcZonePct={calcZonePct}
@@ -1525,7 +1525,7 @@ export default function SupervisorObra(){
                         </div>
                       </div>
                       {!isMateriales&&<span className="badge" style={{background:"#1e293b",color:"#64748b",fontSize:"0.58rem"}}>W{item.peso||1}</span>}
-                      <button className="ic" title={t("comments")} onClick={()=>setExComents(p=>({...p,[item.id]:!p[item.id]}))} style={{color:comentarios.length>0?"#38bdf8":"#64748b",borderColor:comentarios.length>0?"#38bdf844":"#334155"}}>
+                      <button className="ic" title="Comentarios" onClick={()=>setExComents(p=>({...p,[item.id]:!p[item.id]}))} style={{color:comentarios.length>0?"#38bdf8":"#64748b",borderColor:comentarios.length>0?"#38bdf844":"#334155"}}>
                         <Ico.Chat/>{comentarios.length>0&&<span style={{fontSize:"0.65rem",fontWeight:700,marginLeft:1}}>{comentarios.length}</span>}
                       </button>
                       {!isMateriales&&<button className="ic" title="Sub-ítems" onClick={()=>setExSubItems(p=>({...p,[item.id]:!p[item.id]}))} style={{color:hasSubs?"#a78bfa":"#64748b",borderColor:hasSubs?"#a78bfa44":"#334155"}}>
@@ -1541,7 +1541,7 @@ export default function SupervisorObra(){
                         <button className="ic danger" onClick={()=>delItem(zona.id,item.id)}><Ico.Trash/></button>
                       </>}
                       {!isMateriales&&<button className="ic" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))}><Ico.Cam/></button>}
-                      {isMateriales&&<button className="ic" title={t("materials")} onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))} style={{color:"#a78bfa",borderColor:"#a78bfa44"}}><Ico.Mat/></button>}
+                      {isMateriales&&<button className="ic" title="Materiales" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))} style={{color:"#a78bfa",borderColor:"#a78bfa44"}}><Ico.Mat/></button>}
                     </div>
 
                     {/* COMENTARIOS */}
@@ -1586,7 +1586,7 @@ export default function SupervisorObra(){
                             {/* Badge materiales */}
                             {siMats.length>0&&<span style={{fontSize:"0.6rem",color:"#a78bfa",background:"#a78bfa18",borderRadius:4,padding:"1px 5px"}}>📦 {siMats.length}</span>}
                             {/* Botón materiales */}
-                            <button className="ic" title={t("materials")} onClick={()=>setExSubMats(p=>({...p,[si.id]:!p[si.id]}))}
+                            <button className="ic" title="Materiales" onClick={()=>setExSubMats(p=>({...p,[si.id]:!p[si.id]}))}
                               style={{color:siMats.length>0?"#a78bfa":"#64748b",borderColor:siMats.length>0?"#a78bfa44":"#334155",padding:"3px 5px"}}>
                               <Ico.Mat/>
                             </button>
@@ -1597,14 +1597,14 @@ export default function SupervisorObra(){
                           {siMatOpen&&<div style={{borderTop:"1px solid #0d1526",background:"#060e1a"}}>
                             {/* Lista materiales */}
                             {siMats.length===0&&<p style={{fontSize:"0.72rem",color:"#334155",margin:0,padding:"8px 12px"}}>Sin materiales en este sub-ítem.</p>}
-                            {siMats.map(mat=><MatRow key={mat.id} t={t} mat={mat} canEdit={ceMat}
+                            {siMats.map(mat=><MatRow key={mat.id} mat={mat} canEdit={ceMat}
                               onEdit={()=>{setMatForm({...mat});setModal({type:"editSubMat",zId:zona.id,iId:item.id,sId:si.id,mId:mat.id});}}
                               onDelete={()=>delSubMat(zona.id,item.id,si.id,mat.id)}
                               onStatus={s=>setSubMatStatus(zona.id,item.id,si.id,mat.id,s)}/>)}
                             {/* Botones agregar */}
                             {ceMat&&<div style={{padding:"7px 10px",display:"flex",gap:6,borderTop:"1px solid #0a1628"}}>
                               <button style={{...S.btnP,fontSize:"0.68rem",padding:"5px 10px",flex:1,justifyContent:"center"}} onClick={()=>setScanBoleta({zId:zona.id,iId:item.id,sId:si.id})}>🧾 Boleta</button>
-                              <button style={{...S.btnS,fontSize:"0.68rem",padding:"5px 10px"}} onClick={()=>setModal({type:"addSubMat",zId:zona.id,iId:item.id,sId:si.id})}>+ {t("materials")}</button>
+                              <button style={{...S.btnS,fontSize:"0.68rem",padding:"5px 10px"}} onClick={()=>setModal({type:"addSubMat",zId:zona.id,iId:item.id,sId:si.id})}>+ Material</button>
                             </div>}
                           </div>}
                         </div>;
@@ -1618,14 +1618,14 @@ export default function SupervisorObra(){
                     {/* BOLETA + MATERIAL + PDF */}
                     {ceMat&&<div style={{padding:"6px 12px",borderTop:"1px solid #1e293b22",display:"flex",gap:6,flexWrap:"wrap"}}>
                       <button style={{...S.btnP,fontSize:"0.72rem",padding:"6px 12px",borderRadius:8,flex:1,justifyContent:"center"}} onClick={()=>setScanBoleta({zId:zona.id,iId:item.id})}>🧾 Escanear Boleta</button>
-                      <button style={{...S.btnS,fontSize:"0.72rem",padding:"6px 12px",borderRadius:8}} onClick={()=>setModal({type:"addMat",zId:zona.id,iId:item.id})}>+ {t("materials")}</button>
+                      <button style={{...S.btnS,fontSize:"0.72rem",padding:"6px 12px",borderRadius:8}} onClick={()=>setModal({type:"addMat",zId:zona.id,iId:item.id})}>+ Material</button>
                       {((item.materiales||[]).length>0||(item.subItems||[]).some(si=>(si.materiales||[]).length>0))&&
                         <button style={{...S.btnG,fontSize:"0.72rem",padding:"6px 10px",borderRadius:8}} onClick={()=>{ const o=obras.find(x=>x.id===activeId); if(!o)return; setExporting(true); exportComprasPDF(o,item.id).catch(()=>toast("Error PDF","err")).finally(()=>setExporting(false)); }}><Ico.Down/> PDF</button>}
                     </div>}
 
                     {/* MATERIALES + FOTOS */}
                     {iOpen&&<>
-                      {(item.materiales||[]).map(mat=><MatRow key={mat.id} t={t} mat={mat} canEdit={ceMat}
+                      {(item.materiales||[]).map(mat=><MatRow key={mat.id} mat={mat} canEdit={ceMat}
                         onEdit={()=>{setMatForm({...mat});setModal({type:"editMat",zId:zona.id,iId:item.id,mId:mat.id});}}
                         onDelete={()=>delMat(zona.id,item.id,mat.id)}
                         onStatus={s=>setMatStatus(zona.id,item.id,mat.id,s)}/>)}
@@ -1665,8 +1665,8 @@ export default function SupervisorObra(){
             <div>
               <span style={{fontSize:"0.72rem",color:"#64748b",textTransform:"uppercase",letterSpacing:"0.07em",fontWeight:600}}>Personal · {obra.trabajadores.length}</span>
               {obra.trabajadores.length>0&&<div style={{fontSize:"0.65rem",color:"#475569",marginTop:2}}>
-                🔧 {obra.trabajadores.flatMap(t=>t.herramientas||[]).length} herramientas totales
-                {" · "}en uso: {obra.trabajadores.flatMap(t=>t.herramientas||[]).filter(h=>h.estado==="en_uso").length}
+                🔧 {obra.trabajadores.flatMap(t=>trab.herramientas||[]).length} herramientas totales
+                {" · "}en uso: {obra.trabajadores.flatMap(t=>trab.herramientas||[]).filter(h=>h.estado==="en_uso").length}
               </div>}
             </div>
             {currentUser?.rol==="admin"&&<button style={S.btnP} onClick={()=>setModal({type:"addTrab"})}><Ico.Plus/> Trabajador</button>}
@@ -1678,7 +1678,7 @@ export default function SupervisorObra(){
           {!obra.trabajadores.length&&<div style={{textAlign:"center",padding:"50px 20px",color:"#334155"}}><Ico.Hard/><p style={{marginTop:10}}>{t("noStaff")}</p></div>}
           {obra.trabajadores.map(t=>{
             const zona=obra.zonas.find(z=>z.id===t.zonaId);
-            return <WorkerCard key={t.id} trab={t} t={t} lang={lang} zona={zona}
+            return <WorkerCard key={t.id} trab={t} zona={zona}
               onEdit={(tr)=>{setForm({nombre:tr.nombre,rol:tr.rol||"",zonaId:tr.zonaId||"",telefono:tr.telefono||""});setModal({type:"editTrab",tId:tr.id});}}
               onDelete={delTrab}
               onToggleAsistencia={toggleAsistencia}
@@ -1748,7 +1748,7 @@ export default function SupervisorObra(){
               </div>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",borderTop:"1px solid #1e293b"}}>
-              {[[t("zonesLabel"),o.zonas.length,"#64748b"],[t("itemsLabel"),allI.length,"#64748b"],[t("doneLabel"),doneI,"#22c55e"],[t("pendMatLabel"),pendM,"#f59e0b"]].map(([l,v,c])=><div key={l} style={{padding:"8px 6px",textAlign:"center",borderRight:"1px solid #1e293b"}}>
+              {[["Zonas",o.zonas.length,"#64748b"],["Ítems",allI.length,"#64748b"],["Listos",doneI,"#22c55e"],["Mat. pend.",pendM,"#f59e0b"]].map(([l,v,c])=><div key={l} style={{padding:"8px 6px",textAlign:"center",borderRight:"1px solid #1e293b"}}>
                 <div style={{fontSize:"1rem",fontWeight:800,color:c,lineHeight:1}}>{v}</div>
                 <div style={{fontSize:"0.55rem",color:"#475569",marginTop:2,fontWeight:600,textTransform:"uppercase"}}>{l}</div>
               </div>)}
@@ -1773,7 +1773,7 @@ export default function SupervisorObra(){
     {(modal?.type==="addZona"||modal?.type==="editZona")&&<Modal title={modal.type==="addZona"?t("newZone"):t("editZone")} onClose={closeModal}>
       <div style={{display:"flex",flexDirection:"column",gap:9}}>
         <input style={S.inp} placeholder={t("namePlaceholder")} value={form.nombre||""} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))}/>
-        <input style={S.inp} placeholder="Descripción" value={form.descripcion||""} onChange={e=>setForm(p=>({...p,descripcion:e.target.value}))}/>
+        <input style={S.inp} placeholder={t("descLabel")} value={form.descripcion||""} onChange={e=>setForm(p=>({...p,descripcion:e.target.value}))}/>
         <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>Peso (1–10)</label><input style={{...S.inp,width:80}} type="number" min="1" max="10" value={form.peso||1} onChange={e=>setForm(p=>({...p,peso:e.target.value}))}/></div>
         {modal.type==="addZona"&&<div style={{background:"#1e293b",borderRadius:8,padding:"10px 12px",fontSize:"0.78rem",color:"#64748b",display:"flex",gap:6,alignItems:"flex-start"}}><Ico.Shield/><span>Zona asignada a <strong style={{color:"#f59e0b"}}>{currentUser?.nombre}</strong>.</span></div>}
         <div style={{display:"flex",gap:7,justifyContent:"flex-end"}}><button style={S.btnS} onClick={closeModal}>Cancelar</button><button style={S.btnP} onClick={modal.type==="addZona"?addZona:editZona}>{modal.type==="addZona"?"Crear":"Guardar"}</button></div>
@@ -1798,12 +1798,12 @@ export default function SupervisorObra(){
     </Modal>}
 
     {(modal?.type==="addSubMat"||modal?.type==="editSubMat")&&<Modal title={modal.type==="addSubMat"?t("addSubMaterial"):t("editMaterial")} onClose={closeModal} wide>
-      <MatForm t={t} mat={matForm} onChange={(k,v)=>setMatForm(p=>({...p,[k]:v}))}/>
+      <MatForm mat={matForm} onChange={(k,v)=>setMatForm(p=>({...p,[k]:v}))}/>
       <div style={{display:"flex",gap:7,justifyContent:"flex-end",marginTop:12}}><button style={S.btnS} onClick={closeModal}>Cancelar</button><button style={S.btnP} onClick={modal.type==="addSubMat"?()=>addSubMat(modal.zId,modal.iId,modal.sId):editSubMat}>{modal.type==="addSubMat"?"Agregar":"Guardar"}</button></div>
     </Modal>}
 
     {(modal?.type==="addMat"||modal?.type==="editMat")&&<Modal title={modal.type==="addMat"?t("addMaterial"):t("editMaterial")} onClose={closeModal} wide>
-      <MatForm t={t} mat={matForm} onChange={(k,v)=>setMatForm(p=>({...p,[k]:v}))}/>
+      <MatForm mat={matForm} onChange={(k,v)=>setMatForm(p=>({...p,[k]:v}))}/>
       <div style={{display:"flex",gap:7,justifyContent:"flex-end",marginTop:12}}><button style={S.btnS} onClick={closeModal}>Cancelar</button><button style={S.btnP} onClick={modal.type==="addMat"?()=>addMat(modal.zId,modal.iId):editMat}>{modal.type==="addMat"?"Agregar":"Guardar"}</button></div>
     </Modal>}
 
@@ -1956,9 +1956,9 @@ export default function SupervisorObra(){
 
     {modal?.type==="toast"&&<div style={{position:"fixed",bottom:24,left:"50%",transform:"translateX(-50%)",background:"#1e293b",border:`1px solid ${modal.toastType==="err"?"#ef444444":"#334155"}`,borderRadius:12,padding:"10px 20px",fontSize:"0.85rem",color:"#f1f5f9",zIndex:2000,boxShadow:"0 8px 30px rgba(0,0,0,.5)",animation:"fadeUp .25s ease",whiteSpace:"nowrap",maxWidth:"90vw"}}>{modal.msg}</div>}
     {exporting&&<div style={{position:"fixed",bottom:24,right:16,background:"#1e293b",border:"1px solid #f59e0b44",borderRadius:12,padding:"9px 16px",fontSize:"0.8rem",color:"#f59e0b",zIndex:2000,display:"flex",alignItems:"center",gap:7}}><span style={{animation:"spin 1s linear infinite",display:"inline-block"}}>⟳</span> {t("generatingPDF")}</div>}
-    {cameraFor&&<CameraModal t={t} onCapture={data=>addFoto(cameraFor.zId,cameraFor.iId,data)} onClose={()=>setCameraFor(null)}/>}
-    {scanBoleta&&<ScanBoletaModal t={t} onDatos={datos=>handleBoletaDatos(datos,scanBoleta.zId,scanBoleta.iId,scanBoleta.sId||null)} onClose={()=>setScanBoleta(null)}/>}
-  </>;
+    {cameraFor&&<CameraModal onCapture={data=>addFoto(cameraFor.zId,cameraFor.iId,data)} onClose={()=>setCameraFor(null)}/>}
+    {scanBoleta&&<ScanBoletaModal onDatos={datos=>handleBoletaDatos(datos,scanBoleta.zId,scanBoleta.iId,scanBoleta.sId||null)} onClose={()=>setScanBoleta(null)}/>}
+  </LangContext.Provider>;
 }
 
 
