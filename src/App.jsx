@@ -44,6 +44,12 @@ const TRANSLATIONS = {
     logout:"Salir", login:"Ingresar", newUser:"Nuevo usuario",
     createAccount:"Crear cuenta", onlyOwnerEdit:"Solo el creador puede modificar este ítem",
     present:"Presente", absent:"Ausente", pin:"PIN de",
+    pinLabel:"PIN (5 dígitos)", confirmPin:"Confirmar PIN", fullName:"Nombre completo *",
+    addUserTitle:"Agregar usuario", createUser:"Crear usuario", rolLabel:"Rol",
+    searchItems:"Buscar ítems…", staffCount:"Personal", workerBtn:"Trabajador",
+    zoneBtn:"Zona", noResults:"Sin resultados",
+    toolsTotal:"herramientas totales", inUseLabel:"en uso",
+    matViewInfo:"Vista de Encargado de Materiales — puedes ver el personal y sus herramientas.",
     available:"Disponible", inUse:"En uso", inRepair:"En reparación",
     tools:"Herramientas", noTools:"Sin herramientas asignadas", toolPlaceholder:"Ej: Taladro, Nivel, Pala…",
     attendance:"Asistencia", last7days:"Últimos 7 días", tapToChange:"Toca para cambiar",
@@ -93,6 +99,12 @@ const TRANSLATIONS = {
     logout:"Log out", login:"Log in", newUser:"New user",
     createAccount:"Create account", onlyOwnerEdit:"Only the creator can edit this item",
     present:"Present", absent:"Absent", pin:"PIN for",
+    pinLabel:"PIN (5 digits)", confirmPin:"Confirm PIN", fullName:"Full name *",
+    addUserTitle:"Add user", createUser:"Create user", rolLabel:"Role",
+    searchItems:"Search items…", staffCount:"Staff", workerBtn:"Worker",
+    zoneBtn:"Zone", noResults:"No results",
+    toolsTotal:"total tools", inUseLabel:"in use",
+    matViewInfo:"Materials Manager view — you can see the staff and their tools.",
     available:"Available", inUse:"In use", inRepair:"Under repair",
     tools:"Tools", noTools:"No tools assigned", toolPlaceholder:"E.g.: Drill, Level, Shovel…",
     attendance:"Attendance", last7days:"Last 7 days", tapToChange:"Tap to change",
@@ -142,6 +154,12 @@ const TRANSLATIONS = {
     logout:"Sair", login:"Entrar", newUser:"Novo usuário",
     createAccount:"Criar conta", onlyOwnerEdit:"Somente o criador pode editar este item",
     present:"Presente", absent:"Ausente", pin:"PIN de",
+    pinLabel:"PIN (5 dígitos)", confirmPin:"Confirmar PIN", fullName:"Nome completo *",
+    addUserTitle:"Adicionar usuário", createUser:"Criar usuário", rolLabel:"Função",
+    searchItems:"Buscar itens…", staffCount:"Pessoal", workerBtn:"Trabalhador",
+    zoneBtn:"Zona", noResults:"Sem resultados",
+    toolsTotal:"ferramentas totais", inUseLabel:"em uso",
+    matViewInfo:"Vista do Resp. Materiais — você pode ver o pessoal e suas ferramentas.",
     available:"Disponível", inUse:"Em uso", inRepair:"Em reparo",
     tools:"Ferramentas", noTools:"Sem ferramentas atribuídas", toolPlaceholder:"Ex: Furadeira, Nível…",
     attendance:"Presença", last7days:"Últimos 7 dias", tapToChange:"Toque para alterar",
@@ -191,6 +209,12 @@ const TRANSLATIONS = {
     logout:"Se déconnecter", login:"Se connecter", newUser:"Nouvel utilisateur",
     createAccount:"Créer un compte", onlyOwnerEdit:"Seul le créateur peut modifier cet élément",
     present:"Présent", absent:"Absent", pin:"PIN de",
+    pinLabel:"PIN (5 chiffres)", confirmPin:"Confirmer PIN", fullName:"Nom complet *",
+    addUserTitle:"Ajouter utilisateur", createUser:"Créer utilisateur", rolLabel:"Rôle",
+    searchItems:"Rechercher éléments…", staffCount:"Personnel", workerBtn:"Ouvrier",
+    zoneBtn:"Zone", noResults:"Aucun résultat",
+    toolsTotal:"outils au total", inUseLabel:"en cours",
+    matViewInfo:"Vue Resp. Matériaux — vous pouvez voir le personnel et leurs outils.",
     available:"Disponible", inUse:"En cours", inRepair:"En réparation",
     tools:"Outils", noTools:"Aucun outil attribué", toolPlaceholder:"Ex: Perceuse, Niveau…",
     attendance:"Présence", last7days:"7 derniers jours", tapToChange:"Appuyer pour modifier",
@@ -619,17 +643,17 @@ function AuthScreen({users,obras,invites,onLogin,onRegister,onAcceptInvite}){
         {mode==="register"&&<div style={{display:"flex",flexDirection:"column",gap:12,textAlign:"left"}}>
           <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:4,fontWeight:600}}>Nombre completo</label>
             <input style={S.inp} placeholder="Ej: Juan Pérez" value={nombre} onChange={e=>setNombre(e.target.value)}/></div>
-          <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:6,fontWeight:600}}>Rol</label>
+          <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:6,fontWeight:600}}>{t("rolLabel")}</label>
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
-              {[["admin","👑 Administrador","Control total · crea obras y zonas"],["colaborador","🔧 Colaborador","Edita sus zonas · ve todo"]].map(([v,l,desc])=><button key={v} onClick={()=>setRol(v)} style={{background:rol===v?"#1e293b":"#0f172a",border:`2px solid ${rol===v?"#f59e0b":"#1e293b"}`,borderRadius:10,padding:"10px 12px",cursor:"pointer",textAlign:"left",transition:"all .2s",display:"flex",gap:10,alignItems:"center"}}>
+              {[["admin",`👑 ${t("roleAdmin")}`,t("roleAdminDesc")],["colaborador",`🔧 ${t("roleCollab")}`,t("roleCollabDesc")]].map(([v,l,desc])=><button key={v} onClick={()=>setRol(v)} style={{background:rol===v?"#1e293b":"#0f172a",border:`2px solid ${rol===v?"#f59e0b":"#1e293b"}`,borderRadius:10,padding:"10px 12px",cursor:"pointer",textAlign:"left",transition:"all .2s",display:"flex",gap:10,alignItems:"center"}}>
                 <span style={{fontSize:"1.3rem"}}>{l.split(" ")[0]}</span>
                 <div><div style={{fontWeight:700,color:"#f1f5f9",fontSize:"0.82rem"}}>{l.split(" ").slice(1).join(" ")}</div><div style={{fontSize:"0.62rem",color:"#64748b",marginTop:1}}>{desc}</div></div>
               </button>)}
             </div>
           </div>
-          <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:6,fontWeight:600}}>Crear PIN (5 dígitos)</label>
+          <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:6,fontWeight:600}}>{t("pinLabel")}</label>
             <PinRow value={pin} onChange={setPin} refs={refs} size={46} height={56}/></div>
-          {pin.every(d=>d!=="")&&<div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:6,fontWeight:600}}>Confirmar PIN</label>
+          {pin.every(d=>d!=="")&&<div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:6,fontWeight:600}}>{t("confirmPin")}</label>
             <div style={{display:"flex",gap:8,justifyContent:"center"}}>
               {pin2.map((d,i)=><input key={i} type="password" inputMode="numeric" maxLength={1} value={d}
                 onChange={e=>{ if(!/^\d?$/.test(e.target.value))return; const n=[...pin2];n[i]=e.target.value;setPin2(n); }}
@@ -1454,13 +1478,13 @@ export default function SupervisorObra(){
           <div style={{display:"flex",gap:8,marginBottom:10,alignItems:"center"}}>
             <div style={{flex:1,position:"relative"}}>
               <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:"#475569"}}><Ico.Search/></span>
-              <input style={{...S.inp,paddingLeft:32}} placeholder="Buscar ítems…" value={search} onChange={e=>setSearch(e.target.value)}/>
+              <input style={{...S.inp,paddingLeft:32}} placeholder={t("searchItems")} value={search} onChange={e=>setSearch(e.target.value)}/>
             </div>
-            {!isMateriales&&<button style={S.btnP} onClick={()=>setModal({type:"addZona"})}><Ico.Plus/> Zona</button>}
+            {!isMateriales&&<button style={S.btnP} onClick={()=>setModal({type:"addZona"})}><Ico.Plus/> {t("zoneBtn")}</button>}
           </div>
 
           {filteredZonas.length===0&&<div style={{textAlign:"center",padding:"50px 20px",color:"#334155"}}>
-            {search?<p>Sin resultados</p>:<p>{isMateriales?t("noZones"):t("noZones")}</p>}
+            {search?<p>{t("noResults")}</p>:<p>{isMateriales?t("noZones"):t("noZones")}</p>}
           </div>}
 
           {filteredZonas.map((zona,zi)=>{
@@ -1663,17 +1687,17 @@ export default function SupervisorObra(){
         {tab==="personal"&&obra&&<div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
             <div>
-              <span style={{fontSize:"0.72rem",color:"#64748b",textTransform:"uppercase",letterSpacing:"0.07em",fontWeight:600}}>Personal · {obra.trabajadores.length}</span>
+              <span style={{fontSize:"0.72rem",color:"#64748b",textTransform:"uppercase",letterSpacing:"0.07em",fontWeight:600}}>{t("staffCount")} · {obra.trabajadores.length}</span>
               {obra.trabajadores.length>0&&<div style={{fontSize:"0.65rem",color:"#475569",marginTop:2}}>
                 🔧 {obra.trabajadores.flatMap(t=>trab.herramientas||[]).length} herramientas totales
-                {" · "}en uso: {obra.trabajadores.flatMap(t=>trab.herramientas||[]).filter(h=>h.estado==="en_uso").length}
+                {" · "}{t("inUseLabel")}: {obra.trabajadores.flatMap(t=>trab.herramientas||[]).filter(h=>h.estado==="en_uso").length}
               </div>}
             </div>
-            {currentUser?.rol==="admin"&&<button style={S.btnP} onClick={()=>setModal({type:"addTrab"})}><Ico.Plus/> Trabajador</button>}
+            {currentUser?.rol==="admin"&&<button style={S.btnP} onClick={()=>setModal({type:"addTrab"})}><Ico.Plus/> {t("workerBtn")}</button>}
           </div>
           {isMateriales&&<div style={{background:"#1a1a2e",border:"1px solid #a78bfa33",borderRadius:10,padding:"10px 14px",marginBottom:12,display:"flex",alignItems:"center",gap:8,fontSize:"0.78rem",color:"#a78bfa"}}>
             <span style={{fontSize:"1.1rem"}}>📦</span>
-            <span>Vista de <strong>Encargado de Materiales</strong> — puedes ver el personal y sus herramientas.</span>
+            <span>{t("matViewInfo")}</span>
           </div>}
           {!obra.trabajadores.length&&<div style={{textAlign:"center",padding:"50px 20px",color:"#334155"}}><Ico.Hard/><p style={{marginTop:10}}>{t("noStaff")}</p></div>}
           {obra.trabajadores.map(t=>{
@@ -1809,7 +1833,7 @@ export default function SupervisorObra(){
 
     {(modal?.type==="addTrab"||modal?.type==="editTrab")&&<Modal title={modal.type==="addTrab"?t("newWorker"):t("editWorker")} onClose={closeModal}>
       <div style={{display:"flex",flexDirection:"column",gap:9}}>
-        <input style={S.inp} placeholder="Nombre completo *" value={form.nombre||""} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))}/>
+        <input style={S.inp} placeholder={t("fullName")} value={form.nombre||""} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))}/>
         <input style={S.inp} placeholder={t("roleLabel")} value={form.rol||""} onChange={e=>setForm(p=>({...p,rol:e.target.value}))}/>
         <input style={S.inp} placeholder={t("phoneLabel")} value={form.telefono||""} onChange={e=>setForm(p=>({...p,telefono:e.target.value}))}/>
         <select style={{...S.inp,color:form.zonaId?"#f1f5f9":"#64748b"}} value={form.zonaId||""} onChange={e=>setForm(p=>({...p,zonaId:e.target.value}))}>
@@ -1880,28 +1904,28 @@ export default function SupervisorObra(){
             </div>; })}
           </div>
           {currentUser?.rol==="admin"&&<div style={{background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,padding:"14px"}}>
-            <div style={{fontSize:"0.72rem",color:"#38bdf8",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:10,display:"flex",alignItems:"center",gap:5}}><Ico.Plus/> Agregar usuario</div>
+            <div style={{fontSize:"0.72rem",color:"#38bdf8",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:10,display:"flex",alignItems:"center",gap:5}}><Ico.Plus/> {t("addUserTitle")}</div>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
-              <input style={S.inp} placeholder="Nombre completo *" value={form.nuNombre||""} onChange={e=>setForm(p=>({...p,nuNombre:e.target.value}))}/>
+              <input style={S.inp} placeholder={t("fullName")} value={form.nuNombre||""} onChange={e=>setForm(p=>({...p,nuNombre:e.target.value}))}/>
               <div>
                 <label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:5}}>Rol</label>
                 <div style={{display:"flex",gap:6}}>
-                  {[["colaborador","🔧 Colaborador"],["materiales","📦 Enc. Materiales"]].map(([v,l])=><button key={v} onClick={()=>setForm(p=>({...p,nuRol:v}))} style={{flex:1,background:(form.nuRol||"materiales")===v?"#1e293b":"#0f172a",border:`2px solid ${(form.nuRol||"materiales")===v?"#f59e0b":"#1e293b"}`,borderRadius:8,padding:"7px 6px",cursor:"pointer",color:"#f1f5f9",fontSize:"0.72rem",fontWeight:700,transition:"all .2s"}}>{l}</button>)}
+                  {[["colaborador","🔧 Colaborador"],["materiales",`📦 ${t("roleMat")}`]].map(([v,l])=><button key={v} onClick={()=>setForm(p=>({...p,nuRol:v}))} style={{flex:1,background:(form.nuRol||"materiales")===v?"#1e293b":"#0f172a",border:`2px solid ${(form.nuRol||"materiales")===v?"#f59e0b":"#1e293b"}`,borderRadius:8,padding:"7px 6px",cursor:"pointer",color:"#f1f5f9",fontSize:"0.72rem",fontWeight:700,transition:"all .2s"}}>{l}</button>)}
                 </div>
               </div>
               <div>
-                <label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:5}}>PIN (5 dígitos)</label>
+                <label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:5}}>{t("pinLabel")}</label>
                 <div style={{display:"flex",gap:6}}>
                   {[0,1,2,3,4].map(i=><input key={i} type="password" inputMode="numeric" maxLength={1} value={(form.nuPin||"")[i]||""} onChange={e=>{ if(!/^\d?$/.test(e.target.value))return; const arr=(form.nuPin||"     ").split(""); arr[i]=e.target.value; setForm(p=>({...p,nuPin:arr.join("")})); }} style={{width:42,height:50,textAlign:"center",fontSize:"1.4rem",fontWeight:800,background:"#1e293b",border:`2px solid ${(form.nuPin||"")[i]?"#f59e0b":"#334155"}`,borderRadius:9,color:"#f1f5f9",outline:"none"}}/>)}
                 </div>
               </div>
               <div>
-                <label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:5}}>Confirmar PIN</label>
+                <label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:5}}>{t("confirmPin")}</label>
                 <div style={{display:"flex",gap:6}}>
                   {[0,1,2,3,4].map(i=><input key={i} type="password" inputMode="numeric" maxLength={1} value={(form.nuPin2||"")[i]||""} onChange={e=>{ if(!/^\d?$/.test(e.target.value))return; const arr=(form.nuPin2||"     ").split(""); arr[i]=e.target.value; setForm(p=>({...p,nuPin2:arr.join("")})); }} style={{width:42,height:50,textAlign:"center",fontSize:"1.4rem",fontWeight:800,background:"#1e293b",border:`2px solid ${(form.nuPin2||"")[i]?"#22c55e":"#334155"}`,borderRadius:9,color:"#f1f5f9",outline:"none"}}/>)}
                 </div>
               </div>
-              <button style={{...S.btnG2,justifyContent:"center"}} onClick={addUserFromSettings}><Ico.User/> Crear usuario</button>
+              <button style={{...S.btnG2,justifyContent:"center"}} onClick={addUserFromSettings}><Ico.User/> {t("createUser")}</button>
             </div>
           </div>}
         </div>
@@ -1909,8 +1933,8 @@ export default function SupervisorObra(){
         <div>
           <label style={{fontSize:"0.72rem",color:"#94a3b8",display:"block",marginBottom:7,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>{t("dataSection")}</label>
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-            <button style={S.btnG} onClick={doExportJSON}><Ico.Down/> Exportar JSON</button>
-            <label style={{...S.btnG,cursor:"pointer"}}><Ico.Up/> Importar JSON<input type="file" accept=".json" style={{display:"none"}} onChange={doImportJSON}/></label>
+            <button style={S.btnG} onClick={doExportJSON}><Ico.Down/> {t("exportJSON")}</button>
+            <label style={{...S.btnG,cursor:"pointer"}}><Ico.Up/> {t("importJSON")}<input type="file" accept=".json" style={{display:"none"}} onChange={doImportJSON}/></label>
           </div>
         </div>
         {/* Selector de idioma */}
@@ -1929,7 +1953,7 @@ export default function SupervisorObra(){
         {/* Invitaciones */}
         {currentUser?.rol==="admin"&&obra&&<div style={{background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,padding:14}}>
           <div style={{fontSize:"0.72rem",color:"#38bdf8",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:10,display:"flex",alignItems:"center",gap:5}}><Ico.Link/> Invitar colaborador</div>
-          <p style={{margin:"0 0 10px",fontSize:"0.78rem",color:"#64748b"}}>Genera un código de 6 dígitos válido por 48 horas para que otro usuario se una a <strong style={{color:"#f1f5f9"}}>{obra.nombre}</strong>.</p>
+          <p style={{margin:"0 0 10px",fontSize:"0.78rem",color:"#64748b"}}>{t("inviteCollab")} — <strong style={{color:"#f1f5f9"}}>{obra.nombre}</strong>.</p>
           {form.inviteCode
             ? <div style={{display:"flex",flexDirection:"column",gap:8}}>
                 <div style={{background:"#1e293b",borderRadius:8,padding:"12px",textAlign:"center"}}>
