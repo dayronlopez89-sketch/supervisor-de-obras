@@ -85,7 +85,19 @@ const TRANSLATIONS = {
     dataSection:"Datos", inviteCollab:"Invitar colaborador",
     validFor:"Válido por 48h · comparte este código",
     generateCodeBtn:"Generar código", copyCode:"Copiar código", codeCopied:"¡Copiado!",
-    close:"Cerrar", selectUser:"Selecciona tu usuario", joinCode:"Tengo un código de invitación",
+    // Nuevas funciones
+    attendanceSummary:"Resumen de Asistencia", attendanceMonth:"Mes",
+    pdfAttendance:"PDF Asistencia", exporting:"Exportando…",
+    daysPresent:"días presente", daysAbsent:"días ausente", daysNoReg:"sin registro",
+    notifications:"Notificaciones", noNotifications:"Sin notificaciones pendientes",
+    expiresToday:"Vence hoy", expiresSoon:"Vence pronto", overdue:"Vencido",
+    markAllRead:"Marcar todas leídas",
+    globalSearch:"Búsqueda global", searchAll:"Buscar en todas las obras…",
+    searchResults:"Resultados", searchNoResults:"Sin resultados para",
+    totalBudget:"Presupuesto total obra", budgetSet:"Presupuesto definido",
+    budgetVsSpent:"Presupuesto vs Gastado", setBudget:"Definir presupuesto",
+    changeLog:"Historial de cambios", markedDone:"marcó como listo",
+    markedPending:"marcó como pendiente", noHistory:"Sin historial aún.",
   },
   en: {
     appName:"Work Supervisor", dashboard:"Home", zones:"Zones", staff:"Staff", settings:"Settings",
@@ -142,7 +154,18 @@ const TRANSLATIONS = {
     dataSection:"Data", inviteCollab:"Invite collaborator",
     validFor:"Valid 48h · share this code",
     generateCodeBtn:"Generate code", copyCode:"Copy code", codeCopied:"Copied!",
-    close:"Close", selectUser:"Select your user", joinCode:"I have an invitation code",
+    attendanceSummary:"Attendance Summary", attendanceMonth:"Month",
+    pdfAttendance:"PDF Attendance", exporting:"Exporting…",
+    daysPresent:"days present", daysAbsent:"days absent", daysNoReg:"no record",
+    notifications:"Notifications", noNotifications:"No pending notifications",
+    expiresToday:"Due today", expiresSoon:"Due soon", overdue:"Overdue",
+    markAllRead:"Mark all as read",
+    globalSearch:"Global search", searchAll:"Search all projects…",
+    searchResults:"Results", searchNoResults:"No results for",
+    totalBudget:"Project total budget", budgetSet:"Budget defined",
+    budgetVsSpent:"Budget vs Spent", setBudget:"Set budget",
+    changeLog:"Change history", markedDone:"marked as done",
+    markedPending:"marked as pending", noHistory:"No history yet.",
   },
   pt: {
     appName:"Supervisor de Obra", dashboard:"Início", zones:"Zonas", staff:"Pessoal", settings:"Config",
@@ -199,7 +222,18 @@ const TRANSLATIONS = {
     dataSection:"Dados", inviteCollab:"Convidar colaborador",
     validFor:"Válido 48h · compartilhe este código",
     generateCodeBtn:"Gerar código", copyCode:"Copiar código", codeCopied:"Copiado!",
-    close:"Fechar", selectUser:"Selecione seu usuário", joinCode:"Tenho um código de convite",
+    attendanceSummary:"Resumo de Presença", attendanceMonth:"Mês",
+    pdfAttendance:"PDF Presença", exporting:"Exportando…",
+    daysPresent:"dias presente", daysAbsent:"dias ausente", daysNoReg:"sem registro",
+    notifications:"Notificações", noNotifications:"Sem notificações pendentes",
+    expiresToday:"Vence hoje", expiresSoon:"Vence em breve", overdue:"Vencido",
+    markAllRead:"Marcar todas como lidas",
+    globalSearch:"Busca global", searchAll:"Buscar em todas as obras…",
+    searchResults:"Resultados", searchNoResults:"Sem resultados para",
+    totalBudget:"Orçamento total da obra", budgetSet:"Orçamento definido",
+    budgetVsSpent:"Orçamento vs Gasto", setBudget:"Definir orçamento",
+    changeLog:"Histórico de alterações", markedDone:"marcou como concluído",
+    markedPending:"marcou como pendente", noHistory:"Sem histórico ainda.",
   },
   fr: {
     appName:"Superviseur Chantier", dashboard:"Accueil", zones:"Zones", staff:"Personnel", settings:"Config",
@@ -256,7 +290,18 @@ const TRANSLATIONS = {
     dataSection:"Données", inviteCollab:"Inviter un collaborateur",
     validFor:"Valide 48h · partagez ce code",
     generateCodeBtn:"Générer un code", copyCode:"Copier le code", codeCopied:"Copié!",
-    close:"Fermer", selectUser:"Sélectionnez votre utilisateur", joinCode:"J'ai un code d'invitation",
+    attendanceSummary:"Résumé de présence", attendanceMonth:"Mois",
+    pdfAttendance:"PDF Présence", exporting:"Exportation…",
+    daysPresent:"jours présent", daysAbsent:"jours absent", daysNoReg:"sans registre",
+    notifications:"Notifications", noNotifications:"Aucune notification en attente",
+    expiresToday:"Échéance aujourd'hui", expiresSoon:"Échéance proche", overdue:"En retard",
+    markAllRead:"Tout marquer comme lu",
+    globalSearch:"Recherche globale", searchAll:"Chercher dans tous les projets…",
+    searchResults:"Résultats", searchNoResults:"Aucun résultat pour",
+    totalBudget:"Budget total projet", budgetSet:"Budget défini",
+    budgetVsSpent:"Budget vs Dépensé", setBudget:"Définir budget",
+    changeLog:"Historique des modifications", markedDone:"a marqué comme terminé",
+    markedPending:"a marqué comme en attente", noHistory:"Aucun historique encore.",
   },
 };
 const detectLang=()=>{ try{ const s=localStorage.getItem("supervisor_lang"); if(s&&TRANSLATIONS[s])return s; }catch{} const n=navigator.language?.slice(0,2).toLowerCase(); return TRANSLATIONS[n]?n:"es"; };
@@ -282,6 +327,7 @@ function sd(key){ try{ localStorage.removeItem(key); }catch{}}
 const emptyObra = (nombre="") => ({
   id:uid(), nombre, descripcion:"", fechaInicio:today(), fechaFin:"", notas:"",
   estado:"en_ejecucion",
+  presupuestoTotal:0,
   zonas:[], trabajadores:[],
 });
 
@@ -416,7 +462,70 @@ async function exportComprasPDF(obra, filtroItemId=null){
   doc.save(`${sufijo}-${(obra.nombre||"obra").replace(/\s+/g,"-").toLowerCase()}-${today()}.pdf`);
 }
 
-// ─── OCR Boleta ───────────────────────────────────────────────────────────────
+// ─── PDF Asistencia Mensual ───────────────────────────────────────────────────
+async function exportAttendancePDF(obra, mesStr){ // mesStr = "2026-05"
+  const jsPDF=await getJsPDF(); const doc=new jsPDF({unit:"pt",format:"a4"});
+  const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),M=40; let y=M;
+  const chk=(n=30)=>{ if(y+n>H-M){doc.addPage();y=M;} };
+  const now=new Date();
+  const [yr,mo]=mesStr.split("-").map(Number);
+  const diasEnMes=new Date(yr,mo,0).getDate();
+  const nombreMes=new Date(yr,mo-1,1).toLocaleDateString("es-ES",{month:"long",year:"numeric"});
+  // Header
+  doc.setFillColor(10,22,40); doc.rect(0,0,W,75,"F");
+  doc.setFillColor(56,189,248); doc.rect(0,73,W,3,"F");
+  doc.setFont("helvetica","bold"); doc.setFontSize(18); doc.setTextColor(241,245,249);
+  doc.text("RESUMEN DE ASISTENCIA",M,28);
+  doc.setFontSize(10); doc.setTextColor(56,189,248); doc.text(`${obra.nombre} — ${nombreMes}`,M,44);
+  doc.setFontSize(8); doc.setFont("helvetica","normal"); doc.setTextColor(148,163,184);
+  doc.text(`Generado: ${now.toLocaleDateString("es-ES",{day:"2-digit",month:"long",year:"numeric"})}`,M,62);
+  y=90;
+  if(!obra.trabajadores.length){ doc.setTextColor(100,116,139); doc.text("Sin trabajadores registrados.",M,y); }
+  obra.trabajadores.forEach(trab=>{
+    chk(60);
+    let pres=0,ause=0;
+    const dias=[];
+    for(let d=1;d<=diasEnMes;d++){
+      const fecha=`${yr}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+      const est=(trab.asistencia||{})[fecha];
+      if(est==="presente") pres++;
+      else if(est==="ausente") ause++;
+      dias.push({d,est});
+    }
+    const noreg=diasEnMes-pres-ause;
+    // Fila trabajador
+    doc.setFillColor(15,23,42); doc.roundedRect(M,y,W-M*2,38,5,5,"F");
+    doc.setFillColor(56,189,248); doc.rect(M,y,3,38,"F");
+    doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.setTextColor(241,245,249);
+    doc.text(`👷 ${trab.nombre}`,M+10,y+14);
+    if(trab.rol){ doc.setFont("helvetica","normal"); doc.setFontSize(7.5); doc.setTextColor(100,116,139); doc.text(trab.rol,M+10,y+26); }
+    // Stats
+    const statsX=W-M-200;
+    [[pres,"#22c55e","Pres."],[ause,"#ef4444","Ause."],[noreg,"#475569","S/R"]].forEach(([v,c,l],i)=>{
+      const sx=statsX+i*68;
+      doc.setFont("helvetica","bold"); doc.setFontSize(14); doc.setTextColor(...c.match(/#(..)(..)(..)/).slice(1).map(x=>parseInt(x,16)));
+      doc.text(String(v),sx,y+20);
+      doc.setFont("helvetica","normal"); doc.setFontSize(6.5); doc.setTextColor(100,116,139);
+      doc.text(l,sx,y+30);
+    });
+    y+=44;
+    // Grilla de días
+    chk(20); const cellW=(W-M*2)/diasEnMes;
+    dias.forEach(({d,est})=>{
+      const cx=M+(d-1)*cellW;
+      const clr=est==="presente"?[34,197,94]:est==="ausente"?[239,68,68]:[30,41,59];
+      doc.setFillColor(...clr); doc.roundedRect(cx+0.5,y,cellW-1,14,1,1,"F");
+      doc.setFont("helvetica","bold"); doc.setFontSize(5.5); doc.setTextColor(est?"255":"100",est?"255":"116",est?"255":"139");
+      doc.text(String(d),cx+cellW/2,y+9,{align:"center"});
+    });
+    y+=22;
+  });
+  const pages=doc.internal.getNumberOfPages();
+  for(let p=1;p<=pages;p++){ doc.setPage(p); doc.setFillColor(10,22,40); doc.rect(0,H-26,W,26,"F"); doc.setFont("helvetica","normal"); doc.setFontSize(7.5); doc.setTextColor(100,116,139); doc.text(`Asistencia — ${obra.nombre} — ${nombreMes}`,M,H-10); doc.text(`Pág ${p}/${pages}`,W-M,H-10,{align:"right"}); }
+  doc.save(`asistencia-${(obra.nombre||"obra").replace(/\s+/g,"-").toLowerCase()}-${mesStr}.pdf`);
+}
+
+
 async function escanearBoleta(imageBase64){
   const base64Data=imageBase64.split(",")[1]; const mediaType=imageBase64.split(";")[0].split(":")[1]||"image/jpeg";
   const response=await fetch("https://api.anthropic.com/v1/messages",{ method:"POST", headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"}, body:JSON.stringify({ model:"claude-haiku-4-5-20251001", max_tokens:1024, messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:mediaType,data:base64Data}},{type:"text",text:`Analiza esta boleta o factura y extrae los datos.\nResponde SOLO con JSON válido sin texto adicional:\n{"proveedor":"nombre","fechaCompra":"YYYY-MM-DD","materiales":[{"nombre":"","cantidad":0,"unidad":"","precio":0}]}`}]}] }) });
@@ -465,6 +574,10 @@ const Ico = {
   Chat:    ()=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="13" height="13"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
   Send:    ()=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="13" height="13"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
   Status:  ()=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="13" height="13"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  Bell:    ()=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="18" height="18"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+  Globe:   ()=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+  History: ()=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="14" height="14"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/><polyline points="12 7 12 12 16 14"/></svg>,
+  Wallet:  ()=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="16" height="16"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
 };
 
 // ─── Styles & Constants ───────────────────────────────────────────────────────
@@ -528,7 +641,177 @@ function PinRow({value,onChange,refs,onComplete,shake,size=52,height=64}){
   </div>;
 }
 
-// ─── Auth Screen ──────────────────────────────────────────────────────────────
+// ─── Notifications Panel ──────────────────────────────────────────────────────
+function NotificationsPanel({obras,onClose,onGoToZona}){
+  const t=useLang();
+  const hoy=today();
+  const notifs=[];
+  obras.forEach(obra=>{
+    obra.zonas.forEach(zona=>{
+      (zona.items||[]).forEach(item=>{
+        if(item.terminado)return;
+        const d=item.fechaFin?Math.ceil((new Date(item.fechaFin+"T12:00:00")-new Date())/86400000):null;
+        if(d===null)return;
+        if(d<0) notifs.push({type:"overdue",obra:obra.nombre,zona:zona.nombre,item:item.nombre,d,obraId:obra.id});
+        else if(d===0) notifs.push({type:"today",obra:obra.nombre,zona:zona.nombre,item:item.nombre,d,obraId:obra.id});
+        else if(d<=3) notifs.push({type:"soon",obra:obra.nombre,zona:zona.nombre,item:item.nombre,d,obraId:obra.id});
+      });
+    });
+  });
+  notifs.sort((a,b)=>a.d-b.d);
+  const color={overdue:"#ef4444",today:"#f59e0b",soon:"#38bdf8"};
+  const label={overdue:t("overdue"),today:t("expiresToday"),soon:t("expiresSoon")};
+  return <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",zIndex:500,display:"flex",alignItems:"flex-start",justifyContent:"flex-end",padding:"60px 8px 0"}} onClick={onClose}>
+    <div style={{background:"#0f172a",border:"1px solid #334155",borderRadius:14,width:"min(360px,96vw)",maxHeight:"70vh",overflow:"hidden",display:"flex",flexDirection:"column"}} onClick={e=>e.stopPropagation()}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px",borderBottom:"1px solid #1e293b"}}>
+        <span style={{fontWeight:700,fontSize:"0.9rem",color:"#f1f5f9",display:"flex",alignItems:"center",gap:6}}><Ico.Bell/> {t("notifications")} {notifs.length>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.65rem",fontWeight:800}}>{notifs.length}</span>}</span>
+        <button onClick={onClose} style={{background:"none",border:"none",color:"#64748b",cursor:"pointer",fontSize:"1.2rem"}}>×</button>
+      </div>
+      <div style={{overflowY:"auto",flex:1}}>
+        {notifs.length===0
+          ? <p style={{margin:0,padding:"24px",textAlign:"center",fontSize:"0.82rem",color:"#334155"}}>{t("noNotifications")}</p>
+          : notifs.map((n,i)=><div key={i} style={{padding:"12px 16px",borderBottom:"1px solid #0d1a2e",cursor:"pointer",transition:"background .15s"}}
+              onClick={()=>{onGoToZona(n.obraId);onClose();}}>
+              <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
+                <span style={{background:color[n.type]+"22",color:color[n.type],borderRadius:6,padding:"2px 7px",fontSize:"0.65rem",fontWeight:700,flexShrink:0,marginTop:2}}>{label[n.type]}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:"0.83rem",fontWeight:600,color:"#e2e8f0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{n.item}</div>
+                  <div style={{fontSize:"0.65rem",color:"#475569",marginTop:2}}>{n.obra} · {n.zona} {n.d<0?`· ${Math.abs(n.d)}d ${t("overdue").toLowerCase()}`:`· ${n.d}d`}</div>
+                </div>
+              </div>
+            </div>)
+        }
+      </div>
+    </div>
+  </div>;
+}
+
+// ─── Global Search ────────────────────────────────────────────────────────────
+function GlobalSearch({obras,users,onClose,onGoTo}){
+  const t=useLang();
+  const [q,setQ]=useState("");
+  const ref=useRef();
+  useEffect(()=>{ ref.current?.focus(); },[]);
+  const results=q.trim().length<2?[]:[];
+  if(q.trim().length>=2){
+    const ql=q.toLowerCase();
+    obras.forEach(obra=>{
+      obra.zonas.forEach(zona=>{
+        (zona.items||[]).forEach(item=>{
+          if(item.nombre.toLowerCase().includes(ql)||item.descripcion?.toLowerCase().includes(ql)||item.notas?.toLowerCase().includes(ql)){
+            results.push({type:"item",obra:obra.nombre,obraId:obra.id,zona:zona.nombre,nombre:item.nombre,done:item.terminado});
+          }
+          (item.materiales||[]).forEach(mat=>{
+            if(mat.nombre.toLowerCase().includes(ql)){
+              results.push({type:"mat",obra:obra.nombre,obraId:obra.id,zona:zona.nombre,item:item.nombre,nombre:mat.nombre});
+            }
+          });
+        });
+      });
+      obra.trabajadores.forEach(trab=>{
+        if(trab.nombre.toLowerCase().includes(ql)){
+          results.push({type:"worker",obra:obra.nombre,obraId:obra.id,nombre:trab.nombre,rol:trab.rol});
+        }
+      });
+    });
+  }
+  const typeIcon={item:"☑",mat:"📦",worker:"👷"};
+  return <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.82)",zIndex:600,display:"flex",flexDirection:"column",alignItems:"center",padding:"60px 12px 20px"}} onClick={onClose}>
+    <div style={{width:"min(540px,100%)",display:"flex",flexDirection:"column",gap:0}} onClick={e=>e.stopPropagation()}>
+      <div style={{display:"flex",gap:8,marginBottom:8}}>
+        <div style={{flex:1,position:"relative"}}>
+          <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:"#475569"}}><Ico.Search/></span>
+          <input ref={ref} style={{width:"100%",background:"#0f172a",border:"2px solid #f59e0b",borderRadius:12,padding:"14px 14px 14px 38px",color:"#f1f5f9",fontSize:"1rem",outline:"none",boxSizing:"border-box"}}
+            placeholder={t("searchAll")} value={q} onChange={e=>setQ(e.target.value)}/>
+        </div>
+        <button onClick={onClose} style={{background:"#1e293b",border:"1px solid #334155",borderRadius:10,color:"#94a3b8",cursor:"pointer",padding:"0 14px",fontSize:"0.82rem",fontWeight:600}}>{t("cancel")}</button>
+      </div>
+      {q.trim().length>=2&&<div style={{background:"#0f172a",border:"1px solid #334155",borderRadius:12,overflow:"hidden",maxHeight:"60vh",overflowY:"auto"}}>
+        {results.length===0
+          ? <p style={{margin:0,padding:"20px",textAlign:"center",color:"#334155",fontSize:"0.82rem"}}>{t("searchNoResults")} "{q}"</p>
+          : <>
+              <div style={{padding:"8px 14px",fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",background:"#080f1e"}}>{t("searchResults")} — {results.length}</div>
+              {results.map((r,i)=><div key={i} style={{padding:"11px 14px",borderBottom:"1px solid #0d1a2e",cursor:"pointer",display:"flex",gap:10,alignItems:"center"}}
+                onClick={()=>{onGoTo(r.obraId);onClose();}}>
+                <span style={{fontSize:"1rem",flexShrink:0}}>{typeIcon[r.type]}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:"0.85rem",fontWeight:600,color:r.done?"#4ade80":"#e2e8f0",textDecoration:r.done?"line-through":"none",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.nombre}</div>
+                  <div style={{fontSize:"0.65rem",color:"#475569",marginTop:1}}>{r.obra}{r.zona?` · ${r.zona}`:""}{r.item?` · ${r.item}`:""}{r.rol?` · ${r.rol}`:""}</div>
+                </div>
+              </div>)}
+            </>
+        }
+      </div>}
+    </div>
+  </div>;
+}
+
+// ─── Attendance Summary Modal ─────────────────────────────────────────────────
+function AttendanceSummaryModal({obra,onClose,onExport}){
+  const t=useLang();
+  const now=new Date();
+  const [mes,setMes]=useState(`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`);
+  const [exporting,setExporting]=useState(false);
+  const [yr,mo]=mes.split("-").map(Number);
+  const diasEnMes=new Date(yr,mo,0).getDate();
+  const workers=obra.trabajadores||[];
+  const stats=workers.map(trab=>{
+    let pres=0,ause=0;
+    for(let d=1;d<=diasEnMes;d++){
+      const fecha=`${yr}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+      const est=(trab.asistencia||{})[fecha];
+      if(est==="presente") pres++;
+      else if(est==="ausente") ause++;
+    }
+    return{...trab,pres,ause,noreg:diasEnMes-pres-ause};
+  });
+  const handleExport=async()=>{ setExporting(true); try{await onExport(mes);}finally{setExporting(false);} };
+  return <Modal title={t("attendanceSummary")} onClose={onClose} wide>
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      <div style={{display:"flex",gap:8,alignItems:"center"}}>
+        <input type="month" value={mes} onChange={e=>setMes(e.target.value)}
+          style={{flex:1,background:"#1e293b",border:"1px solid #334155",borderRadius:8,padding:"8px 12px",color:"#f1f5f9",fontSize:"0.85rem",outline:"none"}}/>
+        <button style={{...S.btnP,padding:"8px 14px",flexShrink:0}} onClick={handleExport} disabled={exporting}>
+          <Ico.Down/> {exporting?t("exporting"):t("pdfAttendance")}
+        </button>
+      </div>
+      {workers.length===0
+        ? <p style={{margin:0,textAlign:"center",color:"#334155",fontSize:"0.82rem"}}>{t("noStaff")}</p>
+        : <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {stats.map(s=><div key={s.id} style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                <div style={{width:32,height:32,borderRadius:"50%",background:(s.color||"#f59e0b")+"22",border:`2px solid ${s.color||"#f59e0b"}`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,color:s.color||"#f59e0b",fontSize:"0.9rem",flexShrink:0}}>{s.nombre[0].toUpperCase()}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:600,fontSize:"0.88rem",color:"#f1f5f9"}}>{s.nombre}</div>
+                  {s.rol&&<div style={{fontSize:"0.65rem",color:"#64748b"}}>{s.rol}</div>}
+                </div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
+                {[[s.pres,"#22c55e",t("daysPresent")],[s.ause,"#ef4444",t("daysAbsent")],[s.noreg,"#64748b",t("daysNoReg")]].map(([v,c,l])=>(
+                  <div key={l} style={{background:c+"11",borderRadius:7,padding:"8px",textAlign:"center"}}>
+                    <div style={{fontSize:"1.4rem",fontWeight:800,color:c,lineHeight:1}}>{v}</div>
+                    <div style={{fontSize:"0.58rem",color:c,marginTop:2,opacity:0.8}}>{l}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{marginTop:8,display:"flex",gap:1.5,flexWrap:"wrap"}}>
+                {Array.from({length:diasEnMes},(_,i)=>{
+                  const d=i+1;
+                  const fecha=`${yr}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+                  const est=(s.asistencia||{})[fecha];
+                  return <div key={d} style={{width:20,height:20,borderRadius:4,background:est==="presente"?"#22c55e22":est==="ausente"?"#ef444422":"#1e293b",border:`1px solid ${est==="presente"?"#22c55e44":est==="ausente"?"#ef444444":"#334155"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.5rem",color:est==="presente"?"#22c55e":est==="ausente"?"#ef4444":"#475569",fontWeight:700}}>
+                    {d}
+                  </div>;
+                })}
+              </div>
+            </div>)}
+          </div>
+      }
+    </div>
+  </Modal>;
+}
+
+
 function AuthScreen({users,obras,invites,onLogin,onRegister,onAcceptInvite}){
   const t=useLang();
   const [mode,setMode]=useState(users.length===0?"register":"login");
@@ -945,6 +1228,19 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onP
         </div>
       </div>}
 
+      {o.presupuestoTotal>0&&<div style={{background:"#0f172a",border:"1px solid #a78bfa33",borderRadius:11,padding:12}}>
+        <div style={{display:"flex",alignItems:"center",gap:5,fontSize:"0.65rem",color:"#a78bfa",fontWeight:700,textTransform:"uppercase",marginBottom:8}}><Ico.Wallet/> {t("budgetVsSpent")}</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginBottom:8}}>
+          {[[t("totalBudget"),"$"+fmt(o.presupuestoTotal),"#a78bfa"],[t("spent"),"$"+fmt(gast),"#f59e0b"],[t("pending"),"$"+fmt(Math.max(0,o.presupuestoTotal-gast)),gast>o.presupuestoTotal?"#ef4444":"#22c55e"]].map(([l,v,c])=>(
+            <div key={l} style={{textAlign:"center"}}><div style={{fontSize:"0.82rem",fontWeight:800,color:c}}>{v}</div><div style={{fontSize:"0.57rem",color:"#475569",marginTop:1}}>{l}</div></div>
+          ))}
+        </div>
+        <div style={{height:4,background:"#1e293b",borderRadius:2,overflow:"hidden"}}>
+          <div style={{height:"100%",width:`${Math.min(100,(gast/o.presupuestoTotal)*100)}%`,background:gast>o.presupuestoTotal?"#ef4444":"linear-gradient(90deg,#a78bfa,#38bdf8)",borderRadius:2,transition:"width .6s"}}/>
+        </div>
+        {gast>o.presupuestoTotal&&<div style={{fontSize:"0.65rem",color:"#ef4444",marginTop:4,textAlign:"center"}}>⚠ Excedido por ${fmt(gast-o.presupuestoTotal)}</div>}
+      </div>}
+
       {sorted.length>0&&<div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:11,padding:12}}>
         <div style={{fontSize:"0.65rem",color:"#64748b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8}}>{t("progressByZone")}</div>
         {sorted.map(z=>{ const zp=calcZonePct(z),zc=zp<30?"#ef4444":zp<70?"#f59e0b":"#22c55e"; return <div key={z.id} style={{marginBottom:8}}>
@@ -1146,6 +1442,9 @@ export default function SupervisorObra(){
   const [cameraFor,setCameraFor]=useState(null);
   const [scanBoleta,setScanBoleta]=useState(null);
   const [newComment,setNewComment]=useState({});
+  const [showNotifs,setShowNotifs]=useState(false);
+  const [showSearch,setShowSearch]=useState(false);
+  const [showAttendance,setShowAttendance]=useState(false);
 
   const obra=obras.find(o=>o.id===activeId)||obras[0]||null;
 
@@ -1289,7 +1588,16 @@ export default function SupervisorObra(){
   const delItem=(zId,iId)=>{ if(!window.confirm("¿Eliminar ítem?"))return; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.filter(i=>i.id!==iId)}:z)})); };
   const toggleItem=(zId,iId,item)=>{
     if(!canEditItem(item)){ toast(t("onlyOwnerEdit"),"err"); return; }
-    updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,terminado:!i.terminado}:i)}:z)}));
+    const nuevoEstado=!item.terminado;
+    const entrada={
+      id:uid(),
+      autor:currentUser?.nombre||"?",
+      autorId:currentUser?.id,
+      accion:nuevoEstado?t("markedDone"):t("markedPending"),
+      fecha:new Date().toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric"}),
+      hora:new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}),
+    };
+    updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,terminado:nuevoEstado,historial:[...(i.historial||[]),entrada]}:i)}:z)}));
   };
 
   // ── Sub-Ítems ──
@@ -1389,6 +1697,13 @@ export default function SupervisorObra(){
   const pct=obra?totalPct():0; const pc=pct<30?"#ef4444":pct<70?"#f59e0b":"#22c55e";
   const rm=ROLE_META[currentUser.rol]||ROLE_META.colaborador;
 
+  // Conteo de notificaciones pendientes
+  const notifCount=obras.reduce((acc,o)=>acc+o.zonas.reduce((a2,z)=>a2+(z.items||[]).filter(item=>{
+    if(item.terminado||!item.fechaFin)return false;
+    const d=Math.ceil((new Date(item.fechaFin+"T12:00:00")-new Date())/86400000);
+    return d<=3;
+  }).length,0),0);
+
   const TABS = [{id:"dashboard",label:t("summary"),icon:<Ico.Chart/>},{id:"zonas",label:t("zones"),icon:<Ico.Zone/>},{id:"personal",label:t("staff"),icon:<Ico.Hard/>}];
 
   const filteredZonas=search.trim()?(obra?.zonas||[]).map(z=>({...z,items:(z.items||[]).filter(i=>i.nombre.toLowerCase().includes(search.toLowerCase()))})).filter(z=>z.items.length>0):(obra?.zonas||[]);
@@ -1444,6 +1759,11 @@ export default function SupervisorObra(){
                 </div>
               </div>}
               {!isMateriales&&<button className="ic" onClick={()=>setModal({type:"settings"})}><Ico.Gear/></button>}
+              <button className="ic" title={t("globalSearch")} onClick={()=>setShowSearch(true)}><Ico.Globe/></button>
+              <button className="ic" title={t("notifications")} onClick={()=>setShowNotifs(true)} style={{position:"relative",color:notifCount>0?"#f59e0b":"#64748b",borderColor:notifCount>0?"#f59e0b44":"#334155"}}>
+                <Ico.Bell/>
+                {notifCount>0&&<span style={{position:"absolute",top:-4,right:-4,background:"#ef4444",color:"#fff",borderRadius:"50%",width:15,height:15,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.5rem",fontWeight:800,border:"1.5px solid #080f1e"}}>{notifCount}</span>}
+              </button>
               <button className="ic" title="Cerrar sesión" onClick={handleLogout}><Ico.LogOut/></button>
             </div>
           </div>
@@ -1527,7 +1847,7 @@ export default function SupervisorObra(){
 
               {isOpen&&<div>
                 {(zona.items||[]).map((item)=>{
-                  const iOpen=exItems[item.id],sOpen=exSubItems[item.id],cOpen=exComents[item.id];
+                  const iOpen=exItems[item.id],sOpen=exSubItems[item.id],cOpen=exComents[item.id],hOpen=exComents[item.id+"_hist"];
                   const d=daysDiff(item.fechaFin);
                   const overdue=d!==null&&d<0&&!isItemDone(item),warning=d!==null&&d<=3&&d>=0&&!isItemDone(item);
                   const iPct=calcItemPct(item),iDone=isItemDone(item),hasSubs=(item.subItems||[]).length>0;
@@ -1558,9 +1878,12 @@ export default function SupervisorObra(){
                         </div>
                       </div>
                       {!isMateriales&&<span className="badge" style={{background:"#1e293b",color:"#64748b",fontSize:"0.58rem"}}>W{item.peso||1}</span>}
-                      <button className="ic" title="Comentarios" onClick={()=>setExComents(p=>({...p,[item.id]:!p[item.id]}))} style={{color:comentarios.length>0?"#38bdf8":"#64748b",borderColor:comentarios.length>0?"#38bdf844":"#334155"}}>
+                      <button className="ic" title={t("comments")} onClick={()=>setExComents(p=>({...p,[item.id]:!p[item.id]}))} style={{color:comentarios.length>0?"#38bdf8":"#64748b",borderColor:comentarios.length>0?"#38bdf844":"#334155"}}>
                         <Ico.Chat/>{comentarios.length>0&&<span style={{fontSize:"0.65rem",fontWeight:700,marginLeft:1}}>{comentarios.length}</span>}
                       </button>
+                      {(item.historial||[]).length>0&&<button className="ic" title={t("changeLog")} onClick={()=>setExComents(p=>({...p,[item.id+"_hist"]:!p[item.id+"_hist"]}))} style={{color:"#f59e0b44"?hOpen?"#f59e0b":"#64748b":"#64748b",borderColor:hOpen?"#f59e0b44":"#334155"}}>
+                        <Ico.History/><span style={{fontSize:"0.65rem",fontWeight:700,marginLeft:1}}>{(item.historial||[]).length}</span>
+                      </button>}
                       {!isMateriales&&<button className="ic" title="Sub-ítems" onClick={()=>setExSubItems(p=>({...p,[item.id]:!p[item.id]}))} style={{color:hasSubs?"#a78bfa":"#64748b",borderColor:hasSubs?"#a78bfa44":"#334155"}}>
                         <Ico.List/>{hasSubs&&<span style={{fontSize:"0.65rem",fontWeight:700,marginLeft:1}}>{(item.subItems||[]).length}</span>}
                       </button>}
@@ -1599,6 +1922,21 @@ export default function SupervisorObra(){
                           onChange={e=>setNewComment(p=>({...p,[item.id]:e.target.value}))}
                           onKeyDown={e=>{ if(e.key==="Enter") addComment(zona.id,item.id,newComment[item.id]); }}/>
                         <button style={{...S.btnT,padding:"7px 10px",flexShrink:0}} onClick={()=>addComment(zona.id,item.id,newComment[item.id])}><Ico.Send/></button>
+                      </div>
+                    </div>}
+
+                    {/* HISTORIAL DE CAMBIOS */}
+                    {hOpen&&(item.historial||[]).length>0&&<div style={{background:"#050d1a",borderTop:"1px solid #0d1a2e",padding:"10px 14px 12px 28px"}}>
+                      <div style={{fontSize:"0.65rem",color:"#f59e0b",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8,display:"flex",alignItems:"center",gap:4}}><Ico.History/> {t("changeLog")}</div>
+                      <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                        {[...(item.historial||[])].reverse().map(h=><div key={h.id} style={{display:"flex",gap:8,alignItems:"center",padding:"5px 0",borderBottom:"1px solid #0a1628"}}>
+                          <div style={{width:22,height:22,borderRadius:"50%",background:"#f59e0b22",border:"1px solid #f59e0b44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.65rem",fontWeight:800,color:"#f59e0b",flexShrink:0}}>{h.autor[0].toUpperCase()}</div>
+                          <div style={{flex:1,minWidth:0}}>
+                            <span style={{fontSize:"0.78rem",color:"#94a3b8",fontWeight:600}}>{h.autor}</span>
+                            <span style={{fontSize:"0.72rem",color:"#64748b"}}> {h.accion}</span>
+                          </div>
+                          <span style={{fontSize:"0.6rem",color:"#334155",flexShrink:0}}>{h.fecha} {h.hora}</span>
+                        </div>)}
                       </div>
                     </div>}
 
@@ -1703,6 +2041,7 @@ export default function SupervisorObra(){
               </div>}
             </div>
             {currentUser?.rol==="admin"&&<button style={S.btnP} onClick={()=>setModal({type:"addTrab"})}><Ico.Plus/> {t("workerBtn")}</button>}
+            <button style={S.btnT} onClick={()=>setShowAttendance(true)}><Ico.Attend/></button>
           </div>
           {isMateriales&&<div style={{background:"#1a1a2e",border:"1px solid #a78bfa33",borderRadius:10,padding:"10px 14px",marginBottom:12,display:"flex",alignItems:"center",gap:8,fontSize:"0.78rem",color:"#a78bfa"}}>
             <span style={{fontSize:"1.1rem"}}>📦</span>
@@ -1896,6 +2235,11 @@ export default function SupervisorObra(){
           <label style={{fontSize:"0.72rem",color:"#94a3b8",display:"block",marginBottom:2,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>{t("activeObraLabel")} — {obra.nombre}</label>
           <input style={{...S.inp}} placeholder={t("nameLabel")} value={obra.nombre||""} onChange={e=>updObra(o=>({...o,nombre:e.target.value}))}/>
           <input style={{...S.inp}} placeholder="Descripción" value={obra.descripcion||""} onChange={e=>updObra(o=>({...o,descripcion:e.target.value}))}/>
+          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+            <span style={{fontSize:"0.72rem",color:"#a78bfa",flexShrink:0,display:"flex",alignItems:"center",gap:4}}><Ico.Wallet/> {t("totalBudget")}</span>
+            <input style={{...S.inp,flex:1}} type="number" min="0" step="any" placeholder="0"
+              value={obra.presupuestoTotal||""} onChange={e=>updObra(o=>({...o,presupuestoTotal:parseFloat(e.target.value)||0}))}/>
+          </div>
           <textarea style={S.inp} placeholder={t("notes")} value={obra.notas||""} onChange={e=>updObra(o=>({...o,notas:e.target.value}))}/>
 
         </div>}
@@ -1991,6 +2335,9 @@ export default function SupervisorObra(){
     {exporting&&<div style={{position:"fixed",bottom:24,right:16,background:"#1e293b",border:"1px solid #f59e0b44",borderRadius:12,padding:"9px 16px",fontSize:"0.8rem",color:"#f59e0b",zIndex:2000,display:"flex",alignItems:"center",gap:7}}><span style={{animation:"spin 1s linear infinite",display:"inline-block"}}>⟳</span> {t("generatingPDF")}</div>}
     {cameraFor&&<CameraModal onCapture={data=>addFoto(cameraFor.zId,cameraFor.iId,data)} onClose={()=>setCameraFor(null)}/>}
     {scanBoleta&&<ScanBoletaModal onDatos={datos=>handleBoletaDatos(datos,scanBoleta.zId,scanBoleta.iId,scanBoleta.sId||null)} onClose={()=>setScanBoleta(null)}/>}
+    {showNotifs&&<NotificationsPanel obras={obras} onClose={()=>setShowNotifs(false)} onGoToZona={(oId)=>{setActiveId(oId);ss(ACTIVE_KEY,oId);setTab("zonas");}}/>}
+    {showSearch&&<GlobalSearch obras={obras} users={users} onClose={()=>setShowSearch(false)} onGoTo={(oId)=>{setActiveId(oId);ss(ACTIVE_KEY,oId);setTab("zonas");}}/>}
+    {showAttendance&&obra&&<AttendanceSummaryModal obra={obra} onClose={()=>setShowAttendance(false)} onExport={async(mes)=>{ await exportAttendancePDF(obra,mes); }}/>}
   </LangContext.Provider>;
 }
 
