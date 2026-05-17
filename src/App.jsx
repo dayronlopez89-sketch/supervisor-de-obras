@@ -463,10 +463,10 @@ const MAT_EST = {
 };
 
 const getRoleMeta = (t) => ({
-  admin:      {label:"Administrador", icon:"👑", desc:"Control total · crea obras y zonas",    color:"#f59e0b"},
-  colaborador:{label:"Colaborador",   icon:"🔧", desc:"Edita sus zonas · ve todo",              color:"#38bdf8"},
-  materiales: {label:"Enc. Materiales",icon:"📦",desc:"Solo materiales y boletas · ve el avance",color:"#a78bfa"},
-};
+  admin:      {label:t("roleAdmin"),  icon:"👑", desc:t("roleAdminDesc"), color:"#f59e0b"},
+  colaborador:{label:t("roleCollab"), icon:"🔧", desc:t("roleCollabDesc"),color:"#38bdf8"},
+  materiales: {label:t("roleMat"),    icon:"📦", desc:t("roleMat"),       color:"#a78bfa"},
+});
 
 // ─── Progress Ring ────────────────────────────────────────────────────────────
 function Ring({pct,size=56,stroke=5,color="#f59e0b"}){
@@ -508,6 +508,7 @@ function PinRow({value,onChange,refs,onComplete,shake,size=52,height=64}){
 
 // ─── Auth Screen ──────────────────────────────────────────────────────────────
 function AuthScreen({t,users,obras,invites,onLogin,onRegister,onAcceptInvite}){
+  const ROLE_META=getRoleMeta(t);
   const [mode,setMode]=useState(users.length===0?"register":"login");
   const [nombre,setNombre]=useState("");
   const [rol,setRol]=useState("admin");
