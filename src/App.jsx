@@ -35,13 +35,7 @@ const TRANSLATIONS = {
     newItem:"Nuevo Ítem", editItem:"Editar Ítem", addItem:"Agregar ítem", weight:"Peso",
     startDate:"Fecha inicio", endDate:"Fecha límite", notes:"Notas / Observaciones",
     save:"Guardar", cancel:"Cancelar", add:"Agregar", create:"Crear", del:"Eliminar",
-    noZones:"Sin zonas. ¡Crea la primera!", locationSystem:"Sistema de Ubicación",
-    enableLocation:"Activar sistema de ubicación para esta obra",
-    level1:"Nivel 1", level2:"Nivel 2", level3:"Nivel 3",
-    selectL1:"Seleccionar {{l}}", selectL2:"Seleccionar {{l}}", selectL3:"Seleccionar {{l}}",
-    manageLocations:"Gestionar Ubicaciones", addLocation:"Agregar ubicación",
-    locationName:"Nombre *", parentLabel:"Pertenece a", noLocations:"Sin ubicaciones aún.",
-    assignedLocs:"Ubicaciones asignadas", locationConfig:"Nombres de niveles",
+    noZones:"Sin zonas. ¡Crea la primera!",
     lang:"Idioma", langEs:"Español", langEn:"English", langPt:"Português", langFr:"Français",
     activeTag:"ACTIVA", newObra:"Nueva Obra", resetAll:"Resetear todo",
     exportJSON:"Exportar JSON", importJSON:"Importar JSON",
@@ -56,13 +50,7 @@ const TRANSLATIONS = {
     newItem:"New Item", editItem:"Edit Item", addItem:"Add item", weight:"Weight",
     startDate:"Start date", endDate:"Deadline", notes:"Notes / Observations",
     save:"Save", cancel:"Cancel", add:"Add", create:"Create", del:"Delete",
-    noZones:"No zones yet. Create the first one!", locationSystem:"Location System",
-    enableLocation:"Enable location system for this project",
-    level1:"Level 1", level2:"Level 2", level3:"Level 3",
-    selectL1:"Select {{l}}", selectL2:"Select {{l}}", selectL3:"Select {{l}}",
-    manageLocations:"Manage Locations", addLocation:"Add location",
-    locationName:"Name *", parentLabel:"Belongs to", noLocations:"No locations yet.",
-    assignedLocs:"Assigned locations", locationConfig:"Level names",
+    noZones:"No zones yet. Create the first one!",
     lang:"Language", langEs:"Español", langEn:"English", langPt:"Português", langFr:"Français",
     activeTag:"ACTIVE", newObra:"New Project", resetAll:"Reset all",
     exportJSON:"Export JSON", importJSON:"Import JSON",
@@ -77,13 +65,7 @@ const TRANSLATIONS = {
     newItem:"Novo Item", editItem:"Editar Item", addItem:"Adicionar item", weight:"Peso",
     startDate:"Data início", endDate:"Prazo", notes:"Notas / Observações",
     save:"Salvar", cancel:"Cancelar", add:"Adicionar", create:"Criar", del:"Excluir",
-    noZones:"Sem zonas. Crie a primeira!", locationSystem:"Sistema de Localização",
-    enableLocation:"Ativar sistema de localização para esta obra",
-    level1:"Nível 1", level2:"Nível 2", level3:"Nível 3",
-    selectL1:"Selecionar {{l}}", selectL2:"Selecionar {{l}}", selectL3:"Selecionar {{l}}",
-    manageLocations:"Gerenciar Localizações", addLocation:"Adicionar localização",
-    locationName:"Nome *", parentLabel:"Pertence a", noLocations:"Sem localizações ainda.",
-    assignedLocs:"Localizações atribuídas", locationConfig:"Nomes dos níveis",
+    noZones:"Sem zonas. Crie a primeira!",
     lang:"Idioma", langEs:"Español", langEn:"English", langPt:"Português", langFr:"Français",
     activeTag:"ATIVA", newObra:"Nova Obra", resetAll:"Resetar tudo",
     exportJSON:"Exportar JSON", importJSON:"Importar JSON",
@@ -98,13 +80,7 @@ const TRANSLATIONS = {
     newItem:"Nouvel élément", editItem:"Modifier élément", addItem:"Ajouter élément", weight:"Poids",
     startDate:"Date début", endDate:"Date limite", notes:"Notes / Observations",
     save:"Enregistrer", cancel:"Annuler", add:"Ajouter", create:"Créer", del:"Supprimer",
-    noZones:"Aucune zone. Créez la première!", locationSystem:"Système d'emplacement",
-    enableLocation:"Activer le système d'emplacement pour ce projet",
-    level1:"Niveau 1", level2:"Niveau 2", level3:"Niveau 3",
-    selectL1:"Sélectionner {{l}}", selectL2:"Sélectionner {{l}}", selectL3:"Sélectionner {{l}}",
-    manageLocations:"Gérer emplacements", addLocation:"Ajouter emplacement",
-    locationName:"Nom *", parentLabel:"Appartient à", noLocations:"Aucun emplacement encore.",
-    assignedLocs:"Emplacements assignés", locationConfig:"Noms des niveaux",
+    noZones:"Aucune zone. Créez la première!",
     lang:"Langue", langEs:"Español", langEn:"English", langPt:"Português", langFr:"Français",
     activeTag:"ACTIF", newObra:"Nouveau Projet", resetAll:"Tout réinitialiser",
     exportJSON:"Exporter JSON", importJSON:"Importer JSON",
@@ -137,10 +113,6 @@ const emptyObra = (nombre="") => ({
   id:uid(), nombre, descripcion:"", fechaInicio:today(), fechaFin:"", notas:"",
   estado:"en_ejecucion",
   zonas:[], trabajadores:[],
-  // Sistema de ubicación (opcional)
-  locationEnabled: false,
-  locationLevels: { l1:"", l2:"", l3:"" },
-  locations: [], // [{id, nombre, level:1|2|3, parentId:null|id}]
 });
 
 const OBRA_ESTADOS = {
@@ -823,150 +795,7 @@ function ObraCard({o,isActive,calcZonePct,calcItemPct,isItemDone,onGoToZonas,onP
   </div>;
 }
 
-// ─── Location Picker ─────────────────────────────────────────────────────────
-function LocationPicker({obra, selected=[], onChange, t}){
-  const lvls = obra.locationLevels||{};
-  const locs = obra.locations||[];
-  const l1Name = lvls.l1||t("level1");
-  const l2Name = lvls.l2||t("level2");
-  const l3Name = lvls.l3||t("level3");
 
-  const l1Items = locs.filter(l=>l.level===1);
-  const [selL1,setSelL1]=useState(()=>{
-    // Detect l1 from current selection
-    if(!selected.length)return "";
-    const l3=locs.find(l=>l.id===selected[0]&&l.level===3);
-    if(l3){ const l2=locs.find(l=>l.id===l3.parentId); return l2?.parentId||""; }
-    const l2=locs.find(l=>l.id===selected[0]&&l.level===2);
-    return l2?.parentId||"";
-  });
-  const [selL2,setSelL2]=useState(()=>{
-    if(!selected.length)return "";
-    const l3=locs.find(l=>l.id===selected[0]&&l.level===3);
-    return l3?.parentId||"";
-  });
-
-  const l2Items = locs.filter(l=>l.level===2&&l.parentId===selL1);
-  const l3Items = locs.filter(l=>l.level===3&&l.parentId===selL2);
-
-  const toggleL3=(id)=>{
-    if(selected.includes(id)) onChange(selected.filter(x=>x!==id));
-    else onChange([...selected,id]);
-  };
-
-  if(!locs.length) return <div style={{fontSize:"0.78rem",color:"#475569",padding:"8px 0"}}>{t("noLocations")}</div>;
-
-  return <div style={{display:"flex",flexDirection:"column",gap:8}}>
-    {/* Nivel 1 */}
-    {l1Items.length>0&&<div>
-      <label style={{fontSize:"0.7rem",color:"#64748b",display:"block",marginBottom:4,fontWeight:600}}>{l1Name}</label>
-      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-        {l1Items.map(l=><button key={l.id} onClick={()=>{setSelL1(l.id===selL1?"":l.id);setSelL2("");}}
-          style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${selL1===l.id?"#f59e0b44":"#334155"}`,background:selL1===l.id?"#f59e0b22":"transparent",color:selL1===l.id?"#f59e0b":"#94a3b8",fontSize:"0.72rem",fontWeight:600,cursor:"pointer"}}>{l.nombre}</button>)}
-      </div>
-    </div>}
-    {/* Nivel 2 */}
-    {selL1&&l2Items.length>0&&<div>
-      <label style={{fontSize:"0.7rem",color:"#64748b",display:"block",marginBottom:4,fontWeight:600}}>{l2Name}</label>
-      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-        {l2Items.map(l=><button key={l.id} onClick={()=>setSelL2(l.id===selL2?"":l.id)}
-          style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${selL2===l.id?"#38bdf844":"#334155"}`,background:selL2===l.id?"#38bdf822":"transparent",color:selL2===l.id?"#38bdf8":"#94a3b8",fontSize:"0.72rem",fontWeight:600,cursor:"pointer"}}>{l.nombre}</button>)}
-      </div>
-    </div>}
-    {/* Nivel 3 — selección múltiple */}
-    {selL2&&l3Items.length>0&&<div>
-      <label style={{fontSize:"0.7rem",color:"#64748b",display:"block",marginBottom:4,fontWeight:600}}>{l3Name} <span style={{color:"#475569",fontWeight:400}}>(múltiple)</span></label>
-      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-        {l3Items.map(l=><button key={l.id} onClick={()=>toggleL3(l.id)}
-          style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${selected.includes(l.id)?"#a78bfa44":"#334155"}`,background:selected.includes(l.id)?"#a78bfa22":"transparent",color:selected.includes(l.id)?"#a78bfa":"#94a3b8",fontSize:"0.72rem",fontWeight:600,cursor:"pointer"}}>{l.nombre}</button>)}
-      </div>
-    </div>}
-    {/* Mostrar seleccionados */}
-    {selected.length>0&&<div style={{display:"flex",gap:4,flexWrap:"wrap",marginTop:2}}>
-      {selected.map(id=>{ const loc=locs.find(l=>l.id===id); return loc?<span key={id} style={{fontSize:"0.65rem",background:"#a78bfa22",color:"#a78bfa",borderRadius:4,padding:"2px 7px",display:"flex",alignItems:"center",gap:3}}>{loc.nombre}<button onClick={()=>onChange(selected.filter(x=>x!==id))} style={{background:"none",border:"none",color:"#a78bfa",cursor:"pointer",padding:0,fontWeight:800,lineHeight:1}}>×</button></span>:null; })}
-    </div>}
-  </div>;
-}
-
-// ─── Location Manager Modal Content ──────────────────────────────────────────
-function LocationManager({obra, onAdd, onDelete, onUpdateLevels, t}){
-  const [newName,setNewName]=useState("");
-  const [newLevel,setNewLevel]=useState(1);
-  const [newParent,setNewParent]=useState("");
-  const lvls=obra.locationLevels||{};
-  const locs=obra.locations||[];
-  const l1Name=lvls.l1||t("level1");
-  const l2Name=lvls.l2||t("level2");
-  const l3Name=lvls.l3||t("level3");
-
-  const l1=(locs||[]).filter(l=>l.level===1);
-  const l2=(locs||[]).filter(l=>l.level===2);
-  const l3=(locs||[]).filter(l=>l.level===3);
-
-  const parentOptions=newLevel===2?l1:newLevel===3?l2:[];
-
-  return <div style={{display:"flex",flexDirection:"column",gap:14}}>
-    {/* Config nombres de niveles */}
-    <div style={{background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,padding:12}}>
-      <div style={{fontSize:"0.7rem",color:"#38bdf8",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>{t("locationConfig")}</div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7}}>
-        {[["l1",l1Name,t("level1")],["l2",l2Name,t("level2")],["l3",l3Name,t("level3")]].map(([key,val,ph])=>(
-          <input key={key} style={{background:"#1e293b",border:"1px solid #334155",borderRadius:7,padding:"7px 9px",color:"#f1f5f9",fontSize:"0.78rem",outline:"none",width:"100%",boxSizing:"border-box"}}
-            placeholder={ph} value={val} onChange={e=>onUpdateLevels({[key]:e.target.value})}/>
-        ))}
-      </div>
-    </div>
-
-    {/* Árbol de ubicaciones */}
-    {locs.length>0&&<div style={{display:"flex",flexDirection:"column",gap:4}}>
-      {l1.map(a=><div key={a.id}>
-        <div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",background:"#1e293b",borderRadius:7,marginBottom:3}}>
-          <span style={{fontSize:"0.65rem",background:"#f59e0b22",color:"#f59e0b",borderRadius:3,padding:"1px 5px",fontWeight:700}}>{l1Name}</span>
-          <span style={{flex:1,fontSize:"0.82rem",color:"#f1f5f9",fontWeight:600}}>{a.nombre}</span>
-          <button onClick={()=>onDelete(a.id)} style={{background:"none",border:"none",color:"#ef4444",cursor:"pointer",fontSize:"0.75rem",padding:"0 3px"}}>✕</button>
-        </div>
-        {l2.filter(b=>b.parentId===a.id).map(b=><div key={b.id} style={{marginLeft:14}}>
-          <div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",background:"#162032",borderRadius:7,marginBottom:3}}>
-            <span style={{fontSize:"0.65rem",background:"#38bdf822",color:"#38bdf8",borderRadius:3,padding:"1px 5px",fontWeight:700}}>{l2Name}</span>
-            <span style={{flex:1,fontSize:"0.8rem",color:"#e2e8f0"}}>{b.nombre}</span>
-            <button onClick={()=>onDelete(b.id)} style={{background:"none",border:"none",color:"#ef4444",cursor:"pointer",fontSize:"0.75rem",padding:"0 3px"}}>✕</button>
-          </div>
-          {l3.filter(c=>c.parentId===b.id).map(c=><div key={c.id} style={{marginLeft:14,display:"flex",alignItems:"center",gap:6,padding:"4px 8px",background:"#0f172a",borderRadius:6,marginBottom:2}}>
-            <span style={{fontSize:"0.65rem",background:"#a78bfa22",color:"#a78bfa",borderRadius:3,padding:"1px 5px",fontWeight:700}}>{l3Name}</span>
-            <span style={{flex:1,fontSize:"0.78rem",color:"#cbd5e1"}}>{c.nombre}</span>
-            <button onClick={()=>onDelete(c.id)} style={{background:"none",border:"none",color:"#ef4444",cursor:"pointer",fontSize:"0.75rem",padding:"0 3px"}}>✕</button>
-          </div>)}
-        </div>)}
-      </div>)}
-    </div>}
-    {locs.length===0&&<p style={{fontSize:"0.78rem",color:"#334155",textAlign:"center",margin:0}}>{t("noLocations")}</p>}
-
-    {/* Agregar nueva ubicación */}
-    <div style={{background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,padding:12}}>
-      <div style={{fontSize:"0.7rem",color:"#22c55e",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>{t("addLocation")}</div>
-      <div style={{display:"flex",flexDirection:"column",gap:8}}>
-        <div style={{display:"flex",gap:6}}>
-          {[[1,l1Name,"#f59e0b"],[2,l2Name,"#38bdf8"],[3,l3Name,"#a78bfa"]].map(([lv,name,color])=>(
-            <button key={lv} onClick={()=>{setNewLevel(lv);setNewParent("");}}
-              style={{flex:1,padding:"6px",borderRadius:7,border:`2px solid ${newLevel===lv?color+"66":"#1e293b"}`,background:newLevel===lv?color+"22":"transparent",color:newLevel===lv?color:"#64748b",fontWeight:700,fontSize:"0.7rem",cursor:"pointer"}}>{name}</button>
-          ))}
-        </div>
-        {parentOptions.length>0&&<select value={newParent} onChange={e=>setNewParent(e.target.value)}
-          style={{background:"#1e293b",border:"1px solid #334155",borderRadius:7,padding:"7px 10px",color:newParent?"#f1f5f9":"#64748b",fontSize:"0.8rem",outline:"none"}}>
-          <option value="">{t("parentLabel")}…</option>
-          {parentOptions.map(p=><option key={p.id} value={p.id}>{p.nombre}</option>)}
-        </select>}
-        <div style={{display:"flex",gap:7}}>
-          <input style={{flex:1,background:"#1e293b",border:"1px solid #334155",borderRadius:7,padding:"7px 10px",color:"#f1f5f9",fontSize:"0.8rem",outline:"none"}}
-            placeholder={t("locationName")} value={newName} onChange={e=>setNewName(e.target.value)}
-            onKeyDown={e=>{ if(e.key==="Enter"&&newName.trim()){ onAdd(newName.trim(),newLevel,newParent||null); setNewName(""); }}}/>
-          <button onClick={()=>{ if(newName.trim()){ onAdd(newName.trim(),newLevel,newParent||null); setNewName(""); }}}
-            style={{background:"#22c55e",color:"#0f172a",border:"none",borderRadius:7,padding:"7px 14px",fontWeight:700,fontSize:"0.8rem",cursor:"pointer"}}>+</button>
-        </div>
-      </div>
-    </div>
-  </div>;
-}
 
 function Dashboard({obras,activeId,calcZonePct,calcItemPct,isItemDone,totalPct,onPDF,onCompras,currentUser,onGoToZonas,onChangeStatus,onSetActive}){
   const [expanded,setExpanded]=useState({[activeId]:true});
@@ -995,8 +824,9 @@ function Dashboard({obras,activeId,calcZonePct,calcItemPct,isItemDone,totalPct,o
 // ─── Worker Card ─────────────────────────────────────────────────────────────
 function WorkerCard({t,zona,onEdit,onDelete,onToggleAsistencia,onAddHerramienta,onEditHerramienta,onDeleteHerramienta,onSetHerramientaStatus,canEdit}){
   const [open,setOpen]=useState(false);
-  const [tab,setTab]=useState("herramientas"); // herramientas | asistencia
+  const [tab,setTab]=useState("herramientas");
   const [newTool,setNewTool]=useState("");
+  const [editingTool,setEditingTool]=useState(null); // {id, nombre}
   const hoy=today();
   const asistHoy=t.asistencia?.[hoy];
   const herramientas=t.herramientas||[];
@@ -1050,13 +880,25 @@ function WorkerCard({t,zona,onEdit,onDelete,onToggleAsistencia,onAddHerramienta,
           {herramientas.map(h=>{
             const hEst=HERRAMIENTA_ESTADOS[h.estado||"disponible"];
             return <div key={h.id} style={{display:"flex",alignItems:"center",gap:8,background:"#0a1628",borderRadius:8,padding:"7px 10px"}}>
-              <span style={{width:8,height:8,borderRadius:"50%",background:hEst.dot,flexShrink:0}}/>
-              <span style={{flex:1,fontSize:"0.83rem",color:"#e2e8f0"}}>{h.nombre}</span>
-              {canEdit?<select value={h.estado||"disponible"} onChange={e=>onSetHerramientaStatus(t.id,h.id,e.target.value)}
-                style={{background:"#1e293b",border:`1px solid ${hEst.dot}44`,borderRadius:6,color:hEst.color,fontSize:"0.65rem",fontWeight:700,padding:"2px 5px",cursor:"pointer",outline:"none"}}>
-                {Object.entries(HERRAMIENTA_ESTADOS).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
-              </select>:<span style={{fontSize:"0.65rem",color:hEst.color,fontWeight:700}}>{hEst.label}</span>}
-              {canEdit&&<button className="ic danger" style={{padding:"2px 5px"}} onClick={()=>onDeleteHerramienta(t.id,h.id)}><Ico.Trash/></button>}
+              {editingTool?.id===h.id
+                ? <>
+                    <input autoFocus style={{flex:1,background:"#1e293b",border:"1px solid #f59e0b",borderRadius:6,padding:"4px 8px",color:"#f1f5f9",fontSize:"0.82rem",outline:"none"}}
+                      value={editingTool.nombre} onChange={e=>setEditingTool(p=>({...p,nombre:e.target.value}))}
+                      onKeyDown={e=>{ if(e.key==="Enter"&&editingTool.nombre.trim()){ onEditHerramienta(t.id,h.id,editingTool.nombre.trim()); setEditingTool(null); } if(e.key==="Escape") setEditingTool(null); }}/>
+                    <button style={{...S.btnP,padding:"3px 8px",fontSize:"0.72rem"}} onClick={()=>{ if(editingTool.nombre.trim()){ onEditHerramienta(t.id,h.id,editingTool.nombre.trim()); setEditingTool(null); } }}>✓</button>
+                    <button className="ic" onClick={()=>setEditingTool(null)}>✕</button>
+                  </>
+                : <>
+                    <span style={{width:8,height:8,borderRadius:"50%",background:hEst.dot,flexShrink:0}}/>
+                    <span style={{flex:1,fontSize:"0.83rem",color:"#e2e8f0"}}>{h.nombre}</span>
+                    {canEdit?<select value={h.estado||"disponible"} onChange={e=>onSetHerramientaStatus(t.id,h.id,e.target.value)}
+                      style={{background:"#1e293b",border:`1px solid ${hEst.dot}44`,borderRadius:6,color:hEst.color,fontSize:"0.65rem",fontWeight:700,padding:"2px 5px",cursor:"pointer",outline:"none"}}>
+                      {Object.entries(HERRAMIENTA_ESTADOS).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
+                    </select>:<span style={{fontSize:"0.65rem",color:hEst.color,fontWeight:700}}>{hEst.label}</span>}
+                    {canEdit&&<button className="ic" onClick={()=>setEditingTool({id:h.id,nombre:h.nombre})}><Ico.Edit/></button>}
+                    {canEdit&&<button className="ic danger" style={{padding:"2px 5px"}} onClick={()=>onDeleteHerramienta(t.id,h.id)}><Ico.Trash/></button>}
+                  </>
+              }
             </div>;
           })}
         </div>
@@ -1255,32 +1097,16 @@ export default function SupervisorObra(){
   const editZona=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===modal.zId?{...z,nombre:form.nombre.trim(),descripcion:form.descripcion||"",peso:parseFloat(form.peso)||1}:z)})); closeModal(); };
   const delZona=(id)=>{ if(!window.confirm("¿Eliminar zona?"))return; updObra(o=>({...o,zonas:o.zonas.filter(z=>z.id!==id),trabajadores:o.trabajadores.map(t=>t.zonaId===id?{...t,zonaId:null}:t)})); };
 
-  // ── Sistema de Ubicación ──
-  const toggleLocationSystem=()=>updObra(o=>({...o,locationEnabled:!o.locationEnabled}));
-  const updateLocationLevels=(levels)=>updObra(o=>({...o,locationLevels:{...o.locationLevels,...levels}}));
-  const addLocation=(nombre,level,parentId=null)=>{
-    if(!nombre?.trim())return;
-    const loc={id:uid(),nombre:nombre.trim(),level,parentId};
-    updObra(o=>({...o,locations:[...(o.locations||[]),loc]}));
-  };
-  const delLocation=(locId)=>{
-    updObra(o=>({
-      ...o,
-      locations:(o.locations||[]).filter(l=>l.id!==locId&&l.parentId!==locId),
-      // Quitar ubicaciones de ítems que tenían esta location
-      zonas:o.zonas.map(z=>({...z,items:z.items.map(i=>({...i,locationIds:(i.locationIds||[]).filter(id=>id!==locId)}))}))
-    }));
-  };
 
   // ── CRUD Items ──
   const addItem=(zId)=>{
     if(!form.nombre?.trim())return;
     if(!currentUser?.id){toast("Error: no hay sesión activa","err");return;}
-    const ni={id:uid(),nombre:form.nombre.trim(),descripcion:form.descripcion||"",terminado:false,peso:parseFloat(form.peso)||1,materiales:[],fotos:[],notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||"",subItems:[],comentarios:[],ownerUserId:currentUser.id,locationIds:form.locationIds||[]};
+    const ni={id:uid(),nombre:form.nombre.trim(),descripcion:form.descripcion||"",terminado:false,peso:parseFloat(form.peso)||1,materiales:[],fotos:[],notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||"",subItems:[],comentarios:[],ownerUserId:currentUser.id};
     updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:[...z.items,ni]}:z)}));
     closeModal();
   };
-  const editItem=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===modal.zId?{...z,items:z.items.map(i=>i.id===modal.iId?{...i,nombre:form.nombre.trim(),descripcion:form.descripcion||"",peso:parseFloat(form.peso)||1,notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||"",locationIds:form.locationIds||[]}:i)}:z)})); closeModal(); };
+  const editItem=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===modal.zId?{...z,items:z.items.map(i=>i.id===modal.iId?{...i,nombre:form.nombre.trim(),descripcion:form.descripcion||"",peso:parseFloat(form.peso)||1,notas:form.notas||"",fechaInicio:form.fechaInicio||"",fechaFin:form.fechaFin||""}:i)}:z)})); closeModal(); };
   const delItem=(zId,iId)=>{ if(!window.confirm("¿Eliminar ítem?"))return; updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.filter(i=>i.id!==iId)}:z)})); };
   const toggleItem=(zId,iId,item)=>{
     if(!canEditItem(item)){ toast(t("onlyOwnerEdit"),"err"); return; }
@@ -1318,6 +1144,14 @@ export default function SupervisorObra(){
   const delMat=(zId,iId,mId)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,materiales:i.materiales.filter(m=>m.id!==mId)}:i)}:z)}));
   const setMatStatus=(zId,iId,mId,estado)=>updObra(o=>({...o,zonas:o.zonas.map(z=>z.id===zId?{...z,items:z.items.map(i=>i.id===iId?{...i,materiales:i.materiales.map(m=>m.id===mId?{...m,estado}:m)}:i)}:z)}));
 
+  // ── Invitaciones ──
+  const createInvite=(obraId)=>{
+    const code=mkCode();
+    const inv={code,obraId,createdBy:currentUser?.id,expiresAt:Date.now()+48*60*60*1000,used:false};
+    setInvites(p=>[...p,inv]);
+    return code;
+  };
+
   // ── Trabajadores ──
   const addTrab=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,trabajadores:[...o.trabajadores,{id:uid(),nombre:form.nombre.trim(),rol:form.rol||"",zonaId:form.zonaId||null,telefono:form.telefono||"",herramientas:[],asistencia:{}}]})); closeModal(); };
   const editTrab=()=>{ if(!form.nombre?.trim())return; updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===modal.tId?{...t,nombre:form.nombre.trim(),rol:form.rol||"",zonaId:form.zonaId||null,telefono:form.telefono||""}:t)})); closeModal(); };
@@ -1325,6 +1159,7 @@ export default function SupervisorObra(){
 
   // ── Herramientas ──
   const addHerramienta=(tId,nombre)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,herramientas:[...(t.herramientas||[]),{id:uid(),nombre,estado:"disponible"}]}:t)}));
+  const editHerramienta=(tId,hId,nombre)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,herramientas:(t.herramientas||[]).map(h=>h.id===hId?{...h,nombre}:h)}:t)}));
   const deleteHerramienta=(tId,hId)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,herramientas:(t.herramientas||[]).filter(h=>h.id!==hId)}:t)}));
   const setHerramientaStatus=(tId,hId,estado)=>updObra(o=>({...o,trabajadores:o.trabajadores.map(t=>t.id===tId?{...t,herramientas:(t.herramientas||[]).map(h=>h.id===hId?{...h,estado}:h)}:t)}));
 
@@ -1536,7 +1371,6 @@ export default function SupervisorObra(){
                         <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:2}}>
                           {item.fechaFin&&<span style={{fontSize:"0.63rem",color:overdue?"#ef4444":warning?"#f59e0b":"#475569",display:"flex",alignItems:"center",gap:2}}>{overdue?"⚠":warning?"⏰":""}<Ico.Cal/>{item.fechaFin}</span>}
                           {(item.fotos||[]).length>0&&<span style={{fontSize:"0.63rem",color:"#475569",display:"flex",alignItems:"center",gap:2}}><Ico.Photo/>{item.fotos.length}</span>}
-                          {obra?.locationEnabled&&(item.locationIds||[]).length>0&&<span style={{fontSize:"0.63rem",color:"#a78bfa",background:"#a78bfa18",borderRadius:4,padding:"1px 5px",display:"flex",alignItems:"center",gap:2}}>📍 {(item.locationIds||[]).map(id=>(obra.locations||[]).find(l=>l.id===id)?.nombre).filter(Boolean).join(", ")}</span>}
                           {(item.materiales||[]).length>0&&<span style={{fontSize:"0.63rem",color:"#475569"}}>📦 {item.materiales.length}</span>}
                           {hasSubs&&<span style={{fontSize:"0.63rem",color:"#64748b",display:"flex",alignItems:"center",gap:2}}><Ico.List/>{(item.subItems||[]).filter(s=>s.terminado).length}/{(item.subItems||[]).length}</span>}
                           {comentarios.length>0&&<span style={{fontSize:"0.63rem",color:"#64748b",display:"flex",alignItems:"center",gap:2}}><Ico.Chat/>{comentarios.length}</span>}
@@ -1557,7 +1391,7 @@ export default function SupervisorObra(){
                         👤+
                       </button>}
                       {ceItem&&<>
-                        <button className="ic" onClick={()=>{setForm({nombre:item.nombre,descripcion:item.descripcion||"",peso:item.peso||1,notas:item.notas||"",fechaInicio:item.fechaInicio||"",fechaFin:item.fechaFin||"",locationIds:item.locationIds||[]});setModal({type:"editItem",zId:zona.id,iId:item.id});}}><Ico.Edit/></button>
+                        <button className="ic" onClick={()=>{setForm({nombre:item.nombre,descripcion:item.descripcion||"",peso:item.peso||1,notas:item.notas||"",fechaInicio:item.fechaInicio||"",fechaFin:item.fechaFin||""});setModal({type:"editItem",zId:zona.id,iId:item.id});}}><Ico.Edit/></button>
                         <button className="ic danger" onClick={()=>delItem(zona.id,item.id)}><Ico.Trash/></button>
                       </>}
                       {!isMateriales&&<button className="ic" onClick={()=>setExItems(p=>({...p,[item.id]:!p[item.id]}))}><Ico.Cam/></button>}
@@ -1703,7 +1537,7 @@ export default function SupervisorObra(){
               onDelete={delTrab}
               onToggleAsistencia={toggleAsistencia}
               onAddHerramienta={addHerramienta}
-              onEditHerramienta={()=>{}}
+              onEditHerramienta={editHerramienta}
               onDeleteHerramienta={deleteHerramienta}
               onSetHerramientaStatus={setHerramientaStatus}
               canEdit={currentUser?.rol==="admin"}/>;
@@ -1802,7 +1636,7 @@ export default function SupervisorObra(){
 
     {(modal?.type==="addItem"||modal?.type==="editItem")&&<Modal title={modal.type==="addItem"?t("newItem"):t("editItem")} onClose={closeModal} wide>
       <div style={{display:"flex",flexDirection:"column",gap:9}}>
-        <input style={S.inp} placeholder={t("locationName").replace(" *","")} value={form.nombre||""} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))}/>
+        <input style={S.inp} placeholder="Nombre del ítem *" value={form.nombre||""} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))}/>
         <input style={S.inp} placeholder="Descripción" value={form.descripcion||""} onChange={e=>setForm(p=>({...p,descripcion:e.target.value}))}/>
         <textarea style={S.inp} placeholder={t("notes")} value={form.notas||""} onChange={e=>setForm(p=>({...p,notas:e.target.value}))}/>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
@@ -1813,13 +1647,6 @@ export default function SupervisorObra(){
           <input style={{...S.inp,width:80}} type="number" min="1" max="10" value={form.peso||1} onChange={e=>setForm(p=>({...p,peso:e.target.value}))}/>
           <div style={{height:4,background:"#1e293b",borderRadius:2,overflow:"hidden",marginTop:5}}><div style={{height:"100%",width:`${((parseFloat(form.peso)||1)/10)*100}%`,background:"linear-gradient(90deg,#22c55e,#f59e0b,#ef4444)",borderRadius:2,transition:"width .2s"}}/></div>
         </div>
-        {/* Ubicación — solo si está habilitado en la obra */}
-        {obra?.locationEnabled&&(obra?.locations||[]).length>0&&<div style={{background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,padding:12}}>
-          <div style={{fontSize:"0.7rem",color:"#a78bfa",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10,display:"flex",alignItems:"center",gap:5}}>
-            📍 {t("location")}
-          </div>
-          <LocationPicker obra={obra} selected={form.locationIds||[]} onChange={ids=>setForm(p=>({...p,locationIds:ids}))} t={t}/>
-        </div>}
         <div style={{display:"flex",gap:7,justifyContent:"flex-end"}}><button style={S.btnS} onClick={closeModal}>{t("cancel")}</button><button style={S.btnP} onClick={modal.type==="addItem"?()=>addItem(modal.zId):editItem}>{modal.type==="addItem"?t("add"):t("save")}</button></div>
       </div>
     </Modal>}
@@ -1952,6 +1779,28 @@ export default function SupervisorObra(){
             ))}
           </div>
         </div>
+
+        {/* Invitaciones */}
+        {currentUser?.rol==="admin"&&obra&&<div style={{background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,padding:14}}>
+          <div style={{fontSize:"0.72rem",color:"#38bdf8",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:10,display:"flex",alignItems:"center",gap:5}}><Ico.Link/> Invitar colaborador</div>
+          <p style={{margin:"0 0 10px",fontSize:"0.78rem",color:"#64748b"}}>Genera un código de 6 dígitos válido por 48 horas para que otro usuario se una a <strong style={{color:"#f1f5f9"}}>{obra.nombre}</strong>.</p>
+          {form.inviteCode
+            ? <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                <div style={{background:"#1e293b",borderRadius:8,padding:"12px",textAlign:"center"}}>
+                  <div style={{fontSize:"2rem",fontWeight:800,letterSpacing:"0.25em",color:"#f59e0b",fontFamily:"monospace"}}>{form.inviteCode}</div>
+                  <div style={{fontSize:"0.65rem",color:"#475569",marginTop:4}}>Válido por 48 horas · comparte este código</div>
+                </div>
+                <div style={{display:"flex",gap:7}}>
+                  <button style={{...S.btnT,flex:1,justifyContent:"center"}} onClick={()=>{ navigator.clipboard?.writeText(form.inviteCode).then(()=>toast("📋 Código copiado")); }}><Ico.Copy/> Copiar</button>
+                  <button style={{...S.btnG,flex:1,justifyContent:"center"}} onClick={()=>setForm(p=>({...p,inviteCode:null}))}>Cerrar</button>
+                </div>
+              </div>
+            : <button style={{...S.btnP,justifyContent:"center",width:"100%"}} onClick={()=>{ const code=createInvite(obra.id); setForm(p=>({...p,inviteCode:code})); }}><Ico.Plus/> Generar código</button>
+          }
+          {invites.filter(i=>i.obraId===obra.id&&!i.used&&i.expiresAt>Date.now()).length>0&&<div style={{marginTop:8,fontSize:"0.65rem",color:"#475569"}}>
+            {invites.filter(i=>i.obraId===obra.id&&!i.used&&i.expiresAt>Date.now()).length} código(s) activo(s) para esta obra
+          </div>}
+        </div>}
 
         {currentUser?.rol==="admin"&&<div style={{borderTop:"1px solid #1e293b",paddingTop:12}}>
           <button style={S.btnD} onClick={()=>{if(window.confirm("¿Resetear TODOS los datos?")){ const fresh=[emptyObra("Mi Obra")]; setObras(fresh); setActiveId(fresh[0].id); ss(ACTIVE_KEY,fresh[0].id); closeModal(); }}}>🗑️ {t("resetAll")}</button>
