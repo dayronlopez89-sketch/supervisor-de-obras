@@ -1891,20 +1891,7 @@ export default function SupervisorObra(){
           <input style={{...S.inp}} placeholder="Nombre" value={obra.nombre||""} onChange={e=>updObra(o=>({...o,nombre:e.target.value}))}/>
           <input style={{...S.inp}} placeholder="Descripción" value={obra.descripcion||""} onChange={e=>updObra(o=>({...o,descripcion:e.target.value}))}/>
           <textarea style={S.inp} placeholder="Notas generales" value={obra.notas||""} onChange={e=>updObra(o=>({...o,notas:e.target.value}))}/>
-          {/* Sistema de Ubicación */}
-          <div style={{background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,padding:12}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:obra.locationEnabled?12:0}}>
-              <div>
-                <div style={{fontSize:"0.78rem",fontWeight:700,color:"#a78bfa",display:"flex",alignItems:"center",gap:5}}>📍 {t("locationSystem")}</div>
-                <div style={{fontSize:"0.65rem",color:"#475569",marginTop:2}}>{t("enableLocation")}</div>
-              </div>
-              <button onClick={toggleLocationSystem}
-                style={{width:42,height:24,borderRadius:12,border:"none",background:obra.locationEnabled?"#a78bfa":"#334155",cursor:"pointer",position:"relative",transition:"background .2s",flexShrink:0}}>
-                <div style={{position:"absolute",top:3,left:obra.locationEnabled?20:3,width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left .2s"}}/>
-              </button>
-            </div>
-            {obra.locationEnabled&&<LocationManager obra={obra} onAdd={addLocation} onDelete={delLocation} onUpdateLevels={updateLocationLevels} t={t}/>}
-          </div>
+
         </div>}
 
         <div>
