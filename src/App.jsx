@@ -727,7 +727,7 @@ function MatRow({t,mat,onEdit,onDelete,onStatus,canEdit}){
 
 // ─── MatForm ──────────────────────────────────────────────────────────────────
 function MatForm({t,mat,onChange}){
-  const p=parseFloat(mat.precio)||0,q=parseFloat(mat.cantidad)||0,t=p*q;
+  const p=parseFloat(mat.precio)||0,q=parseFloat(mat.cantidad)||0,total=p*q;
   return <div style={{display:"flex",flexDirection:"column",gap:9}}>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
       <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>{t("materials")} *</label><input style={S.inp} placeholder={t("matNamePlaceholder")} value={mat.nombre||""} onChange={e=>onChange("nombre",e.target.value)}/></div>
@@ -741,7 +741,7 @@ function MatForm({t,mat,onChange}){
       <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>Unidad</label><input style={S.inp} placeholder="kg, m²" value={mat.unidad||""} onChange={e=>onChange("unidad",e.target.value)}/></div>
       <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>Precio u.</label><input style={S.inp} type="number" min="0" step="any" placeholder="0" value={mat.precio||""} onChange={e=>onChange("precio",e.target.value)}/></div>
     </div>
-    {t>0&&<div style={{background:"#1e293b",borderRadius:8,padding:"7px 12px",display:"flex",justifyContent:"space-between"}}><span style={{fontSize:"0.75rem",color:"#64748b"}}>Total</span><span style={{fontSize:"0.95rem",fontWeight:800,color:"#f59e0b"}}>${fmt(t)}</span></div>}
+    {total>0&&<div style={{background:"#1e293b",borderRadius:8,padding:"7px 12px",display:"flex",justifyContent:"space-between"}}><span style={{fontSize:"0.75rem",color:"#64748b"}}>Total</span><span style={{fontSize:"0.95rem",fontWeight:800,color:"#f59e0b"}}>${fmt(total)}</span></div>}
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
       <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>{t("supplier")}</label><input style={S.inp} placeholder="Nombre" value={mat.proveedor||""} onChange={e=>onChange("proveedor",e.target.value)}/></div>
       <div><label style={{fontSize:"0.72rem",color:"#64748b",display:"block",marginBottom:3}}>{t("purchaseDate")}</label><input style={S.inp} type="date" value={mat.fechaCompra||""} onChange={e=>onChange("fechaCompra",e.target.value)}/></div>
